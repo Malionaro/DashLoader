@@ -1,5 +1,6 @@
 package dev.notalpha.dashloader.client.sprite.content;
 
+import dev.notalpha.dashloader.DashLoader;
 import dev.notalpha.dashloader.api.CachingData;
 import dev.notalpha.dashloader.api.DashModule;
 import dev.notalpha.dashloader.api.cache.Cache;
@@ -30,8 +31,15 @@ public class SpriteContentModule implements DashModule<SpriteContentModule.Data>
 
 		var map = new IntIntList();
 		task.doForEach(spriteData, (identifier, spriteContents) -> {
-			if (spriteContents != null)
-				map.put(writer.add(identifier), writer.add(spriteContents));
+			if (spriteContents != null) {
+				try {
+					map.put(writer.add(identifier), writer.add(spriteContents));
+				} catch (RuntimeException e) {
+					// Modded SpriteContents subclasses (e.g. Fusion, see #85) have no ChunkWriter;
+					// skipping is safe: the LOAD path falls back to vanilla loading for missing sprites.
+					DashLoader.LOG.warn("Skipping uncacheable sprite {} ({}): {}", identifier, spriteContents.getClass().getName(), e.getMessage());
+				}
+			}
 		});
 
 		return new Data(map);

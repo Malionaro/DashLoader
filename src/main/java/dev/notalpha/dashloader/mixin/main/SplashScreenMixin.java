@@ -42,20 +42,20 @@ public class SplashScreenMixin {
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMillis()J", shift = At.Shift.AFTER)
 	)
 	private void done(CallbackInfo ci) {
-		this.minecraft.gui.setOverlay(null);
-		if (this.minecraft.gui.screen() != null) {
-			if (this.minecraft.gui.screen() instanceof TitleScreen) {
-				this.minecraft.gui.setScreen(new TitleScreen(false));
+		this.minecraft.setOverlay(null);
+		if (this.minecraft.screen != null) {
+			if (this.minecraft.screen instanceof TitleScreen) {
+				this.minecraft.setScreen(new TitleScreen(false));
 			}
 		}
 
 		DashLoader.LOG.info("Minecraft reloaded in {}", ProfilerUtil.getTimeStringFromStart(ProfilerUtil.RELOAD_START));
 		Cache cache = DashLoaderClient.CACHE;
-		if (DashLoaderClient.CACHE.getStatus() == CacheStatus.SAVE && minecraft.gui.toastManager().getToast(DashToast.class, Toast.NO_TOKEN) == null) {
+		if (DashLoaderClient.CACHE.getStatus() == CacheStatus.SAVE && minecraft.getToastManager().getToast(DashToast.class, Toast.NO_TOKEN) == null) {
 			DashToastState rawState;
 			if (ConfigHandler.INSTANCE.config.showCachingToast) {
 				DashToast toast = new DashToast();
-				minecraft.gui.toastManager().addToast(toast);
+				minecraft.getToastManager().addToast(toast);
 				rawState = toast.state;
 			} else {
 				rawState = new DashToastState();
@@ -74,7 +74,7 @@ public class SplashScreenMixin {
 					// Only show toast on fail.
 					if (!ConfigHandler.INSTANCE.config.showCachingToast) {
 						DashToast toast = new DashToast();
-						minecraft.gui.toastManager().addToast(toast);
+						minecraft.getToastManager().addToast(toast);
 						state = toast.state;
 					}
 					state.setOverwriteText("Internal error, Please check logs.");

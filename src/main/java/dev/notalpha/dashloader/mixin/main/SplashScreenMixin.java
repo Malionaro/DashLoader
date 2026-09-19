@@ -41,7 +41,7 @@ public class SplashScreenMixin {
 
 	@Inject(
 			method = "render",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J", shift = At.Shift.BEFORE, ordinal = 1)
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;setOverlay(Lnet/minecraft/client/gui/screen/Overlay;)V")
 	)
 	private void done(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
 		this.client.setOverlay(null);
@@ -94,10 +94,10 @@ public class SplashScreenMixin {
 	}
 
 	@Inject(
-			method = "render",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/resource/ResourceReload;isComplete()Z", shift = At.Shift.BEFORE)
+			method = "tick",
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/resource/ResourceReload;isComplete()Z")
 	)
-	private void removeMinimumTime(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+	private void removeMinimumTime(CallbackInfo ci) {
 		if (this.reloadCompleteTime == -1L && this.reload.isComplete()) {
 			this.reloading = false;
 		}

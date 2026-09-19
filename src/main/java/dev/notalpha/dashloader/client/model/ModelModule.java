@@ -63,8 +63,14 @@ public class ModelModule implements DashModule<ModelModule.Data> {
 				final int modelPtr = factory.add(model);
 				outBlockModels.put(factory.add(state), modelPtr);
 			} catch (RuntimeException e) {
-				if (outBlockModels.list().size() < 3) {
-					DashLoader.LOG.warn("[dashloader-diag] skip {} -> {}: {}: {}", state, model == null ? "null" : model.getClass().getName(), e.getClass().getName(), e.getMessage());
+				if (outBlockModels.list().size() < 2) {
+					StringBuilder chain = new StringBuilder();
+					Throwable t = e;
+					while (t != null && chain.length() < 2000) {
+						chain.append(t.getClass().getName()).append(": ").append(t.getMessage()).append(" <- ");
+						t = t.getCause();
+					}
+					DashLoader.LOG.warn("[dashloader-diag] skip {} -> {}: {}", state, model == null ? "null" : model.getClass().getName(), chain);
 				}
 				// states without resolvable models (e.g. missing) are filled by vanilla on LOAD
 			}

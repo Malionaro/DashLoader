@@ -1,105 +1,105 @@
 # DashLoader Wiki (Unofficial Continuation)
 
-> Diese Wiki gehört zum Community-Fork (`Malionaro/DashLoader`). Original von AlphaQ (`alphaqu/DashLoader`, LGPL-3.0-only), das bei 1.21.4 stehen geblieben ist. Dieser Fork portiert DashLoader auf **1.21.4 – 26.3**.
+> This wiki belongs to the community fork (`Malionaro/DashLoader`). The original by AlphaQ (`alphaqu/DashLoader`, LGPL-3.0-only) stopped at 1.21.4. This fork ports DashLoader to **1.21.4 – 26.3**.
 
-## Inhalt
+## Contents
 
 - [Installation](#installation)
-- [So funktioniert's](#so-funktionierts)
-- [Konfiguration](#konfiguration)
-- [Cache verwalten](#cache-verwalten)
-- [Fehlerbehebung (Troubleshooting)](#fehlerbehebung-troubleshooting)
-- [Bekannte Mod-Kompatibilität](#bekannte-mod-kompatibilität)
-- [Für Modpack-Ersteller](#für-modpack-ersteller)
-- [Versionen & Branches](#versionen--branches)
+- [How it works](#how-it-works)
+- [Configuration](#configuration)
+- [Managing the cache](#managing-the-cache)
+- [Troubleshooting](#troubleshooting)
+- [Known mod compatibility](#known-mod-compatibility)
+- [For modpack makers](#for-modpack-makers)
+- [Versions & branches](#versions--branches)
 - [FAQ](#faq)
 
 ## Installation
 
-1. **Fabric Loader ≥ 0.19.5** installieren (für 26.x zusätzlich **Java 25**, für 1.21.x **Java 21**).
-2. Die passende DashLoader-Datei von Modrinth laden — das `+1.21.x` / `+26.x` im Dateinamen muss zu deiner Minecraft-Version passen.
-3. Die `.jar` in den `mods`-Ordner legen. Fertig — keine weitere Einrichtung nötig.
+1. Install **Fabric Loader ≥ 0.19.5** (plus **Java 25** for 26.x, **Java 21** for 1.21.x).
+2. Download the matching DashLoader file from Modrinth — the `+1.21.x` / `+26.x` in the filename must match your Minecraft version.
+3. Drop the `.jar` into the `mods` folder. Done — no further setup needed.
 
-## So funktioniert's
+## How it works
 
-1. **Erster Start (SAVE):** DashLoader beobachtet das normale Laden und schreibt alles in den Ordner `dashloader-cache/` neben der Instanz. Ein Toast meldet „Caching…". Dieser Start ist **langsamer als normal** — das ist erwartet.
-2. **Alle weiteren Starts (LOAD):** Die Daten werden direkt aus dem Cache geladen. Vanilla-Ladeschritte werden wo möglich übersprungen → **deutlich schnellerer Start**, besonders mit großen Modpacks.
-3. **Cache-Ungültigkeit:** Bei jeder Änderung (Mod dazu/weg, Update, Resourcepack-Wechsel, Minecraft-Update) wird automatisch ein neuer Cache gebaut (Erkennung per Mod-Hash).
+1. **First launch (SAVE):** DashLoader observes normal loading and writes everything into the `dashloader-cache/` folder next to your instance. A toast reports "Caching…". This launch is **slower than normal** — that's expected.
+2. **Every later launch (LOAD):** Data is loaded straight from the cache. Vanilla loading steps are skipped where possible → **much faster startup**, especially with large modpacks.
+3. **Cache invalidation:** Any change (mod added/removed/updated, resource pack switch, Minecraft update) automatically builds a fresh cache (detected via mod hash).
 
-## Konfiguration
+## Configuration
 
-- Ingame: ModMenu → DashLoader → Einstellungen (oder Datei `config/dashloader.json`).
-- Einzelne Module schaltbar: `CACHE_MODEL_LOADER`, `CACHE_SPRITE_CONTENT`, `CACHE_SPRITE_STITCHING`, `CACHE_ATLASES`, `CACHE_FONT`, `CACHE_SHADER`, `CACHE_SPLASH_TEXT` u. a.
-- `showCachingToast`, `compression`, `maxCaches`, `singleThreadedReading`, eigene Splash-Texte (`customSplashLines`, mit `;` trennen).
-- Andere Mods können per `dashloader:disableoption` in ihrer `fabric.mod.json` gezielt Optionen abschalten (macht z. B. VulkanMod für Shader/Atlases).
+- In-game: ModMenu → DashLoader → Settings (or the file `config/dashloader.json`).
+- Individual modules can be toggled: `CACHE_MODEL_LOADER`, `CACHE_SPRITE_CONTENT`, `CACHE_SPRITE_STITCHING`, `CACHE_ATLASES`, `CACHE_FONT`, `CACHE_SHADER`, `CACHE_SPLASH_TEXT` and more.
+- `showCachingToast`, `compression`, `maxCaches`, `singleThreadedReading`, custom splash lines (`customSplashLines`, separated with `;`).
+- Other mods can selectively disable options via `dashloader:disableoption` in their `fabric.mod.json` (e.g. VulkanMod does this for shaders/atlases).
 
-## Cache verwalten
+## Managing the cache
 
-| Aktion | Wie |
+| Action | How |
 |---|---|
-| Cache neu bauen | `dashloader-cache/`-Ordner löschen, dann einmal starten |
-| Assets neu laden (Resourcepack-/Mod-Dev) | `F3 + T` |
-| Cache-Reload | `/dash reload` |
-| Cache-Toast an/aus | Config → `Show Caching Toast` |
+| Rebuild the cache | Delete the `dashloader-cache/` folder, then launch once |
+| Reload assets (resource pack / mod dev) | `F3 + T` |
+| Reload the cache | `/dash reload` |
+| Toggle the cache toast | Config → `Show Caching Toast` |
 
-## Fehlerbehebung (Troubleshooting)
+## Troubleshooting
 
-**„Failed caching" / „Failed to save cache" beim Start**
-- Seit diesem Fork bricht **ein einzelnes nicht-cachbares Asset den Save nicht mehr ab** — es wird mit `Skipping uncacheable …` im Log übersprungen und vanilla geladen. Wenn der Fehler trotzdem kommt: `logs/latest.log` sichern und als Issue melden.
-- Ultimative Lösung: `dashloader-cache/` löschen und einmal neu bauen lassen.
+**"Failed caching" / "Failed to save cache" on startup**
+- Since this fork, **a single uncacheable asset no longer aborts the save** — it is skipped with a `Skipping uncacheable …` log line and loaded vanilla. If the error still occurs: back up `logs/latest.log` and report it as an issue.
+- Ultimate fix: delete `dashloader-cache/` and let it rebuild once.
 
-**Spiel startet gar nicht / Crash beim Start**
-- Prüfen, ob der Crash auch **ohne** DashLoader passiert (Mod-Hash ändert sich, also immer erst ohne testen).
-- Log-Ausschnitt mit `Could not create DashObject …` → das Asset wird beim nächsten Start per Skip behandelt; trotzdem bitte als Issue melden (Mod-Name + `latest.log`).
+**Game doesn't start at all / crash on startup**
+- Check whether the crash also happens **without** DashLoader (the mod hash changes, so always test without it first).
+- A log snippet with `Could not create DashObject …` means the asset will be skip-handled on the next start; still report it as an issue (mod name + `latest.log`).
 
-**Transparente Texturen werden opak (mit Sodium)**
-- Bekannter Upstream-Fehler mit aktivem `CacheSpriteContents`. Workaround: `CACHE_SPRITE_CONTENT` in der Config deaktivieren.
+**Transparent textures render opaque (with Sodium)**
+- Known upstream bug with `CacheSpriteContents` enabled. Workaround: disable `CACHE_SPRITE_CONTENT` in the config.
 
-**Erster Start ist langsam**
-- Normal — da wird der Cache gebaut. Erst der **zweite** Start zeigt den Gewinn.
+**First launch is slow**
+- Normal — that's when the cache is built. Only the **second** launch shows the speedup.
 
-**Cache wird bei jedem Start neu gebaut**
-- Passiert bei Mod-Zusammenstellungen, die sich bei jedem Start ändern (z. B. dynamisch generierte Inhalte). Log auf `Mod hash` prüfen; Issue melden.
+**Cache rebuilds on every launch**
+- Happens with mod setups that change every start (e.g. dynamically generated content). Check the log for `Mod hash`; report an issue.
 
-## Bekannte Mod-Kompatibilität
+## Known mod compatibility
 
-Grundsatz dieses Forks: **Unbekannte Assets werden übersprungen, nicht gecrasht.** Konkret behandelt:
+This fork's principle: **unknown assets are skipped, not crashed.** Handled cases:
 
-| Mod / Fall | Status |
+| Mod / case | Status |
 |---|---|
-| Refined Storage 2 (Kabel-Models, `#121`) | ✅ Start + Cache ok (Kabel-Parts werden vanilla geladen) |
-| Fusion / CTM-Sprites (`#85`) | ✅ Start + Cache ok (Custom-Sprites werden vanilla geladen) |
-| Custom Fonts / Emoji-Fonts (Glyphix u.ä., `#61`) | ✅ Fehlerhafte Fonts werden übersprungen |
-| Sodium | ✅ Bekannte Einschränkung: transparente Texturen mit `CacheSpriteContents` (siehe oben) |
-| Iris / Distant Horizons, Create, Xaero's | ⚠️ Keine bestätigten Probleme auf 1.21.4+ — bitte testen und melden |
+| Refined Storage 2 (cable models, `#121`) | ✅ Startup + cache fine (cable parts load vanilla) |
+| Fusion / CTM sprites (`#85`) | ✅ Startup + cache fine (custom sprites load vanilla) |
+| Custom fonts / emoji fonts (Glyphix etc., `#61`) | ✅ Broken fonts are skipped |
+| Sodium | ✅ Known limitation: transparent textures with `CacheSpriteContents` (see above) |
+| Iris / Distant Horizons, Create, Xaero's | ⚠️ No confirmed issues on 1.21.4+ — please test and report |
 
-Nicht gecachte Assets kosten etwas Startzeit, aber das Spiel läuft.
+Uncached assets cost some startup time, but the game runs.
 
-## Für Modpack-Ersteller
+## For modpack makers
 
-- DashLoader ist **nur clientseitig** und kann bedenkenlos in Packs liegen.
-- Für identische Pack-Versionen kann ein vorbereiteter `dashloader-cache/` mitgeliefert werden → auch der allererste Start der Spieler ist schnell.
-- Hinweis: Der Cache ist pro Mod-Kombination gültig (Hash). Jede Pack-Änderung baut ihn neu.
+- DashLoader is **client-side only** and safe to ship in packs.
+- For identical pack versions, a prebuilt `dashloader-cache/` can be bundled → even the very first launch is fast for players.
+- Note: the cache is valid per mod combination (hash). Every pack change rebuilds it.
 
-## Versionen & Branches
+## Versions & branches
 
-| Status | Versionen |
+| Status | Versions |
 |---|---|
-| ✅ Stabil | 1.21.4 – 1.21.11 |
+| ✅ Stable | 1.21.4 – 1.21.11 |
 | ⚠️ Beta | 26.1, 26.1.1, 26.1.2, 26.2, 26.3 |
 
-GPU-Caches (Atlases, Shader) sind ab 1.21.5 **nicht** gecacht — Mojang hat die nötigen Hooks entfernt. CPU-seitiges Caching (Models, Fonts, Sprites) greift weiterhin.
+GPU caches (atlases, shaders) are **not** cached on 1.21.5+ — Mojang removed the required hooks. CPU-side caching (models, fonts, sprites) still applies.
 
 ## FAQ
 
-**Ist das offiziell?**
-Nein — Community-Fortführung. Das Original ist archiviert/steht bei 1.21.4. Alle Credits für die Basis gehen an AlphaQ.
+**Is this official?**
+No — a community continuation. The original is archived/stopped at 1.21.4. All credit for the base goes to AlphaQ.
 
 **Forge / NeoForge?**
-Nein (Upstream: „wont fix"). Nur Fabric.
+No (upstream: "wont fix"). Fabric only.
 
-**Ältere Versionen (1.20.x, 1.19.x)?**
-Dieser Fork pflegt nur 1.21.4+. Upstream-Dateien für ältere Versionen existieren, werden hier aber nicht weiterentwickelt.
+**Older versions (1.20.x, 1.19.x)?**
+This fork only maintains 1.21.4+. Upstream files for older versions exist but are not developed further here.
 
-**Wo melden ich Fehler?**
-Im [Issue-Tracker](https://github.com/Malionaro/DashLoader/issues) mit `latest.log` (bei PrismLauncher: Instanz → Logs). Vorher bitte `dashloader-cache/` löschen und Fehler reproduzieren.
+**Where do I report bugs?**
+In the [issue tracker](https://github.com/Malionaro/DashLoader/issues) with `latest.log` attached (PrismLauncher: instance → Logs). Please delete `dashloader-cache/` first and reproduce the error.

@@ -40,11 +40,26 @@ public class DrawerUtil {
 			return;
 		}
 		Color glow = withOpacity(color, GLOW_STRENGTH * strength);
+		drawGlowClipped(context, x, y, width, height, strength, color, topLeft, topRight, bottomLeft, bottomRight,
+				(int) x - (int) GLOW_SIZE - 1, (int) y - (int) GLOW_SIZE - 1,
+				(int) width + (int) (GLOW_SIZE * 2) + 2, (int) height + (int) (GLOW_SIZE * 2) + 2);
+	}
+
+	public static void drawGlowClipped(GuiGraphicsExtractor context, float x, float y, float width, float height, float strength, Color color,
+	                                   boolean topLeft, boolean topRight, boolean bottomLeft, boolean bottomRight,
+	                                   int clipX, int clipY, int clipWidth, int clipHeight) {
+		Color glow = withOpacity(color, GLOW_STRENGTH * strength);
 		int layers = 3;
 		for (int i = layers; i >= 1; i--) {
 			float spread = (GLOW_SIZE / layers) * i;
 			Color layer = withOpacity(glow, 1f - ((float) i / (layers + 1)));
-			context.fill((int) (x - spread), (int) (y - spread), (int) (x + width + spread), (int) (y + height + spread), layer.argb());
+			int rx1 = Math.max(clipX, (int) (x - spread));
+			int ry1 = Math.max(clipY, (int) (y - spread));
+			int rx2 = Math.min(clipX + clipWidth, (int) (x + width + spread));
+			int ry2 = Math.min(clipY + clipHeight, (int) (y + height + spread));
+			if (rx2 > rx1 && ry2 > ry1) {
+				context.fill(rx1, ry1, rx2, ry2, layer.argb());
+			}
 		}
 	}
 

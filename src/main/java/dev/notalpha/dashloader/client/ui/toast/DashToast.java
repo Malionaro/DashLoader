@@ -118,10 +118,10 @@ public class DashToast implements Toast {
 		// Epic rtx graphics. aka I slapped some glow on the things.
 		// Line glow
 		for (Line line : lines) {
-			line.drawGlow(context);
+			line.drawGlow(context, width, height);
 		}
 		// Progress bar glow
-		DrawerUtil.drawGlow(context, 0, barY, (int) (width * progress), PROGRESS_BAR_HEIGHT, 0.75f, progressColor, true, true, true, true);
+		DrawerUtil.drawGlowClipped(context, 0, barY, (int) (width * progress), PROGRESS_BAR_HEIGHT, 0.75f, progressColor, true, true, true, true, 0, 0, width, height);
 	}
 
 	public enum ColorKind {
@@ -196,9 +196,9 @@ public class DashToast implements Toast {
 			DrawerUtil.drawRect(context, (int) x, (int) y, width, height, color);
 		}
 
-		public void drawGlow(GuiGraphicsExtractor context) {
+		public void drawGlow(GuiGraphicsExtractor context, int clipWidth, int clipHeight) {
 			if (this.colorKind != ColorKind.Neutral) {
-				DrawerUtil.drawGlow(context, x, y, width, height, (getWeight() + 2.0f) / 3.0f, this.color, false, true, false, true);
+				DrawerUtil.drawGlowClipped(context, x, y, width, height, (getWeight() + 2.0f) / 3.0f, this.color, false, true, false, true, 0, 0, clipWidth, clipHeight);
 			}
 		}
 

@@ -40,7 +40,7 @@ public final class DashBlockStateModel implements DashObject<BlockStateModel, Da
 		model.addParts(Random.create(), collected);
 		this.parts = new ArrayList<>(collected.size());
 		for (BlockModelPart part : collected) {
-			this.parts.add(writer.add(new DashBlockModelPart(part, writer)));
+			this.parts.add(writer.add(part));
 		}
 		this.sprite = writer.add(model.particleSprite());
 	}

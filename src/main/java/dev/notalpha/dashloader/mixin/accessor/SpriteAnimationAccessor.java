@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.texture.SpriteContents;
 @Mixin(SpriteContents.AnimatedTexture.class)
 public interface SpriteAnimationAccessor {
 	@Invoker("<init>")
-	static SpriteContents.AnimatedTexture init(SpriteContents parent, List<SpriteContents.FrameInfo> frames, int frameCount, boolean interpolation) {
+	static SpriteContents.AnimatedTexture init(List<SpriteContents.FrameInfo> frames, int frameRowSize, boolean interpolateFrames) {
 		throw new AssertionError();
 	}
 
@@ -20,6 +20,6 @@ public interface SpriteAnimationAccessor {
 	@Accessor
 	int getFrameRowSize();
 
-	@Accessor
+	@Accessor("interpolateFrames")
 	boolean getInterpolation();
 }

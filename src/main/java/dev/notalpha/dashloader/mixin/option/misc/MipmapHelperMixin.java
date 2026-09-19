@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public abstract class MipmapHelperMixin {
 	// not using wrapOperation because this is just replacing the call
 	@Redirect(
-			method = {"hasTransparentPixel", "generateMipLevels"},
+			method = {"generateMipLevels"},
 			at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/NativeImage;getPixel(II)I")
 	)
 	private static int getColor(NativeImage instance, int x, int y) {

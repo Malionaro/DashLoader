@@ -1,5 +1,6 @@
 package dev.notalpha.dashloader.mixin.option.cache.model;
 
+import dev.notalpha.dashloader.DashLoader;
 import dev.notalpha.dashloader.api.cache.CacheStatus;
 import dev.notalpha.dashloader.client.model.ModelModule;
 import net.minecraft.client.render.model.BakedModelManager;
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class BakedModelManagerMixin {
 	@Inject(method = "upload", at = @At("HEAD"))
 	private void dashloader$captureModels(BakedModelManager.BakingResult bakingResult, Profiler profiler, CallbackInfo ci) {
+		DashLoader.LOG.info("[dashloader-diag] upload hook fired, modelCache size={}, status={}", bakingResult.modelCache().size(), ModelModule.BLOCK_STATE_MODELS.get(CacheStatus.SAVE) == null ? "null-map-or-wrong-status" : "map-present");
 		ModelModule.BLOCK_STATE_MODELS.visit(CacheStatus.SAVE, map -> map.putAll(bakingResult.modelCache()));
 	}
 }

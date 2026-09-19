@@ -1,4 +1,4 @@
-# DashLoader Wiki (Unofficial Continuation)
+# DashLoader Wiki — Unofficial Continuation (1.21.4 – 26.3)
 
 > This wiki belongs to the community fork (`Malionaro/DashLoader`). The original by AlphaQ (`alphaqu/DashLoader`, LGPL-3.0-only) stopped at 1.21.4. This fork ports DashLoader to **1.21.4 – 26.3**.
 

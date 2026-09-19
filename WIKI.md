@@ -70,8 +70,8 @@ This fork's principle: **unknown assets are skipped, not crashed.** Handled case
 | Refined Storage 2 (cable models, `#121`) | ✅ Startup + cache fine (cable parts load vanilla) |
 | Fusion / CTM sprites (`#85`) | ✅ Startup + cache fine (custom sprites load vanilla) |
 | Custom fonts / emoji fonts (Glyphix etc., `#61`) | ✅ Broken fonts are skipped |
-| Sodium | ✅ Known limitation: transparent textures with `CacheSpriteContents` (see above) |
-| Iris / Distant Horizons, Create, Xaero's | ⚠️ No confirmed issues on 1.21.4+ — please test and report |
+| Sodium | ✅ Tested working on 26.2 (with Iris). Known limitation: transparent textures with `CacheSpriteContents` (see above) |
+| Iris / Distant Horizons, Create, Xaero's | ⚠️ Iris tested working on 26.2 — others unconfirmed on 1.21.4+, please test and report |
 
 Uncached assets cost some startup time, but the game runs.
 

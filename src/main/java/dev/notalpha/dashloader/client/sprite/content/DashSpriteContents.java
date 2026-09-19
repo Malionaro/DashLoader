@@ -10,7 +10,9 @@ import dev.notalpha.hyphen.scan.annotations.DataNullable;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Objects;
+import net.minecraft.client.renderer.texture.MipmapStrategy;
 import net.minecraft.client.renderer.texture.SpriteContents;
 
 public final class DashSpriteContents implements DashObject<SpriteContents, SpriteContents> {
@@ -52,6 +54,11 @@ public final class DashSpriteContents implements DashObject<SpriteContents, Spri
 		access.setWidth(width);
 		access.setByMipLevel(new NativeImage[]{image});
 		access.setAnimatedTexture(this.animation == null ? null : animation.export(out, reader));
+		// Fields the Unsafe allocation leaves blank but vanilla bake needs.
+		access.setTransparency(image.computeTransparency());
+		access.setAdditionalMetadata(List.of());
+		access.setMipmapStrategy(MipmapStrategy.AUTO);
+		access.setAlphaCutoffBias(0.0F);
 		applySodiumScanning(out, image); // run important sodium method if present
 		return out;
 	}

@@ -40,10 +40,10 @@ public class SplashScreenMixin {
 	private boolean reloading;
 
 	@Inject(
-			method = "render",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;setOverlay(Lnet/minecraft/client/gui/screen/Overlay;)V")
+			method = "tick",
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J", shift = At.Shift.AFTER)
 	)
-	private void done(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+	private void done(CallbackInfo ci) {
 		this.client.setOverlay(null);
 		if (this.client.currentScreen != null) {
   			if (this.client.currentScreen instanceof TitleScreen) {
@@ -90,16 +90,6 @@ public class SplashScreenMixin {
 			thread.start();
 		} else {
 			cache.reset();
-		}
-	}
-
-	@Inject(
-			method = "tick",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/resource/ResourceReload;isComplete()Z")
-	)
-	private void removeMinimumTime(CallbackInfo ci) {
-		if (this.reloadCompleteTime == -1L && this.reload.isComplete()) {
-			this.reloading = false;
 		}
 	}
 }

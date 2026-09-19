@@ -38,10 +38,10 @@ public class SplashScreenMixin {
 	private ReloadInstance reload;
 
 	@Inject(
-			method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;setOverlay(Lnet/minecraft/client/gui/screens/Overlay;)V")
+			method = "tick()V",
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMillis()J", shift = At.Shift.AFTER)
 	)
-	private void done(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+	private void done(CallbackInfo ci) {
 		this.minecraft.gui.setOverlay(null);
 		if (this.minecraft.gui.screen() != null) {
 			if (this.minecraft.gui.screen() instanceof TitleScreen) {
@@ -88,17 +88,6 @@ public class SplashScreenMixin {
 			thread.start();
 		} else {
 			cache.reset();
-		}
-	}
-
-	@Inject(
-			method = "tick()V",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/resources/ReloadInstance;isDone()Z")
-	)
-	private void removeMinimumTime(CallbackInfo ci) {
-		if (this.fadeOutStart == -1L && this.reload.isDone()) {
-			// fadeIn is final in 26.2; backdate fadeInStart so isReadyToFadeOut() passes immediately.
-			this.fadeInStart = Util.getMillis() - 1000L;
 		}
 	}
 }

@@ -62,7 +62,10 @@ public class ModelModule implements DashModule<ModelModule.Data> {
 				// constructs the DashObject itself - never pass DashObjects here.
 				final int modelPtr = factory.add(model);
 				outBlockModels.put(factory.add(state), modelPtr);
-			} catch (RuntimeException ignored) {
+			} catch (RuntimeException e) {
+				if (outBlockModels.list().size() < 3) {
+					DashLoader.LOG.warn("[dashloader-diag] skip {} -> {}: {}: {}", state, model == null ? "null" : model.getClass().getName(), e.getClass().getName(), e.getMessage());
+				}
 				// states without resolvable models (e.g. missing) are filled by vanilla on LOAD
 			}
 		});

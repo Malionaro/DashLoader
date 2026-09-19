@@ -13,7 +13,6 @@ accessible class net/minecraft/client/font/UnihexFont$FontImage8x16
 accessible class net/minecraft/client/font/UnihexFont$FontImage32x16
 accessible class net/minecraft/client/font/FontStorage$GlyphPair
 accessible class net/minecraft/client/font/FontManager$ProviderIndex
-accessible field net/minecraft/client/gui/DrawContext vertexConsumers Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;
 accessible class net/minecraft/resource/ZipResourcePack$ZipFileWrapper
 accessible class net/minecraft/client/MinecraftClient$LoadingContext
 accessible field net/minecraft/client/render/model/json/ModelTransformation thirdPersonLeftHand Lnet/minecraft/client/render/model/json/Transformation;

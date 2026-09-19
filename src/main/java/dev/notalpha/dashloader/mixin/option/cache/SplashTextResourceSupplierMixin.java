@@ -21,7 +21,7 @@ public class SplashTextResourceSupplierMixin {
 			cancellable = true
 	)
 	private void applySplashCache(ResourceManager resourceManager, ProfilerFiller profiler, CallbackInfoReturnable<List<Component>> cir) {
-		SplashModule.TEXTS.visit(CacheStatus.LOAD, strings -> cir.setReturnValue(strings.stream().map(Component::literal).toList()));
+		SplashModule.TEXTS.visit(CacheStatus.LOAD, strings -> cir.setReturnValue(strings.stream().map(s -> (Component) Component.literal(s)).toList()));
 	}
 
 	@Inject(

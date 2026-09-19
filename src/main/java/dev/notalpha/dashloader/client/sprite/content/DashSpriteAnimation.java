@@ -30,13 +30,14 @@ public final class DashSpriteAnimation {
 		this.interpolation = access.getInterpolation();
 	}
 
-	public SpriteContents.AnimatedTexture export(RegistryReader registry) {
+	public SpriteContents.AnimatedTexture export(SpriteContents owner, RegistryReader registry) {
 		var framesOut = new ArrayList<SpriteContents.FrameInfo>();
 		for (var frame : this.frames) {
 			framesOut.add(frame.export(registry));
 		}
 
 		return SpriteAnimationAccessor.init(
+				owner,
 				framesOut,
 				this.frameCount,
 				this.interpolation

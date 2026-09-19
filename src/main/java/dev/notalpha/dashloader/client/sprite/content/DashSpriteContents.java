@@ -51,7 +51,7 @@ public final class DashSpriteContents implements DashObject<SpriteContents, Spri
 		access.setHeight(height);
 		access.setWidth(width);
 		access.setByMipLevel(new NativeImage[]{image});
-		access.setAnimatedTexture(this.animation == null ? null : animation.export(reader));
+		access.setAnimatedTexture(this.animation == null ? null : animation.export(out, reader));
 		applySodiumScanning(out, image); // run important sodium method if present
 		return out;
 	}

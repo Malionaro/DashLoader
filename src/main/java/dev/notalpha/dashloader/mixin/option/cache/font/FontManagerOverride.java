@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.font.FontManager;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -25,8 +26,14 @@ public class FontManagerOverride {
 	)
 	private void loadFonts(ResourceManager resourceManager, Executor executor, CallbackInfoReturnable<CompletableFuture<FontManager.Preparation>> cir) {
 		FontModule.DATA.visit(CacheStatus.LOAD, data -> {
-			DashLoader.LOG.info("Providing fonts");
-			cir.setReturnValue(CompletableFuture.completedFuture(FontManagerProviderIndexAccessor.create(data.providers, data.allProviders)));
+			// A cache without the default font (e.g. saved while every font was skipped)
+			// would crash vanilla with "Default font failed to load" - fall back instead.
+			if (data != null && data.providers.containsKey(Minecraft.DEFAULT_FONT)) {
+				DashLoader.LOG.info("Providing fonts");
+				cir.setReturnValue(CompletableFuture.completedFuture(FontManagerProviderIndexAccessor.create(data.providers, data.allProviders)));
+			} else {
+				DashLoader.LOG.warn("Font cache missing default font, falling back to vanilla loading");
+			}
 		});
 	}
 

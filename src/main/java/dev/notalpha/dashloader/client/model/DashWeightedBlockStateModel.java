@@ -28,7 +28,7 @@ public final class DashWeightedBlockStateModel implements DashObject<WeightedVar
 	public DashWeightedBlockStateModel(WeightedVariants model, RegistryWriter writer) {
 		this.entries = new ArrayList<>();
 		for (Weighted<BlockStateModel> entry : ((WeightedBlockStateModelAccessor) model).getModels().unwrap()) {
-			this.entries.add(new Entry(entry.weight(), writer.add(new DashBlockStateModel(entry.value(), writer))));
+			this.entries.add(new Entry(entry.weight(), writer.add(entry.value())));
 		}
 	}
 

@@ -58,13 +58,10 @@ public class ModelModule implements DashModule<ModelModule.Data> {
 			if (model == null) return;
 
 			try {
-				final int modelPtr;
-				if (model instanceof WeightedVariants weighted) {
-					modelPtr = factory.add(new DashWeightedBlockStateModel(weighted, factory));
-				} else {
-					modelPtr = factory.add(new DashBlockStateModel(model, factory));
-				}
-				outBlockModels.put(factory.add(new DashBlockState(state, factory)), modelPtr);
+				// factory.add dispatches on the runtime class (hierarchy-aware) and
+				// constructs the DashObject itself - never pass DashObjects here.
+				final int modelPtr = factory.add(model);
+				outBlockModels.put(factory.add(state), modelPtr);
 			} catch (RuntimeException ignored) {
 				// states without resolvable models (e.g. missing) are filled by vanilla on LOAD
 			}

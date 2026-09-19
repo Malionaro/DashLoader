@@ -22,18 +22,18 @@ public final class DashBakedQuad implements DashObject<BakedQuad, DashBakedQuad.
 	public final long[] uvs;
 	public final int tintIndex;
 	public final Direction face;
-	public final boolean shade;
+	public final int shadeDirectionOverride;
 	public final int sprite;
 	public final int lightEmission;
 	public final ChunkSectionLayer layer;
 
-	public DashBakedQuad(float[] positions, long[] uvs, int tintIndex, Direction face, boolean shade,
+	public DashBakedQuad(float[] positions, long[] uvs, int tintIndex, Direction face, int shadeDirectionOverride,
 	                     int sprite, int lightEmission, ChunkSectionLayer layer) {
 		this.positions = positions;
 		this.uvs = uvs;
 		this.tintIndex = tintIndex;
 		this.face = face;
-		this.shade = shade;
+		this.shadeDirectionOverride = shadeDirectionOverride;
 		this.sprite = sprite;
 		this.lightEmission = lightEmission;
 		this.layer = layer;
@@ -50,14 +50,15 @@ public final class DashBakedQuad implements DashObject<BakedQuad, DashBakedQuad.
 		BakedQuad.MaterialInfo materialInfo = bakedQuad.materialInfo();
 		this.tintIndex = materialInfo.tintIndex();
 		this.face = bakedQuad.direction();
-		this.shade = materialInfo.shade();
+		Direction shadeOverride = materialInfo.shadeDirectionOverride();
+		this.shadeDirectionOverride = shadeOverride == null ? -1 : shadeOverride.ordinal();
 		this.sprite = writer.add(materialInfo.sprite());
 		this.lightEmission = materialInfo.lightEmission();
 		this.layer = materialInfo.layer();
 	}
 
 	public DazyImpl export(RegistryReader handler) {
-		return new DazyImpl(this.positions, this.uvs, this.tintIndex, this.face, this.shade, handler.get(this.sprite), this.lightEmission, this.layer);
+		return new DazyImpl(this.positions, this.uvs, this.tintIndex, this.face, this.shadeDirectionOverride, handler.get(this.sprite), this.lightEmission, this.layer);
 	}
 
 	@Override
@@ -68,7 +69,7 @@ public final class DashBakedQuad implements DashObject<BakedQuad, DashBakedQuad.
 		DashBakedQuad that = (DashBakedQuad) o;
 
 		if (tintIndex != that.tintIndex) return false;
-		if (shade != that.shade) return false;
+		if (shadeDirectionOverride != that.shadeDirectionOverride) return false;
 		if (sprite != that.sprite) return false;
 		if (lightEmission != that.lightEmission) return false;
 		if (!Arrays.equals(positions, that.positions)) return false;
@@ -83,7 +84,7 @@ public final class DashBakedQuad implements DashObject<BakedQuad, DashBakedQuad.
 		result = 31 * result + Arrays.hashCode(uvs);
 		result = 31 * result + tintIndex;
 		result = 31 * result + face.hashCode();
-		result = 31 * result + (shade ? 1 : 0);
+		result = 31 * result + shadeDirectionOverride;
 		result = 31 * result + sprite;
 		result = 31 * result + lightEmission;
 		result = 31 * result + layer.hashCode();
@@ -95,17 +96,17 @@ public final class DashBakedQuad implements DashObject<BakedQuad, DashBakedQuad.
 		public final long[] uvs;
 		public final int tintIndex;
 		public final Direction face;
-		public final boolean shade;
+		public final int shadeDirectionOverride;
 		public final DashSprite.DazyImpl sprite;
 		public final int lightEmission;
 		public final ChunkSectionLayer layer;
 
-		public DazyImpl(float[] positions, long[] uvs, int tintIndex, Direction face, boolean shade, DashSprite.DazyImpl sprite, int lightEmission, ChunkSectionLayer layer) {
+		public DazyImpl(float[] positions, long[] uvs, int tintIndex, Direction face, int shadeDirectionOverride, DashSprite.DazyImpl sprite, int lightEmission, ChunkSectionLayer layer) {
 			this.positions = positions;
 			this.uvs = uvs;
 			this.tintIndex = tintIndex;
 			this.face = face;
-			this.shade = shade;
+			this.shadeDirectionOverride = shadeDirectionOverride;
 			this.sprite = sprite;
 			this.lightEmission = lightEmission;
 			this.layer = layer;
@@ -114,8 +115,15 @@ public final class DashBakedQuad implements DashObject<BakedQuad, DashBakedQuad.
 		@Override
 		protected BakedQuad resolve(SpriteGetter spriteLoader) {
 			TextureAtlasSprite sprite = this.sprite.get(spriteLoader);
+			boolean translucent = this.layer == ChunkSectionLayer.TRANSLUCENT;
 			BakedQuad.MaterialInfo materialInfo = new BakedQuad.MaterialInfo(
-					sprite, this.layer, itemRenderType(sprite, this.layer), this.tintIndex, this.shade, this.lightEmission);
+					sprite, this.layer,
+					itemRenderType(sprite, translucent, false),
+					itemRenderType(sprite, translucent, true),
+					itemGlintSpecialRenderType(sprite, translucent),
+					this.tintIndex,
+					this.shadeDirectionOverride < 0 ? null : Direction.values()[this.shadeDirectionOverride],
+					this.lightEmission);
 			return new BakedQuad(
 					new Vector3f(positions[0], positions[1], positions[2]),
 					new Vector3f(positions[3], positions[4], positions[5]),
@@ -126,16 +134,28 @@ public final class DashBakedQuad implements DashObject<BakedQuad, DashBakedQuad.
 		}
 
 		/**
-		 * Rebuilds the item render type exactly as {@link BakedQuad.MaterialInfo#of} derives it:
-		 * it only depends on {@code transparency.hasTranslucent()}, which {@link ChunkSectionLayer}
+		 * Rebuilds the item render types exactly as {@link BakedQuad.MaterialInfo#of} derives them:
+		 * they only depend on {@code transparency.hasTranslucent()}, which {@link ChunkSectionLayer}
 		 * encodes ({@code TRANSLUCENT} iff translucent), plus whether the sprite lives in the block atlas.
 		 */
-		private static RenderType itemRenderType(TextureAtlasSprite sprite, ChunkSectionLayer layer) {
-			boolean translucent = layer == ChunkSectionLayer.TRANSLUCENT;
+		private static RenderType itemRenderType(TextureAtlasSprite sprite, boolean translucent, boolean glint) {
 			if (sprite.atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS)) {
+				if (glint) {
+					return translucent ? Sheets.translucentBlockItemGlintSheet() : Sheets.cutoutBlockItemGlintSheet();
+				}
 				return translucent ? Sheets.translucentBlockItemSheet() : Sheets.cutoutBlockItemSheet();
 			}
+			if (glint) {
+				return translucent ? Sheets.translucentItemGlintSheet() : Sheets.cutoutItemGlintSheet();
+			}
 			return translucent ? Sheets.translucentItemSheet() : Sheets.cutoutItemSheet();
+		}
+
+		private static RenderType itemGlintSpecialRenderType(TextureAtlasSprite sprite, boolean translucent) {
+			if (sprite.atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS)) {
+				return translucent ? Sheets.translucentBlockItemGlintSpecialSheet() : Sheets.cutoutBlockItemGlintSpecialSheet();
+			}
+			return translucent ? Sheets.translucentItemGlintSpecialSheet() : Sheets.cutoutItemGlintSpecialSheet();
 		}
 	}
 }

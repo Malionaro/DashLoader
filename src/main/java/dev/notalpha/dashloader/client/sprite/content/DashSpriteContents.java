@@ -11,6 +11,7 @@ import net.minecraft.client.texture.SpriteContents;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Objects;
 
 public final class DashSpriteContents implements DashObject<SpriteContents, SpriteContents> {
@@ -52,6 +53,7 @@ public final class DashSpriteContents implements DashObject<SpriteContents, Spri
 		access.setWidth(width);
 		access.setMipmapLevelsImages(new NativeImage[]{image});
 		access.setAnimation(this.animation == null ? null : animation.export(out, reader));
+		access.setAdditionalMetadata(List.of());
 		applySodiumScanning(out, image); // run important sodium method if present
 		return out;
 	}

@@ -46,11 +46,9 @@ public class SplashScreenMixin {
 	private void done(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
 		this.client.setOverlay(null);
 		if (this.client.currentScreen != null) {
-			if (this.client.currentScreen instanceof TitleScreen) {
-				TitleScreen titleScreen = new TitleScreen(false);
-				titleScreen.init(this.client, this.client.getWindow().getScaledWidth(), this.client.getWindow().getScaledHeight());
-				this.client.currentScreen = titleScreen;
-			}
+  			if (this.client.currentScreen instanceof TitleScreen) {
+  				this.client.currentScreen = new TitleScreen(false);
+  			}
 		}
 
 		DashLoader.LOG.info("Minecraft reloaded in {}", ProfilerUtil.getTimeStringFromStart(ProfilerUtil.RELOAD_START));

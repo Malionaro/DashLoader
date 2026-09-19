@@ -10,12 +10,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import java.util.List;
-import java.util.concurrent.Executor;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.Stitcher;
@@ -43,12 +38,12 @@ public final class StitchSpriteLoaderMixin {
 		return original.call(maxWidth, maxHeight, mipLevel, anisotropy);
 	}
 
-	@Inject(
+	@WrapOperation(
 			method = "stitch",
-			at = @At(value = "RETURN"),
-			locals = LocalCapture.CAPTURE_FAILSOFT
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/texture/Stitcher;stitch()V")
 	)
-	private void dashloaderStitcherSave(List<SpriteContents> sprites, int mipLevel, Executor executor, CallbackInfoReturnable<SpriteLoader.Preparations> cir, int i, Stitcher<SpriteContents> textureStitcher) {
-		SpriteStitcherModule.STITCHERS_SAVE.visit(CacheStatus.SAVE, map -> map.add(Pair.of(location, textureStitcher)));
+	private void dashloaderStitcherSave(Stitcher<SpriteContents> instance, Operation<Void> original) {
+		original.call(instance);
+		SpriteStitcherModule.STITCHERS_SAVE.visit(CacheStatus.SAVE, map -> map.add(Pair.of(location, instance)));
 	}
 }

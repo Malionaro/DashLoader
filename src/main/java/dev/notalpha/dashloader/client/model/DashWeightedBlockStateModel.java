@@ -7,16 +7,16 @@ import dev.notalpha.dashloader.client.Dazy;
 import dev.notalpha.dashloader.mixin.accessor.WeightedBlockStateModelAccessor;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.resources.model.SpriteGetter;
-import net.minecraft.client.resources.model.WeightedVariants;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.WeightedVariants;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.util.random.WeightedList;
 
 /**
  * Cached form of a {@link WeightedVariants} (1.21.5+ model system).
- * All variants are stored so vanilla random picking ({@link Pool}) behaves
- * exactly like an uncached load. Rebuilt as a real {@link Pool} on LOAD.
+ * All variants are stored so vanilla random picking ({@link WeightedList}) behaves
+ * exactly like an uncached load. Rebuilt as a real {@link WeightedVariants} on LOAD.
  */
 public final class DashWeightedBlockStateModel implements DashObject<WeightedVariants, DashWeightedBlockStateModel.DazyImpl> {
 	public final List<Entry> entries;

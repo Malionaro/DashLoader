@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import it.unimi.dsi.fastutil.chars.CharPredicate;
 import it.unimi.dsi.fastutil.ints.IntConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -89,11 +89,11 @@ public class ConfigListWidget extends ContainerObjectSelectionList<ConfigListWid
 		}
 
 		@Override
-		public void renderContent(GuiGraphics context, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+		public void extractContent(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float tickDelta) {
 			final var textRenderer = ConfigListWidget.this.minecraft.font;
 			int entryWidth = this.getWidth();
 			int entryHeight = this.getHeight();
-			context.drawString(
+			context.text(
 					textRenderer,
 					this.label,
 					(ConfigListWidget.this.width - textRenderer.width(label)) / 2,
@@ -140,12 +140,12 @@ public class ConfigListWidget extends ContainerObjectSelectionList<ConfigListWid
 		}
 
 		@Override
-		public void renderContent(GuiGraphics context, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+		public void extractContent(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float tickDelta) {
 			int x = this.getX();
 			int y = this.getY();
 			int entryWidth = this.getWidth();
 			int entryHeight = this.getHeight();
-			context.drawString(
+			context.text(
 					ConfigListWidget.this.minecraft.font,
 					this.label,
 					x,
@@ -155,9 +155,9 @@ public class ConfigListWidget extends ContainerObjectSelectionList<ConfigListWid
 			);
 
 			this.widget.setPosition(x + entryWidth - INPUT_FIELD_WIDTH - RESET_BUTTON_WIDTH - 5, y - 2);
-			this.widget.render(context, mouseX, mouseY, tickDelta);
+			this.widget.extractRenderState(context, mouseX, mouseY, tickDelta);
 			this.resetButton.setPosition(x + entryWidth - RESET_BUTTON_WIDTH, y - 2);
-			this.resetButton.render(context, mouseX, mouseY, tickDelta);
+			this.resetButton.extractRenderState(context, mouseX, mouseY, tickDelta);
 		}
 
 		@Override

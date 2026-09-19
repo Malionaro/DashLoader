@@ -4,13 +4,13 @@ plugins {
     id "com.modrinth.minotaur" version "2.+"
 
     id 'java'
-    id 'fabric-loom' version '1.17.10'
+    id 'net.fabricmc.fabric-loom' version '1.17.10'
     id 'maven-publish'
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 // Multi-version support: override via -PmcVersion=1.21.5 -PyarnMappings=... -PfabricApiVersion=...
@@ -62,10 +62,10 @@ dependencies {
     // To change the versions see the gradle.properties file
     // Override for multi-version builds: -PmcVersion= -PyarnMappings= -PfabricApiVersion=
     minecraft "com.mojang:minecraft:${activeMcVersion}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    // 26.1+ is unobfuscated: no mappings needed
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+    implementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 
     implementation "dev.notalpha:Hyphen:0.4.0-rc.5"
     include "dev.notalpha:Hyphen:0.4.0-rc.5"
@@ -75,15 +75,6 @@ dependencies {
 
     implementation 'com.github.luben:zstd-jni:1.5.7-1'
     include 'com.github.luben:zstd-jni:1.5.7-1'
-
-    modCompileOnly fabricApi.module("fabric-renderer-indigo", activeFabricApi)
-
-    // For Modmenu
-    modRuntimeOnly fabricApi.module("fabric-api-base", activeFabricApi)
-    modRuntimeOnly fabricApi.module("fabric-key-binding-api-v1", activeFabricApi)
-    modRuntimeOnly fabricApi.module("fabric-lifecycle-events-v1", activeFabricApi)
-    modRuntimeOnly fabricApi.module("fabric-resource-loader-v0", activeFabricApi)
-    modRuntimeOnly fabricApi.module("fabric-screen-api-v1", activeFabricApi)
 }
 
 test {
@@ -110,7 +101,7 @@ tasks.withType(JavaCompile).configureEach {
     it.options.encoding = "UTF-8"
 
     // Minecraft 1.17 (21w19a) upwards uses Java 16.
-    it.options.release = 21
+    it.options.release = 25
 }
 
 java {
@@ -170,7 +161,7 @@ modrinth {
     changelog = file("changelog.md").getText()
     versionNumber = project.version
     versionName = "${baseModVersion} for ${activeMcVersion}"
-    uploadFile = remapJar
+    uploadFile = jar
     versionType = "beta"
     gameVersions = [activeMcVersion]
     loaders = ['fabric', 'quilt']
@@ -189,7 +180,7 @@ curseforge {
         addGameVersion "Quilt"
         addGameVersion "Java 21"
 
-        mainArtifact(remapJar) {
+        mainArtifact(jar) {
             displayName = "${baseModVersion} for ${activeMcVersion}"
         }
     }

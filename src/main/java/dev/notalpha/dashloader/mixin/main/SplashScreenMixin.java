@@ -11,14 +11,14 @@ import dev.notalpha.dashloader.config.ConfigHandler;
 import dev.notalpha.dashloader.misc.ProfilerUtil;
 import dev.notalpha.taski.builtin.StaticTask;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.server.packs.resources.ReloadInstance;
+import net.minecraft.util.Util;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -32,32 +32,30 @@ public class SplashScreenMixin {
 	@Shadow
 	private long fadeOutStart;
 	@Shadow
-	@Final
-	private ReloadInstance reload;
-	@Mutable
+	private long fadeInStart;
 	@Shadow
 	@Final
-	private boolean fadeIn;
+	private ReloadInstance reload;
 
 	@Inject(
-			method = "render",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMillis()J", shift = At.Shift.BEFORE, ordinal = 1)
+			method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V",
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;setOverlay(Lnet/minecraft/client/gui/screens/Overlay;)V")
 	)
-	private void done(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-		this.minecraft.setOverlay(null);
-		if (this.minecraft.screen != null) {
-			if (this.minecraft.screen instanceof TitleScreen) {
-				this.minecraft.screen = new TitleScreen(false);
+	private void done(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+		this.minecraft.gui.setOverlay(null);
+		if (this.minecraft.gui.screen() != null) {
+			if (this.minecraft.gui.screen() instanceof TitleScreen) {
+				this.minecraft.gui.setScreen(new TitleScreen(false));
 			}
 		}
 
 		DashLoader.LOG.info("Minecraft reloaded in {}", ProfilerUtil.getTimeStringFromStart(ProfilerUtil.RELOAD_START));
 		Cache cache = DashLoaderClient.CACHE;
-		if (DashLoaderClient.CACHE.getStatus() == CacheStatus.SAVE && minecraft.getToastManager().getToast(DashToast.class, Toast.NO_TOKEN) == null) {
+		if (DashLoaderClient.CACHE.getStatus() == CacheStatus.SAVE && minecraft.gui.toastManager().getToast(DashToast.class, Toast.NO_TOKEN) == null) {
 			DashToastState rawState;
 			if (ConfigHandler.INSTANCE.config.showCachingToast) {
 				DashToast toast = new DashToast();
-				minecraft.getToastManager().addToast(toast);
+				minecraft.gui.toastManager().addToast(toast);
 				rawState = toast.state;
 			} else {
 				rawState = new DashToastState();
@@ -76,7 +74,7 @@ public class SplashScreenMixin {
 					// Only show toast on fail.
 					if (!ConfigHandler.INSTANCE.config.showCachingToast) {
 						DashToast toast = new DashToast();
-						minecraft.getToastManager().addToast(toast);
+						minecraft.gui.toastManager().addToast(toast);
 						state = toast.state;
 					}
 					state.setOverwriteText("Internal error, Please check logs.");
@@ -94,12 +92,13 @@ public class SplashScreenMixin {
 	}
 
 	@Inject(
-			method = "render",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/resources/ReloadInstance;isDone()Z", shift = At.Shift.BEFORE)
+			method = "tick()V",
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/resources/ReloadInstance;isDone()Z")
 	)
-	private void removeMinimumTime(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+	private void removeMinimumTime(CallbackInfo ci) {
 		if (this.fadeOutStart == -1L && this.reload.isDone()) {
-			this.fadeIn = false;
+			// fadeIn is final in 26.2; backdate fadeInStart so isReadyToFadeOut() passes immediately.
+			this.fadeInStart = Util.getMillis() - 1000L;
 		}
 	}
 }

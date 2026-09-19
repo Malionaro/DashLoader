@@ -1,6 +1,6 @@
 package dev.notalpha.dashloader.client;
 
-import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import org.jetbrains.annotations.Nullable;
 
 // its lazy, but dash! Used for resolution of sprites.

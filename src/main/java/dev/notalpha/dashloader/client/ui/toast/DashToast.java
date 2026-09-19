@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.util.Mth;
@@ -36,10 +36,12 @@ public class DashToast implements Toast {
 		}
 	}
 
+	@Override
 	public int width() {
 		return 200;
 	}
 
+	@Override
 	public int height() {
 		return 40;
 	}
@@ -70,7 +72,7 @@ public class DashToast implements Toast {
 	}
 
 	@Override
-	public void render(GuiGraphics context, Font textRenderer, long startTime) {
+	public void extractRenderState(GuiGraphicsExtractor context, Font textRenderer, long startTime) {
 		final int width = this.width();
 		final int height = this.height();
 		final int barY = height - PROGRESS_BAR_HEIGHT;
@@ -190,11 +192,11 @@ public class DashToast implements Toast {
 			return false;
 		}
 
-		public void draw(GuiGraphics context) {
+		public void draw(GuiGraphicsExtractor context) {
 			DrawerUtil.drawRect(context, (int) x, (int) y, width, height, color);
 		}
 
-		public void drawGlow(GuiGraphics context) {
+		public void drawGlow(GuiGraphicsExtractor context) {
 			if (this.colorKind != ColorKind.Neutral) {
 				DrawerUtil.drawGlow(context, x, y, width, height, (getWeight() + 2.0f) / 3.0f, this.color, false, true, false, true);
 			}

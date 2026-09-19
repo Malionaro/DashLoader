@@ -28,7 +28,7 @@
     "option.cache.SplashTextResourceSupplierMixin",
     "option.cache.font.FontManagerOverride",
     "option.cache.font.TrueTypeFontLoaderMixin",
-    "option.cache.model.BakedModelManagerMixin",
+    "option.cache.model.ModelManagerMixin",
     "option.cache.sprite.stitch.StitchSpriteLoaderMixin",
     "option.misc.AffineTransformationMixin"
   ],

@@ -1,7 +1,7 @@
 package dev.notalpha.dashloader.client.model.components;
 
 import java.util.List;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 
 public class BakedQuadCollection {
 	public final List<BakedQuad> quads;

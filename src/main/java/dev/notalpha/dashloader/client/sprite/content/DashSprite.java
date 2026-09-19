@@ -5,8 +5,8 @@ import dev.notalpha.dashloader.api.registry.RegistryReader;
 import dev.notalpha.dashloader.api.registry.RegistryWriter;
 import dev.notalpha.dashloader.client.Dazy;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 
 public class DashSprite implements DashObject<TextureAtlasSprite, DashSprite.DazyImpl> {
 	public final int id;
@@ -16,7 +16,7 @@ public class DashSprite implements DashObject<TextureAtlasSprite, DashSprite.Daz
 	}
 
 	public DashSprite(TextureAtlasSprite sprite, RegistryWriter writer) {
-		this.id = writer.add(new Material(sprite.atlasLocation(), sprite.contents().name()));
+		this.id = writer.add(new SpriteId(sprite.atlasLocation(), sprite.contents().name()));
 	}
 
 	@Override
@@ -40,15 +40,15 @@ public class DashSprite implements DashObject<TextureAtlasSprite, DashSprite.Daz
 	}
 
 	public static class DazyImpl extends Dazy<TextureAtlasSprite> {
-		public final Material location;
+		public final SpriteId location;
 
-		public DazyImpl(Material location) {
+		public DazyImpl(SpriteId location) {
 			this.location = location;
 		}
 
 		@Override
 		protected TextureAtlasSprite resolve(SpriteGetter spriteLoader) {
-			return spriteLoader.get(location, () -> "dashloader");
+			return spriteLoader.get(location);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-accessWidener	v1	named
+accessWidener v2 official
 accessible	class	net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture
 accessible	class	net/minecraft/client/renderer/texture/SpriteContents$FrameInfo
 accessible	class	net/minecraft/client/gui/font/providers/BitmapProvider$Glyph
@@ -12,14 +12,6 @@ accessible	class	net/minecraft/client/gui/font/providers/UnihexProvider$IntConte
 accessible	class	net/minecraft/client/gui/font/FontSet$SelectedGlyphs
 accessible	class	net/minecraft/client/gui/font/FontManager$Preparation
 accessible	class	net/minecraft/server/packs/FilePackResources$SharedZipFileAccess
-accessible	class	net/minecraft/client/Minecraft$GameLoadCookie
-accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	thirdPersonLeftHand	Lnet/minecraft/client/renderer/block/model/ItemTransform;
-accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	thirdPersonRightHand	Lnet/minecraft/client/renderer/block/model/ItemTransform;
-accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	firstPersonLeftHand	Lnet/minecraft/client/renderer/block/model/ItemTransform;
-accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	firstPersonRightHand	Lnet/minecraft/client/renderer/block/model/ItemTransform;
-accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	head	Lnet/minecraft/client/renderer/block/model/ItemTransform;
-accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	gui	Lnet/minecraft/client/renderer/block/model/ItemTransform;
-accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	ground	Lnet/minecraft/client/renderer/block/model/ItemTransform;
-accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	fixed	Lnet/minecraft/client/renderer/block/model/ItemTransform;
+accessible	class	net/minecraft/client/GameLoadCookie
 accessible	method	com/mojang/blaze3d/font/TrueTypeGlyphProvider$GlyphEntry	<init>	(I)V
 accessible	method	net/minecraft/client/gui/font/providers/UnihexProvider$ByteContents	<init>	([B)V

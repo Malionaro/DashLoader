@@ -18,12 +18,10 @@ import org.lwjgl.util.freetype.FreeType;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.font.CodepointMap;
 import net.minecraft.client.gui.font.providers.FreeTypeUtil;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.resources.Resource;
 
 public final class DashTrueTypeFont implements DashObject<TrueTypeGlyphProvider, TrueTypeGlyphProvider> {
 	public final byte[] fontData;
@@ -49,13 +47,8 @@ public final class DashTrueTypeFont implements DashObject<TrueTypeGlyphProvider,
 		FontPrams prams = FontModule.FONT_TO_DATA.get(CacheStatus.SAVE).get(ft_face);
 		final Identifier ttFont = prams.id();
 		byte[] data = null;
-		try {
-			Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(ttFont.withPrefix("font/"));
-			if (resource.isPresent()) {
-				var stream = resource.get().open();
-				data = IOHelper.streamToArray(stream);
-				stream.close();
-			}
+		try (var stream = Minecraft.getInstance().getResourceManager().open(ttFont.withPrefix("font/"))) {
+			data = IOHelper.streamToArray(stream);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

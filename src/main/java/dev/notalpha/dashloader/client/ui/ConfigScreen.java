@@ -31,10 +31,10 @@ public class ConfigScreen extends Screen {
 		this.addRenderableOnly(new StringWidget(0, 10, this.width, this.font.lineHeight / 2, Component.nullToEmpty(translations.get("config.title")), this.font));
 		this.addRenderableWidget(configWidget).update();
 
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> this.minecraft.gui.setScreen(this.parent)).bounds(this.width / 2 - 154, this.height - 28, 150, 20).build());
+		this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> this.minecraft.setScreen(this.parent)).bounds(this.width / 2 - 154, this.height - 28, 150, 20).build());
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> {
 			this.saveConfig();
-			this.minecraft.gui.setScreen(this.parent);
+			this.minecraft.setScreen(this.parent);
 		}).bounds(this.width / 2 + 4, this.height - 28, 150, 20).build());
 	}
 

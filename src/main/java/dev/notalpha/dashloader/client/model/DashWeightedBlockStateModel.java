@@ -8,7 +8,7 @@ import dev.notalpha.dashloader.mixin.accessor.WeightedBlockStateModelAccessor;
 import net.minecraft.client.render.model.BlockStateModel;
 import net.minecraft.client.render.model.ErrorCollectingSpriteGetter;
 import net.minecraft.client.render.model.WeightedBlockStateModel;
-import net.minecraft.util.collection.Pool;
+import net.minecraft.util.collection.WeightedPool;
 import net.minecraft.util.collection.Weighted;
 
 import java.util.ArrayList;
@@ -94,7 +94,7 @@ public final class DashWeightedBlockStateModel implements DashObject<WeightedBlo
 
 		@Override
 		protected WeightedBlockStateModel resolve(ErrorCollectingSpriteGetter spriteLoader) {
-			Pool.Builder<BlockStateModel> pool = Pool.builder();
+			WeightedPool.Builder<BlockStateModel> pool = WeightedPool.builder();
 			for (Entry entry : this.entries) {
 				pool.add(entry.model.get(spriteLoader), entry.weight);
 			}

@@ -29,7 +29,7 @@ public final class DashWeightedBlockStateModel implements DashObject<WeightedBlo
 	public DashWeightedBlockStateModel(WeightedBlockStateModel model, RegistryWriter writer) {
 		this.entries = new ArrayList<>();
 		for (Weighted<BlockStateModel> entry : ((WeightedBlockStateModelAccessor) model).getModels().getEntries()) {
-			this.entries.add(new Entry(entry.weight(), writer.add(new DashBlockStateModel(entry.value(), writer))));
+			this.entries.add(new Entry(entry.weight(), writer.add(entry.value())));
 		}
 	}
 

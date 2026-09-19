@@ -44,10 +44,10 @@ public final class DashBlockModelPart implements DashObject<BlockModelPart, Dash
 	}
 
 	public DashBlockModelPart(BlockModelPart part, RegistryWriter writer) {
-		this.quads = writer.add(new DashBakedQuadCollection(new BakedQuadCollection(part.getQuads(null)), writer));
+		this.quads = writer.add(new BakedQuadCollection(part.getQuads(null)));
 		this.faceQuads = new ObjectObjectList<>();
 		for (Direction direction : Direction.values()) {
-			this.faceQuads.put(direction, writer.add(new DashBakedQuadCollection(new BakedQuadCollection(part.getQuads(direction)), writer)));
+			this.faceQuads.put(direction, writer.add(new BakedQuadCollection(part.getQuads(direction))));
 		}
 		this.useAo = part.useAmbientOcclusion();
 		this.sprite = writer.add(part.particleSprite());

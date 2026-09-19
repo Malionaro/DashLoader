@@ -9,11 +9,6 @@ import dev.notalpha.dashloader.client.model.components.BakedQuadCollection;
 import dev.notalpha.dashloader.client.model.components.DashBakedQuad;
 import dev.notalpha.dashloader.client.model.components.DashBakedQuadCollection;
 import dev.notalpha.dashloader.client.sprite.content.DashSprite;
-import net.minecraft.client.render.model.BakedQuad;
-import net.minecraft.client.render.model.BlockModelPart;
-import net.minecraft.client.render.model.ErrorCollectingSpriteGetter;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -21,10 +16,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.core.Direction;
 
 /**
  * Cached form of a {@link BlockModelPart} (1.21.5+ model system).
- * Parts are collected from {@link net.minecraft.client.render.model.BlockStateModel#addParts} on SAVE
+ * Parts are collected from {@link net.minecraft.client.renderer.block.model.BlockStateModel#collectParts} on SAVE
  * and reimplemented directly on LOAD, no vanilla bake needed.
  */
 public final class DashBlockModelPart implements DashObject<BlockModelPart, DashBlockModelPart.DazyImpl> {
@@ -50,7 +50,7 @@ public final class DashBlockModelPart implements DashObject<BlockModelPart, Dash
 			this.faceQuads.put(direction, writer.add(new DashBakedQuadCollection(new BakedQuadCollection(part.getQuads(direction)), writer)));
 		}
 		this.useAo = part.useAmbientOcclusion();
-		this.sprite = writer.add(part.particleSprite());
+		this.sprite = writer.add(part.particleIcon());
 	}
 
 	@Override
@@ -102,7 +102,7 @@ public final class DashBlockModelPart implements DashObject<BlockModelPart, Dash
 		}
 
 		@Override
-		protected BlockModelPart resolve(ErrorCollectingSpriteGetter spriteLoader) {
+		protected BlockModelPart resolve(SpriteGetter spriteLoader) {
 			List<BakedQuad> quadsOut = this.quads.get(spriteLoader);
 			Map<Direction, List<BakedQuad>> faceQuadsOut = new HashMap<>();
 			this.faceQuads.forEach((direction, dazy) -> faceQuadsOut.put(direction, dazy.get(spriteLoader)));
@@ -114,9 +114,9 @@ public final class DashBlockModelPart implements DashObject<BlockModelPart, Dash
 			private final List<BakedQuad> quads;
 			private final Map<Direction, List<BakedQuad>> faceQuads;
 			private final boolean useAo;
-			private final Sprite sprite;
+			private final TextureAtlasSprite sprite;
 
-			public Impl(List<BakedQuad> quads, Map<Direction, List<BakedQuad>> faceQuads, boolean useAo, Sprite sprite) {
+			public Impl(List<BakedQuad> quads, Map<Direction, List<BakedQuad>> faceQuads, boolean useAo, TextureAtlasSprite sprite) {
 				this.quads = quads;
 				this.faceQuads = faceQuads;
 				this.useAo = useAo;
@@ -137,7 +137,7 @@ public final class DashBlockModelPart implements DashObject<BlockModelPart, Dash
 			}
 
 			@Override
-			public Sprite particleSprite() {
+			public TextureAtlasSprite particleIcon() {
 				return this.sprite;
 			}
 

@@ -11,14 +11,14 @@ import dev.notalpha.dashloader.api.registry.RegistryWriter;
 import dev.notalpha.dashloader.config.ConfigHandler;
 import dev.notalpha.dashloader.config.Option;
 import dev.notalpha.taski.builtin.StepTask;
-import net.minecraft.client.texture.TextureStitcher;
-import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import net.minecraft.client.renderer.texture.Stitcher;
+import net.minecraft.resources.Identifier;
 
 public class SpriteStitcherModule implements DashModule<SpriteStitcherModule.Data> {
-	public final static CachingData<List<Pair<Identifier, TextureStitcher<?>>>> STITCHERS_SAVE = new CachingData<>(CacheStatus.SAVE);
+	public final static CachingData<List<Pair<Identifier, Stitcher<?>>>> STITCHERS_SAVE = new CachingData<>(CacheStatus.SAVE);
 	public final static CachingData<Map<Identifier, DashTextureStitcher.ExportedData<?>>> STITCHERS_LOAD = new CachingData<>(CacheStatus.LOAD);
 
 	@Override

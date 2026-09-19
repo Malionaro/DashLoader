@@ -62,7 +62,7 @@ dependencies {
     // To change the versions see the gradle.properties file
     // Override for multi-version builds: -PmcVersion= -PyarnMappings= -PfabricApiVersion=
     minecraft "com.mojang:minecraft:${activeMcVersion}"
-    mappings "net.fabricmc:yarn:${activeYarn}:v2"
+    mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"

@@ -1,25 +1,25 @@
-accessWidener v1 named
-accessible class net/minecraft/client/texture/SpriteContents$Animation
-accessible class net/minecraft/client/texture/SpriteContents$AnimationFrame
-accessible class net/minecraft/client/font/BitmapFont$BitmapFontGlyph
-accessible class net/minecraft/client/render/model/BakedModelManager$BakingResult
-accessible class net/minecraft/client/render/model/ModelBaker$BakerImpl
-accessible class net/minecraft/client/font/TrueTypeFont$LazyGlyph
-accessible class net/minecraft/client/font/UnihexFont$UnicodeTextureGlyph
-accessible class net/minecraft/client/font/UnihexFont$FontImage16x16
-accessible class net/minecraft/client/font/UnihexFont$FontImage8x16
-accessible class net/minecraft/client/font/UnihexFont$FontImage32x16
-accessible class net/minecraft/client/font/FontStorage$GlyphPair
-accessible class net/minecraft/client/font/FontManager$ProviderIndex
-accessible class net/minecraft/resource/ZipResourcePack$ZipFileWrapper
-accessible class net/minecraft/client/MinecraftClient$LoadingContext
-accessible field net/minecraft/client/render/model/json/ModelTransformation thirdPersonLeftHand Lnet/minecraft/client/render/model/json/Transformation;
-accessible field net/minecraft/client/render/model/json/ModelTransformation thirdPersonRightHand Lnet/minecraft/client/render/model/json/Transformation;
-accessible field net/minecraft/client/render/model/json/ModelTransformation firstPersonLeftHand Lnet/minecraft/client/render/model/json/Transformation;
-accessible field net/minecraft/client/render/model/json/ModelTransformation firstPersonRightHand Lnet/minecraft/client/render/model/json/Transformation;
-accessible field net/minecraft/client/render/model/json/ModelTransformation head Lnet/minecraft/client/render/model/json/Transformation;
-accessible field net/minecraft/client/render/model/json/ModelTransformation gui Lnet/minecraft/client/render/model/json/Transformation;
-accessible field net/minecraft/client/render/model/json/ModelTransformation ground Lnet/minecraft/client/render/model/json/Transformation;
-accessible field net/minecraft/client/render/model/json/ModelTransformation fixed Lnet/minecraft/client/render/model/json/Transformation;
-accessible method net/minecraft/client/font/TrueTypeFont$LazyGlyph <init> (I)V
-accessible method net/minecraft/client/font/UnihexFont$FontImage8x16 <init> ([B)V
+accessWidener	v1	named
+accessible	class	net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture
+accessible	class	net/minecraft/client/renderer/texture/SpriteContents$FrameInfo
+accessible	class	net/minecraft/client/gui/font/providers/BitmapProvider$Glyph
+accessible	class	net/minecraft/client/resources/model/ModelManager$ReloadState
+accessible	class	net/minecraft/client/resources/model/ModelBakery$ModelBakerImpl
+accessible	class	com/mojang/blaze3d/font/TrueTypeGlyphProvider$GlyphEntry
+accessible	class	net/minecraft/client/gui/font/providers/UnihexProvider$Glyph
+accessible	class	net/minecraft/client/gui/font/providers/UnihexProvider$ShortContents
+accessible	class	net/minecraft/client/gui/font/providers/UnihexProvider$ByteContents
+accessible	class	net/minecraft/client/gui/font/providers/UnihexProvider$IntContents
+accessible	class	net/minecraft/client/gui/font/FontSet$SelectedGlyphs
+accessible	class	net/minecraft/client/gui/font/FontManager$Preparation
+accessible	class	net/minecraft/server/packs/FilePackResources$SharedZipFileAccess
+accessible	class	net/minecraft/client/Minecraft$GameLoadCookie
+accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	thirdPersonLeftHand	Lnet/minecraft/client/renderer/block/model/ItemTransform;
+accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	thirdPersonRightHand	Lnet/minecraft/client/renderer/block/model/ItemTransform;
+accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	firstPersonLeftHand	Lnet/minecraft/client/renderer/block/model/ItemTransform;
+accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	firstPersonRightHand	Lnet/minecraft/client/renderer/block/model/ItemTransform;
+accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	head	Lnet/minecraft/client/renderer/block/model/ItemTransform;
+accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	gui	Lnet/minecraft/client/renderer/block/model/ItemTransform;
+accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	ground	Lnet/minecraft/client/renderer/block/model/ItemTransform;
+accessible	field	net/minecraft/client/renderer/block/model/ItemTransforms	fixed	Lnet/minecraft/client/renderer/block/model/ItemTransform;
+accessible	method	com/mojang/blaze3d/font/TrueTypeGlyphProvider$GlyphEntry	<init>	(I)V
+accessible	method	net/minecraft/client/gui/font/providers/UnihexProvider$ByteContents	<init>	([B)V

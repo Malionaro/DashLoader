@@ -13,14 +13,14 @@ import dev.notalpha.dashloader.client.blockstate.DashBlockState;
 import dev.notalpha.dashloader.config.ConfigHandler;
 import dev.notalpha.dashloader.config.Option;
 import dev.notalpha.taski.builtin.StepTask;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.render.model.BlockStateModel;
-import net.minecraft.client.render.model.WeightedBlockStateModel;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.resources.model.WeightedVariants;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Model caching for the 1.21.5+ model system ({@link BlockStateModel}).
@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public class ModelModule implements DashModule<ModelModule.Data> {
 	public static final CachingData<HashMap<BlockState, BlockStateModel>> BLOCK_STATE_MODELS = new CachingData<>(CacheStatus.SAVE);
-	public static final CachingData<HashMap<BlockState, BlockStateModel.UnbakedGrouped>> BLOCK_STATE_UNBAKED = new CachingData<>(CacheStatus.LOAD);
+	public static final CachingData<HashMap<BlockState, BlockStateModel.UnbakedRoot>> BLOCK_STATE_UNBAKED = new CachingData<>(CacheStatus.LOAD);
 
 	@Override
 	public void reset(Cache cache) {
@@ -59,7 +59,7 @@ public class ModelModule implements DashModule<ModelModule.Data> {
 
 			try {
 				final int modelPtr;
-				if (model instanceof WeightedBlockStateModel weighted) {
+				if (model instanceof WeightedVariants weighted) {
 					modelPtr = factory.add(new DashWeightedBlockStateModel(weighted, factory));
 				} else {
 					modelPtr = factory.add(new DashBlockStateModel(model, factory));
@@ -76,7 +76,7 @@ public class ModelModule implements DashModule<ModelModule.Data> {
 
 	@Override
 	public void load(Data data, RegistryReader reader, StepTask task) {
-		var blockModels = new HashMap<BlockState, BlockStateModel.UnbakedGrouped>(data.blockModels.list().size());
+		var blockModels = new HashMap<BlockState, BlockStateModel.UnbakedRoot>(data.blockModels.list().size());
 
 		data.blockModels.forEach((statePtr, modelPtr) -> {
 			BlockState state = reader.get(statePtr);
@@ -104,7 +104,7 @@ public class ModelModule implements DashModule<ModelModule.Data> {
 	}
 
 	@NotNull
-	public static Map<BlockState, BlockStateModel.UnbakedGrouped> getUnbakedForLoad() {
+	public static Map<BlockState, BlockStateModel.UnbakedRoot> getUnbakedForLoad() {
 		var map = BLOCK_STATE_UNBAKED.get(CacheStatus.LOAD);
 		return map == null ? Map.of() : map;
 	}

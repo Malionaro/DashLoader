@@ -5,30 +5,29 @@ import dev.notalpha.dashloader.api.registry.RegistryReader;
 import dev.notalpha.dashloader.api.registry.RegistryWriter;
 import dev.notalpha.dashloader.client.Dazy;
 import dev.notalpha.dashloader.mixin.accessor.WeightedBlockStateModelAccessor;
-import net.minecraft.client.render.model.BlockStateModel;
-import net.minecraft.client.render.model.ErrorCollectingSpriteGetter;
-import net.minecraft.client.render.model.WeightedBlockStateModel;
-import net.minecraft.util.collection.WeightedPool;
-import net.minecraft.util.collection.Weighted;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.WeightedVariants;
+import net.minecraft.util.random.Weighted;
+import net.minecraft.util.random.WeightedList;
 
 /**
- * Cached form of a {@link WeightedBlockStateModel} (1.21.5+ model system).
+ * Cached form of a {@link WeightedVariants} (1.21.5+ model system).
  * All variants are stored so vanilla random picking ({@link Pool}) behaves
  * exactly like an uncached load. Rebuilt as a real {@link Pool} on LOAD.
  */
-public final class DashWeightedBlockStateModel implements DashObject<WeightedBlockStateModel, DashWeightedBlockStateModel.DazyImpl> {
+public final class DashWeightedBlockStateModel implements DashObject<WeightedVariants, DashWeightedBlockStateModel.DazyImpl> {
 	public final List<Entry> entries;
 
 	public DashWeightedBlockStateModel(List<Entry> entries) {
 		this.entries = entries;
 	}
 
-	public DashWeightedBlockStateModel(WeightedBlockStateModel model, RegistryWriter writer) {
+	public DashWeightedBlockStateModel(WeightedVariants model, RegistryWriter writer) {
 		this.entries = new ArrayList<>();
-		for (Weighted<BlockStateModel> entry : ((WeightedBlockStateModelAccessor) model).getModels().getEntries()) {
+		for (Weighted<BlockStateModel> entry : ((WeightedBlockStateModelAccessor) model).getModels().unwrap()) {
 			this.entries.add(new Entry(entry.weight(), writer.add(new DashBlockStateModel(entry.value(), writer))));
 		}
 	}
@@ -85,20 +84,20 @@ public final class DashWeightedBlockStateModel implements DashObject<WeightedBlo
 		}
 	}
 
-	public static class DazyImpl extends Dazy<WeightedBlockStateModel> {
-		public final List<Entry> entries;
+	public static class DazyImpl extends Dazy<WeightedVariants> {
+		public final List<dev.notalpha.dashloader.client.model.DashWeightedBlockStateModel.DazyImpl.Entry> entries;
 
-		public DazyImpl(List<Entry> entries) {
+		public DazyImpl(List<dev.notalpha.dashloader.client.model.DashWeightedBlockStateModel.DazyImpl.Entry> entries) {
 			this.entries = entries;
 		}
 
 		@Override
-		protected WeightedBlockStateModel resolve(ErrorCollectingSpriteGetter spriteLoader) {
-			WeightedPool.Builder<BlockStateModel> pool = WeightedPool.builder();
-			for (Entry entry : this.entries) {
+		protected WeightedVariants resolve(SpriteGetter spriteLoader) {
+			WeightedList.Builder<BlockStateModel> pool = WeightedList.builder();
+			for (dev.notalpha.dashloader.client.model.DashWeightedBlockStateModel.DazyImpl.Entry entry : this.entries) {
 				pool.add(entry.model.get(spriteLoader), entry.weight);
 			}
-			return new WeightedBlockStateModel(pool.build());
+			return new WeightedVariants(pool.build());
 		}
 
 		public static class Entry {

@@ -9,12 +9,12 @@ import dev.notalpha.hyphen.SerializerFactory;
 import dev.notalpha.hyphen.io.ByteBufferIO;
 import dev.notalpha.hyphen.scan.annotations.DataSubclasses;
 import dev.notalpha.taski.builtin.StepTask;
-import net.minecraft.client.font.UnihexFont;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.nio.file.Path;
+import net.minecraft.client.gui.font.providers.UnihexProvider;
 
 public class Serializer<O> {
 	private final HyphenSerializer<ByteBufferIO, O> serializer;
@@ -33,7 +33,7 @@ public class Serializer<O> {
 			}
 		});
 		factory.setClassName(getSerializerClassName(aClass));
-		factory.addAnnotationProvider(UnihexFont.BitmapGlyph.class, new DataSubclasses() {
+		factory.addAnnotationProvider(UnihexProvider.LineData.class, new DataSubclasses() {
 			@Override
 			public Class<? extends Annotation> annotationType() {
 				return DataSubclasses.class;
@@ -42,9 +42,9 @@ public class Serializer<O> {
 			@Override
 			public Class<?>[] value() {
 				return new Class[]{
-						UnihexFont.FontImage32x16.class,
-						UnihexFont.FontImage16x16.class,
-						UnihexFont.FontImage8x16.class,
+						UnihexProvider.IntContents.class,
+						UnihexProvider.ShortContents.class,
+						UnihexProvider.ByteContents.class,
 				};
 			}
 		});

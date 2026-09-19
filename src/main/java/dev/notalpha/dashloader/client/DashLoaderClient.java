@@ -21,10 +21,9 @@ import dev.notalpha.dashloader.client.sprite.content.DashSpriteContents;
 import dev.notalpha.dashloader.client.sprite.content.SpriteContentModule;
 import dev.notalpha.dashloader.client.sprite.stitch.SpriteStitcherModule;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.state.BlockState;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -53,7 +52,7 @@ public class DashLoaderClient implements DashEntrypoint {
 		factory.addMissingHandler(Identifier.class, (identifier, registryWriter) -> new DashIdentifier(identifier));
 
 		factory.addMissingHandler(
-				Sprite.class,
+				TextureAtlasSprite.class,
 				DashSprite::new
 		);
 

@@ -72,6 +72,7 @@ public class DashLoaderClient implements DashEntrypoint {
 				DashBakedQuadCollection.class,
 				DashImage.class,
 				DashSprite.class,
+				DashSpriteIdentifier.class,
 				DashSpriteContents.class,
 				DashBitmapFont.class,
 				DashBlankFont.class,

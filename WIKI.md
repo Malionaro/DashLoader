@@ -1,4 +1,4 @@
-# DashLoader Wiki — Unofficial Continuation (1.21.4 – 26.3)
+# DashLoader Wiki - Unofficial Continuation (1.21.4 – 26.3)
 
 > This wiki belongs to the community fork (`Malionaro/DashLoader`). The original by AlphaQ (`alphaqu/DashLoader`, LGPL-3.0-only) stopped at 1.21.4. This fork ports DashLoader to **1.21.4 – 26.3**.
 
@@ -17,12 +17,12 @@
 ## Installation
 
 1. Install **Fabric Loader ≥ 0.19.5** (plus **Java 25** for 26.x, **Java 21** for 1.21.x).
-2. Download the matching DashLoader file from Modrinth — the `+1.21.x` / `+26.x` in the filename must match your Minecraft version.
-3. Drop the `.jar` into the `mods` folder. Done — no further setup needed.
+2. Download the matching DashLoader file from Modrinth - the `+1.21.x` / `+26.x` in the filename must match your Minecraft version.
+3. Drop the `.jar` into the `mods` folder. Done - no further setup needed.
 
 ## How it works
 
-1. **First launch (SAVE):** DashLoader observes normal loading and writes everything into the `dashloader-cache/` folder next to your instance. A toast reports "Caching…". This launch is **slower than normal** — that's expected.
+1. **First launch (SAVE):** DashLoader observes normal loading and writes everything into the `dashloader-cache/` folder next to your instance. A toast reports "Caching…". This launch is **slower than normal** - that's expected.
 2. **Every later launch (LOAD):** Data is loaded straight from the cache. Vanilla loading steps are skipped where possible → **much faster startup**, especially with large modpacks.
 3. **Cache invalidation:** Any change (mod added/removed/updated, resource pack switch, Minecraft update) automatically builds a fresh cache (detected via mod hash).
 
@@ -45,7 +45,7 @@
 ## Troubleshooting
 
 **"Failed caching" / "Failed to save cache" on startup**
-- Since this fork, **a single uncacheable asset no longer aborts the save** — it is skipped with a `Skipping uncacheable …` log line and loaded vanilla. If the error still occurs: back up `logs/latest.log` and report it as an issue.
+- Since this fork, **a single uncacheable asset no longer aborts the save** - it is skipped with a `Skipping uncacheable …` log line and loaded vanilla. If the error still occurs: back up `logs/latest.log` and report it as an issue.
 - Ultimate fix: delete `dashloader-cache/` and let it rebuild once.
 
 **Game doesn't start at all / crash on startup**
@@ -56,7 +56,7 @@
 - Known upstream bug with `CacheSpriteContents` enabled. Workaround: disable `CACHE_SPRITE_CONTENT` in the config.
 
 **First launch is slow**
-- Normal — that's when the cache is built. Only the **second** launch shows the speedup.
+- Normal - that's when the cache is built. Only the **second** launch shows the speedup.
 
 **Cache rebuilds on every launch**
 - Happens with mod setups that change every start (e.g. dynamically generated content). Check the log for `Mod hash`; report an issue.
@@ -71,7 +71,7 @@ This fork's principle: **unknown assets are skipped, not crashed.** Handled case
 | Fusion / CTM sprites (`#85`) | ✅ Startup + cache fine (custom sprites load vanilla) |
 | Custom fonts / emoji fonts (Glyphix etc., `#61`) | ✅ Broken fonts are skipped |
 | Sodium | ✅ Tested working on 26.2 (with Iris). Known limitation: transparent textures with `CacheSpriteContents` (see above) |
-| Iris / Distant Horizons, Create, Xaero's | ⚠️ Iris tested working on 26.2 — others unconfirmed on 1.21.4+, please test and report |
+| Iris / Distant Horizons, Create, Xaero's | ⚠️ Iris tested working on 26.2 - others unconfirmed on 1.21.4+, please test and report |
 
 Uncached assets cost some startup time, but the game runs.
 
@@ -88,12 +88,12 @@ Uncached assets cost some startup time, but the game runs.
 | ✅ Stable | 1.21.4 – 1.21.11 |
 | ⚠️ Beta | 26.1, 26.1.1, 26.1.2, 26.2, 26.3 |
 
-GPU caches (atlases, shaders) are **not** cached on 1.21.5+ — Mojang removed the required hooks. CPU-side caching (models, fonts, sprites) still applies.
+GPU caches (atlases, shaders) are **not** cached on 1.21.5+ - Mojang removed the required hooks. CPU-side caching (models, fonts, sprites) still applies.
 
 ## FAQ
 
 **Is this official?**
-No — a community continuation. The original is archived/stopped at 1.21.4. All credit for the base goes to AlphaQ.
+No - a community continuation. The original is archived/stopped at 1.21.4. All credit for the base goes to AlphaQ.
 
 **Forge / NeoForge?**
 No (upstream: "wont fix"). Fabric only.

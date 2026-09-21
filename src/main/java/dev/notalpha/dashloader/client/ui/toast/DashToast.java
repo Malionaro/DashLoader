@@ -1,5 +1,6 @@
 package dev.notalpha.dashloader.client.ui.toast;
 
+import dev.notalpha.dashloader.DashLoader;
 import dev.notalpha.dashloader.client.ui.Color;
 import dev.notalpha.dashloader.client.ui.DrawerUtil;
 import dev.notalpha.dashloader.misc.HahaManager;
@@ -26,7 +27,8 @@ public class DashToast implements Toast {
 	private long oldTime = System.currentTimeMillis();
 	private float progress = 0;
 	private Color progressColor = DrawerUtil.getProgressColor(progress);
-	private Visibility visibility;
+	private Visibility visibility = Visibility.SHOW;
+	private static boolean loggedFirstRender = false;
 
 	public DashToast() {
 		this.state = new DashToastState();
@@ -73,6 +75,10 @@ public class DashToast implements Toast {
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor context, Font textRenderer, long startTime) {
+		if (!loggedFirstRender) {
+			loggedFirstRender = true;
+			DashLoader.LOG.info("DashToast first extractRenderState, status={}", state.getStatus());
+		}
 		final int width = this.width();
 		final int height = this.height();
 		final int barY = height - PROGRESS_BAR_HEIGHT;
@@ -102,6 +108,9 @@ public class DashToast implements Toast {
 
 		// Draw progress text
 		String progressText = this.state.getProgressText();
+		if (progressText == null) {
+			progressText = "";
+		}
 		int progressTextY = this.fact != null ? barY - PADDING : (barY / 2) + (textRenderer.lineHeight / 2);
 		DrawerUtil.drawText(context, textRenderer, PADDING, progressTextY, this.state.getText(), DrawerUtil.STATUS_COLOR);
 		DrawerUtil.drawText(context, textRenderer, (width - PADDING) - textRenderer.width(progressText), progressTextY, progressText, DrawerUtil.STATUS_COLOR);

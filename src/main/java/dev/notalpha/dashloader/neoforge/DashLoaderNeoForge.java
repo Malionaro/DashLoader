@@ -19,17 +19,7 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 @Mod(value = "dashloader", dist = Dist.CLIENT)
 public class DashLoaderNeoForge {
 	public DashLoaderNeoForge(ModContainer container) {
-		container.registerExtensionPoint(IConfigScreenFactory.class, new DashLoaderConfigScreenFactory());
-		try {
-			DashLoader.LOG.info("DashLoader NeoForge init ({})", DashLoaderClient.CACHE);
-		} catch (Throwable t) {
-			// TEMP-DIAG: surface the real cause (FML only reports bare ExceptionInInitializerError)
-			try {
-				DashLoader.LOG.fatal("DashLoader NeoForge init failed", t);
-			} catch (Throwable ignored) {
-				t.printStackTrace();
-			}
-			throw new RuntimeException("DashLoader init failed: " + t, t);
-		}
+		// TEMP-DIAG step 2: minimal constructor to bisect pre-body failure
+		System.out.println("DL-NEO BOOT");
 	}
 }

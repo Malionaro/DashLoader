@@ -1,7 +1,7 @@
 package dev.notalpha.dashloader.platform;
 
 import net.neoforged.fml.ModList;
-import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.loading.FMLPaths;
 
 import java.nio.file.Path;
@@ -14,7 +14,7 @@ import java.util.List;
  * <ul>
  *   <li>Mod list / versions: {@link ModList}</li>
  *   <li>Config dir: {@link FMLPaths#CONFIGDIR}</li>
- *   <li>Dev environment: inverted {@link FMLLoader#isProduction()}</li>
+ *   <li>Dev environment: inverted {@link FMLEnvironment#production}</li>
  * </ul>
  */
 public final class LoaderAdapter {
@@ -52,7 +52,7 @@ public final class LoaderAdapter {
 	}
 
 	public static boolean isDevelopmentEnvironment() {
-		return !FMLLoader.isProduction();
+		return !FMLEnvironment.isProduction();
 	}
 
 	/**

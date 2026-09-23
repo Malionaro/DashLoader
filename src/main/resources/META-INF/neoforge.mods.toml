@@ -1,5 +1,5 @@
-# DashLoader NeoForge mod metadata. Placeholders (${...}) are expanded by
-# build.gradle's processResources from gradle.properties — edit values there.
+# DashLoader NeoForge mod metadata. Dollar-brace placeholders below are expanded by
+# build.gradle's processResources from gradle.properties - edit values there.
 # NOTE: client-only-ness cannot be expressed in this file; the Java entrypoint
 # must use @Mod(value = "dashloader", dist = Dist.CLIENT) (still TODO, see open questions).
 
@@ -19,9 +19,7 @@ displayName="${mod_name}"
 
 #authors=""
 
-description='''
-Launch at the speed of Light.
-'''
+description="Launch at the speed of Light. Unofficial continuation."
 
 # Mixin config lives at the resources root (src/main/resources/dashloader.mixins.json).
 # No rename/move needed: NeoForge loads whatever path is declared here.

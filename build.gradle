@@ -1,7 +1,8 @@
 plugins {
-    // Publishing
-    id 'com.matthewprenger.cursegradle' version '1.4.0'
-    id "com.modrinth.minotaur" version "2.+"
+    // Publishing via web UI / API (cursegradle 1.4.0 + minotaur 2.x are
+    // incompatible with Gradle 9 and break project evaluation, so they stay off).
+    // id 'com.matthewprenger.cursegradle' version '1.4.0'
+    // id "com.modrinth.minotaur" version "2.+"
 
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.147'
@@ -89,13 +90,14 @@ configurations {
 dependencies {
     // Bundled via Jar-in-Jar (replaces Loom `include`): compiles against the
     // preferred version and embeds it with a compatible version range.
+    // (No additionalRuntimeClasspath: ModDev 2.x on 26.2 has no such config;
+    // jarJar(implementation) already covers compile+runtime.)
     jarJar(implementation("dev.notalpha:Hyphen:0.4.0-rc.5")) {
         version {
             strictly '[0.4.0-rc.5]'
             prefer '0.4.0-rc.5'
         }
     }
-    additionalRuntimeClasspath "dev.notalpha:Hyphen:0.4.0-rc.5"
 
     jarJar(implementation("dev.notalpha:Taski:2.1.0")) {
         version {
@@ -103,7 +105,6 @@ dependencies {
             prefer '2.1.0'
         }
     }
-    additionalRuntimeClasspath "dev.notalpha:Taski:2.1.0"
 
     jarJar(implementation('com.github.luben:zstd-jni:1.5.7-1')) {
         version {
@@ -111,7 +112,6 @@ dependencies {
             prefer '1.5.7-1'
         }
     }
-    additionalRuntimeClasspath 'com.github.luben:zstd-jni:1.5.7-1'
 }
 
 test {
@@ -166,44 +166,44 @@ jar {
     }
 }
 
-// Publishing
-modrinth {
-    token = project.hasProperty("modrinthApiKey") ? project.modrinthApiKey : ""
-    projectId = 'ZfQ3kTvR'
-    changelog = file("changelog.md").getText()
-    versionNumber = project.version
-    versionName = "${baseModVersion} for ${activeMcVersion}"
-    uploadFile = jar
-    versionType = "beta"
-    gameVersions = [activeMcVersion]
-    loaders = ['neoforge']
-}
+// Publishing (disabled: plugins incompatible with Gradle 9, see top).
+// modrinth {
+//     token = project.hasProperty("modrinthApiKey") ? project.modrinthApiKey : ""
+//     projectId = 'ZfQ3kTvR'
+//     changelog = file("changelog.md").getText()
+//     versionNumber = project.version
+//     versionName = "${baseModVersion} for ${activeMcVersion}"
+//     uploadFile = jar
+//     versionType = "beta"
+//     gameVersions = [activeMcVersion]
+//     loaders = ['neoforge']
+// }
 
-curseforge {
-    apiKey = project.hasProperty("curseForgeApiKey") ? project.curseForgeApiKey : ""
-    project {
-        id = '472772'
-        changelogType = "markdown"
-        changelog = file("changelog.md")
-        releaseType = 'beta'
+// curseforge {
+//     apiKey = project.hasProperty("curseForgeApiKey") ? project.curseForgeApiKey : ""
+//     project {
+//         id = '472772'
+//         changelogType = "markdown"
+//         changelog = file("changelog.md")
+//         releaseType = 'beta'
 
-        addGameVersion activeMcVersion
-        addGameVersion "NeoForge"
-        addGameVersion "Java 25"
+//         addGameVersion activeMcVersion
+//         addGameVersion "NeoForge"
+//         addGameVersion "Java 25"
 
-        mainArtifact(jar) {
-            displayName = "${baseModVersion} for ${activeMcVersion}"
-        }
-    }
-    options {
-        forgeGradleIntegration = false
-    }
-}
+//         mainArtifact(jar) {
+//             displayName = "${baseModVersion} for ${activeMcVersion}"
+//         }
+//     }
+//     options {
+//         forgeGradleIntegration = false
+//     }
+// }
 
-tasks.register("publishMod") {
-    dependsOn 'modrinth'
-    dependsOn 'curseforge'
-}
+// tasks.register("publishMod") {
+//     dependsOn 'modrinth'
+//     dependsOn 'curseforge'
+// }
 
 tasks.register("getVersion") {
     print("$project.version")

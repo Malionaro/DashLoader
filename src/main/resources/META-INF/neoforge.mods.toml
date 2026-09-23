@@ -22,9 +22,9 @@ displayName="${mod_name}"
 description="Launch at the speed of Light. Unofficial continuation."
 
 # Mixin config lives at the resources root (src/main/resources/dashloader.mixins.json).
-# TEMP-DIAG: mixins disabled to bisect startup abort.
-#[[mixins]]
-#config="dashloader.mixins.json"
+# No rename/move needed: NeoForge loads whatever path is declared here.
+[[mixins]]
+config="dashloader.mixins.json"
 
 # Access Transformer auto-detected at META-INF/accesstransformer.cfg, no declaration needed here.
 #[[accessTransformers]]

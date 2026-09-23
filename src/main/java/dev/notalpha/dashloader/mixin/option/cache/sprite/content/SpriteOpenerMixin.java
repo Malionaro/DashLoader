@@ -27,11 +27,10 @@ public interface SpriteOpenerMixin {
 			SpriteContents result = original.loadSprite(spriteLocation, resource);
 
 			SpriteContentModule.SOURCE.visit(CacheStatus.SAVE, map -> {
-				if (map.containsKey(spriteLocation)) { // filter out sprites with the same id
-					map.put(spriteLocation, null);
-				} else {
-					map.put(spriteLocation, result);
-				}
+				// Same sprite can be opened twice in one boot (double reload): keep the
+				// first result instead of poisoning the cache with null (which would
+				// force vanilla decoding on every load).
+				map.putIfAbsent(spriteLocation, result);
 			});
 			return result;
 		};

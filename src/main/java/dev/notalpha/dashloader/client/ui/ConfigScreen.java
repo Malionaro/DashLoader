@@ -48,7 +48,7 @@ public class ConfigScreen extends Screen {
 		this.configWidget = new ConfigListWidget(this.minecraft, this.width, this.height - 57, 24, 20);
 		var list = configWidget;
 
-		var config = ConfigHandler.INSTANCE.config;
+		var config = ConfigHandler.instance().config;
 
 		list.addCategory("config.category.behaviour");
 		list.addIntSlider("config.compression", config.compression, 3, 0, 23, v -> config.compression = (byte) v);
@@ -72,6 +72,6 @@ public class ConfigScreen extends Screen {
 
 	private void saveConfig() {
 		this.configWidget.saveValues();
-		ConfigHandler.INSTANCE.saveConfig();
+		ConfigHandler.instance().saveConfig();
 	}
 }

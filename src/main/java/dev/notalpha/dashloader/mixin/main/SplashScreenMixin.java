@@ -53,7 +53,7 @@ public class SplashScreenMixin {
 		Cache cache = DashLoaderClient.CACHE;
 		if (DashLoaderClient.CACHE.getStatus() == CacheStatus.SAVE && minecraft.gui.toastManager().getToast(DashToast.class, Toast.NO_TOKEN) == null) {
 			DashToastState rawState;
-			if (ConfigHandler.INSTANCE.config.showCachingToast) {
+			if (ConfigHandler.instance().config.showCachingToast) {
 				DashToast toast = new DashToast();
 				minecraft.gui.toastManager().addToast(toast);
 				rawState = toast.state;
@@ -72,7 +72,7 @@ public class SplashScreenMixin {
 					state.setStatus(DashToastStatus.DONE);
 				} else {
 					// Only show toast on fail.
-					if (!ConfigHandler.INSTANCE.config.showCachingToast) {
+					if (!ConfigHandler.instance().config.showCachingToast) {
 						DashToast toast = new DashToast();
 						minecraft.gui.toastManager().addToast(toast);
 						state = toast.state;

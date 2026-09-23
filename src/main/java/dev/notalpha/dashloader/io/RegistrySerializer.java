@@ -151,7 +151,7 @@ public class RegistrySerializer {
 			task.setSubTask(serializingTask);
 
 			int fileSize = (int) fragment.info.fileSize;
-			IOHelper.save(fragmentFilePath(dir, k), serializingTask, io, fileSize, ConfigHandler.INSTANCE.config.compression);
+			IOHelper.save(fragmentFilePath(dir, k), serializingTask, io, fileSize, ConfigHandler.instance().config.compression);
 			task.next();
 		}
 
@@ -196,7 +196,7 @@ public class RegistrySerializer {
 			});
 		}
 
-		if (ConfigHandler.INSTANCE.config.singleThreadedReading) {
+		if (ConfigHandler.instance().config.singleThreadedReading) {
 			for (Runnable runnable : runnables) {
 				runnable.run();
 			}

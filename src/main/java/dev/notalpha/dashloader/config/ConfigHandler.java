@@ -23,7 +23,21 @@ public class ConfigHandler {
 		}
 	}
 
-	public static final ConfigHandler INSTANCE = new ConfigHandler(LoaderAdapter.getConfigDir().normalize().resolve("dashloader.json"));
+	private static volatile ConfigHandler instance;
+
+	/**
+	 * Lazy accessor: the handler touches loader APIs (config dir, mod list)
+	 * which are not available during very early startup (e.g. Mixin bootstrap
+	 * on NeoForge). Use this instead of touching the constructor early;
+	 * {@link dev.notalpha.dashloader.mixin.MixinPlugin} degrades to
+	 * apply-all while this is uninitialized.
+	 */
+	public static synchronized ConfigHandler instance() {
+		if (instance == null) {
+			instance = new ConfigHandler(LoaderAdapter.getConfigDir().normalize().resolve("dashloader.json"));
+		}
+		return instance;
+	}
 
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private final Path configPath;

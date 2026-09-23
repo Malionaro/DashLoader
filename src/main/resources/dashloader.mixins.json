@@ -1,44 +1,8 @@
 {
-  "required": true,
+  "required": false,
   "minVersion": "0.8",
   "package": "dev.notalpha.dashloader.mixin",
-  "plugin": "dev.notalpha.dashloader.mixin.MixinPlugin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "accessor.BitmapFontAccessor",
-    "accessor.BitmapFontGlyphAccessor",
-    "accessor.FilterMapAccessor",
-    "accessor.FontManagerProviderIndexAccessor",
-    "accessor.IdentifierAccessor",
-    "accessor.WeightedBlockStateModelAccessor",
-    "accessor.NativeImageAccessor",
-    "accessor.SpriteAnimationAccessor",
-    "accessor.SpriteAnimationFrameAccessor",
-    "accessor.StitcherAccessor",
-    "accessor.TrueTypeFontAccessor",
-    "accessor.UnihexFontAccessor",
-    "accessor.ZipResourcePackAccessor",
-    "accessor.ZipWrapperResourcePackAccessor",
-    "main.BootstrapMixin",
-    "main.KeyboardMixin",
-    "main.MainMixin",
-    "main.MinecraftClientMixin",
-    "main.ReloadableResourceManagerImplMixin",
-    "main.SplashScreenMixin",
-    "option.cache.SplashTextResourceSupplierMixin",
-    "option.cache.font.FontManagerOverride",
-    "option.cache.font.TrueTypeFontLoaderMixin",
-    "option.cache.model.ModelManagerMixin",
-    "option.cache.sprite.stitch.StitchSpriteLoaderMixin",
-    "option.misc.AffineTransformationMixin"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "client": [
-    "accessor.SpriteContentsAccessor",
-    "option.cache.model.BlockStatesLoaderMixin",
-    "option.cache.sprite.content.SpriteOpenerMixin",
-    "option.misc.MipmapHelperMixin"
   ]
 }

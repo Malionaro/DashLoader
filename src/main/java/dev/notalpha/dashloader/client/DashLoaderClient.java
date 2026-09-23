@@ -20,12 +20,11 @@ import dev.notalpha.dashloader.client.sprite.content.DashSprite;
 import dev.notalpha.dashloader.client.sprite.content.DashSpriteContents;
 import dev.notalpha.dashloader.client.sprite.content.SpriteContentModule;
 import dev.notalpha.dashloader.client.sprite.stitch.SpriteStitcherModule;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.ServiceLoader;
 
 public class DashLoaderClient implements DashEntrypoint {
 	public static final Cache CACHE;
@@ -33,8 +32,7 @@ public class DashLoaderClient implements DashEntrypoint {
 
 	static {
 		CacheFactory cacheManagerFactory = CacheFactory.create();
-		List<DashEntrypoint> entryPoints = FabricLoader.getInstance().getEntrypoints("dashloader", DashEntrypoint.class);
-		for (DashEntrypoint entryPoint : entryPoints) {
+		for (DashEntrypoint entryPoint : ServiceLoader.load(DashEntrypoint.class)) {
 			entryPoint.onDashLoaderInit(cacheManagerFactory);
 		}
 

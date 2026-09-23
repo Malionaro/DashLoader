@@ -3,7 +3,7 @@ package dev.notalpha.dashloader.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.notalpha.dashloader.DashLoader;
-import net.fabricmc.loader.api.FabricLoader;
+import dev.notalpha.dashloader.platform.LoaderAdapter;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -23,7 +23,7 @@ public class ConfigHandler {
 		}
 	}
 
-	public static final ConfigHandler INSTANCE = new ConfigHandler(FabricLoader.getInstance().getConfigDir().normalize().resolve("dashloader.json"));
+	public static final ConfigHandler INSTANCE = new ConfigHandler(LoaderAdapter.getConfigDir().normalize().resolve("dashloader.json"));
 
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private final Path configPath;
@@ -44,18 +44,20 @@ public class ConfigHandler {
 			}
 		});
 
-		for (var modContainer : FabricLoader.getInstance().getAllMods()) {
-			var mod = modContainer.getMetadata();
-			if (mod.containsCustomValue(DISABLE_OPTION_TAG)) {
-				for (var value : mod.getCustomValue(DISABLE_OPTION_TAG).getAsArray()) {
-					final String feature = value.getAsString();
-					try {
-						var option = Option.valueOf(feature.toUpperCase());
-						OPTION_ACTIVE.put(option, false);
-						DashLoader.LOG.warn("Disabled Optional Feature {} from {} config. {}", feature, mod.getId(), mod.getName());
-					} catch (IllegalArgumentException illegalArgumentException) {
-						DashLoader.LOG.error("Could not disable Optional Feature {} from {} config as it does not exist. {}", feature, mod.getId(), mod.getName());
-					}
+		// NeoForge has no equivalent of fabric.mod.json `custom` values, so
+		// `dashloader:disableoption` cannot be honored there: LoaderAdapter.getModCustomValues
+		// always returns an empty list, making this loop a graceful no-op. OPTION_ACTIVE keeps
+		// the dashloader.json values and mixin gating in shouldApplyMixin() is unaffected.
+		// Keep this code path (do not delete it) so the mechanism survives for loaders that
+		// support it.
+		for (var mod : LoaderAdapter.getAllMods()) {
+			for (var feature : LoaderAdapter.getModCustomValues(mod.id(), DISABLE_OPTION_TAG)) {
+				try {
+					var option = Option.valueOf(feature.toUpperCase());
+					OPTION_ACTIVE.put(option, false);
+					DashLoader.LOG.warn("Disabled Optional Feature {} from {} config. {}", feature, mod.id(), mod.name());
+				} catch (IllegalArgumentException illegalArgumentException) {
+					DashLoader.LOG.error("Could not disable Optional Feature {} from {} config as it does not exist. {}", feature, mod.id(), mod.name());
 				}
 			}
 		}
@@ -114,10 +116,10 @@ public class ConfigHandler {
 	}
 
 	private static boolean isVulkanModPresent() {
-		return FabricLoader.getInstance().isModLoaded("vulkanmod");
+		return LoaderAdapter.isModLoaded("vulkanmod");
 	}
 
 	private static boolean isQuiltLoaderPresent() {
-		return FabricLoader.getInstance().isModLoaded("quilt_loader");
+		return LoaderAdapter.isModLoaded("quilt_loader");
 	}
 }

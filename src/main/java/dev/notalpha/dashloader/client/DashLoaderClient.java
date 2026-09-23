@@ -79,7 +79,11 @@ public class DashLoaderClient implements DashEntrypoint {
 				DashBlankFont.class,
 				DashSpaceFont.class,
 				DashTrueTypeFont.class,
-				DashUnihexFont.class,
+				// DashUnihexFont excluded on NeoForge: vanilla Unihex IntContents has a
+				// private canonical constructor which Hyphen cannot scan
+				// ("Check if the constructor holds all of the fields"). Unihex fonts
+				// fall back to vanilla loading via the per-font skip in FontModule.
+				//DashUnihexFont.class,
 				DashFontFilterPair.class,
 				DashBlockState.class,
 		}) {

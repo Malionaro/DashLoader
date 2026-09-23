@@ -38,11 +38,10 @@ public class SpriteOpenerMixin {
 			SpriteContents result = delegate.loadSprite(id, resource);
 			var saveData = SpriteContentModule.SOURCE.get(CacheStatus.SAVE);
 			if (saveData != null && result != null) {
-				if (saveData.containsKey(id)) { // filter out sprites with the same id
-					saveData.put(id, null);
-				} else {
-					saveData.put(id, result);
-				}
+				// Same sprite can be opened twice in one boot (double reload): keep the
+				// first result instead of poisoning the cache with null (which would
+				// force vanilla decoding on every load).
+				saveData.putIfAbsent(id, result);
 			}
 			return result;
 		};

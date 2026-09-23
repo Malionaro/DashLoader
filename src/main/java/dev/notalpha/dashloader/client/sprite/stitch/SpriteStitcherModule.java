@@ -32,19 +32,17 @@ public class SpriteStitcherModule implements DashModule<SpriteStitcherModule.Dat
 		task.reset(2);
 
 		var stitchers = new HashMap<Identifier, DashTextureStitcher.Data<?>>();
-		var duplicate = new HashSet<Identifier>();
 		task.run(new StepTask("Caching Stitchers"), (stepTask) -> stepTask.doForEach(STITCHERS_SAVE.get(CacheStatus.SAVE), (pair) -> {
 			var identifier = pair.getLeft();
 			var textureStitcher = pair.getRight();
-			DashTextureStitcher.Data<?> existing = stitchers.put(identifier, new DashTextureStitcher.Data<>(writer, textureStitcher));
-			if (existing != null) {
-				duplicate.add(identifier);
+			// Same atlas can be stitched twice in one boot (double reload): keep the first
+			// result instead of dropping the atlas from the cache entirely.
+			if (stitchers.containsKey(identifier)) {
+				DashLoader.LOG.info("Duplicate stitcher {}, keeping first result.", identifier);
+				return;
 			}
+			stitchers.put(identifier, new DashTextureStitcher.Data<>(writer, textureStitcher));
 		}));
-		duplicate.forEach(identifier -> {
-			DashLoader.LOG.warn("Duplicate stitcher {}", identifier);
-			stitchers.remove(identifier);
-		});
 
 		var output = new IntObjectList<DashTextureStitcher.Data<?>>();
 

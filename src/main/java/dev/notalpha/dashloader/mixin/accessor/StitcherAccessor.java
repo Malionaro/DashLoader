@@ -1,10 +1,10 @@
 package dev.notalpha.dashloader.mixin.accessor;
 
-import net.minecraft.client.renderer.texture.Stitcher;
+import net.minecraft.client.texture.TextureStitcher;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(Stitcher.class)
+@Mixin(TextureStitcher.class)
 public interface StitcherAccessor {
 	@Accessor
 	int getMaxWidth();

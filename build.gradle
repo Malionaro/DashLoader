@@ -160,7 +160,7 @@ java {
 
 jar {
     archiveBaseName.set(project.archives_base_name)
-    archiveVersion.set("${baseModVersion}+${activeMcVersion}")
+    archiveVersion.set(project.mod_version)
     from("LICENSE") {
         rename { "${it}_${project.archives_base_name}" }
     }

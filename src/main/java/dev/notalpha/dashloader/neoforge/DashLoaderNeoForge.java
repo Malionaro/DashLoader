@@ -19,24 +19,28 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 @Mod(value = "dashloader", dist = Dist.CLIENT)
 public class DashLoaderNeoForge {
 	public DashLoaderNeoForge(ModContainer container) {
-		// TEMP-DIAG step 6: catch around ServiceLoader loop to capture throw site
+		// TEMP-DIAG step 7: replicate onDashLoaderInit module by module
 		container.registerExtensionPoint(IConfigScreenFactory.class, new DashLoaderConfigScreenFactory());
-		DashLoader.LOG.info("DL-NEO STEP6 start");
+		DashLoader.LOG.info("DL-NEO STEP7 start");
 		dev.notalpha.dashloader.api.cache.CacheFactory factory =
 				dev.notalpha.dashloader.api.cache.CacheFactory.create();
-		DashLoader.LOG.info("DL-NEO STEP6 factory ok");
 		try {
-			for (dev.notalpha.dashloader.api.DashEntrypoint ep
-					: java.util.ServiceLoader.load(dev.notalpha.dashloader.api.DashEntrypoint.class)) {
-				DashLoader.LOG.info("DL-NEO STEP6 entrypoint {}", ep.getClass().getName());
-				ep.onDashLoaderInit(factory);
-			}
-			DashLoader.LOG.info("DL-NEO STEP6 entrypoints done");
+			DashLoader.LOG.info("DL-NEO STEP7 FontModule");
+			factory.addModule(new dev.notalpha.dashloader.client.font.FontModule());
+			DashLoader.LOG.info("DL-NEO STEP7 ModelModule");
+			factory.addModule(new dev.notalpha.dashloader.client.model.ModelModule());
+			DashLoader.LOG.info("DL-NEO STEP7 SplashModule");
+			factory.addModule(new dev.notalpha.dashloader.client.splash.SplashModule());
+			DashLoader.LOG.info("DL-NEO STEP7 StitchModule");
+			factory.addModule(new dev.notalpha.dashloader.client.sprite.stitch.SpriteStitcherModule());
+			DashLoader.LOG.info("DL-NEO STEP7 ContentModule");
+			factory.addModule(new dev.notalpha.dashloader.client.sprite.content.SpriteContentModule());
+			DashLoader.LOG.info("DL-NEO STEP7 modules done");
+			factory.build(java.nio.file.Path.of("./dashloader-cache/client/"));
+			DashLoader.LOG.info("DL-NEO STEP7 built");
 		} catch (Throwable t) {
-			DashLoader.LOG.fatal("DL-NEO STEP6 loop failed", t);
-			throw new RuntimeException("STEP6 failed: " + t, t);
+			DashLoader.LOG.fatal("DL-NEO STEP7 failed", t);
+			throw new RuntimeException("STEP7 failed: " + t, t);
 		}
-		factory.build(java.nio.file.Path.of("./dashloader-cache/client/"));
-		DashLoader.LOG.info("DL-NEO STEP6 built");
 	}
 }

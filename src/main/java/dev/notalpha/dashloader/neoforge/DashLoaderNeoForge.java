@@ -19,8 +19,19 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 @Mod(value = "dashloader", dist = Dist.CLIENT)
 public class DashLoaderNeoForge {
 	public DashLoaderNeoForge(ModContainer container) {
-		// TEMP-DIAG step 4: force DashLoader statics (VERSION, MOD_HASH, Hyphen serializer)
+		// TEMP-DIAG step 5: isolate CacheFactory.create / ServiceLoader / build
 		container.registerExtensionPoint(IConfigScreenFactory.class, new DashLoaderConfigScreenFactory());
-		DashLoader.LOG.info("DL-NEO STEP4 hash={}", DashLoader.MOD_HASH);
+		DashLoader.LOG.info("DL-NEO STEP5 start");
+		dev.notalpha.dashloader.api.cache.CacheFactory factory =
+				dev.notalpha.dashloader.api.cache.CacheFactory.create();
+		DashLoader.LOG.info("DL-NEO STEP5 factory ok");
+		for (dev.notalpha.dashloader.api.DashEntrypoint ep
+				: java.util.ServiceLoader.load(dev.notalpha.dashloader.api.DashEntrypoint.class)) {
+			DashLoader.LOG.info("DL-NEO STEP5 entrypoint {}", ep.getClass().getName());
+			ep.onDashLoaderInit(factory);
+		}
+		DashLoader.LOG.info("DL-NEO STEP5 entrypoints done");
+		factory.build(java.nio.file.Path.of("./dashloader-cache/client/"));
+		DashLoader.LOG.info("DL-NEO STEP5 built");
 	}
 }

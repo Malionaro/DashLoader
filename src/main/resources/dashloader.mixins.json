@@ -14,6 +14,7 @@
     "accessor.NativeImageAccessor",
     "accessor.SpriteAnimationAccessor",
     "accessor.SpriteAnimationFrameAccessor",
+    "accessor.StitcherAccessor",
     "accessor.TrueTypeFontAccessor",
     "accessor.UnihexFontAccessor",
     "accessor.ZipResourcePackAccessor",

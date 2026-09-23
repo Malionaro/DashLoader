@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "dev.notalpha.dashloader.mixin",
   "compatibilityLevel": "JAVA_25",
+  "plugin": "dev.notalpha.dashloader.mixin.MixinPlugin",
   "mixins": [
     "accessor.BitmapFontAccessor",
     "accessor.BitmapFontGlyphAccessor",
@@ -31,7 +32,8 @@
     "option.cache.font.TrueTypeFontLoaderMixin",
     "option.cache.model.ModelManagerMixin",
     "option.cache.sprite.stitch.StitchSpriteLoaderMixin",
-    "option.misc.AffineTransformationMixin"
+    "option.misc.AffineTransformationMixin",
+    "main.BootstrapMixin"
   ],
   "injectors": {
     "defaultRequire": 1

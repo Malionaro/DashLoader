@@ -19,7 +19,8 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 @Mod(value = "dashloader", dist = Dist.CLIENT)
 public class DashLoaderNeoForge {
 	public DashLoaderNeoForge(ModContainer container) {
-		// TEMP-DIAG step 2: minimal constructor to bisect pre-body failure
-		System.out.println("DL-NEO BOOT");
+		// TEMP-DIAG step 3: extension point + LOG, still no CACHE
+		container.registerExtensionPoint(IConfigScreenFactory.class, new DashLoaderConfigScreenFactory());
+		DashLoader.LOG.info("DL-NEO STEP3");
 	}
 }

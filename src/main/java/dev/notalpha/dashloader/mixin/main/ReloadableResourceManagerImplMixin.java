@@ -48,7 +48,7 @@ public class ReloadableResourceManagerImplMixin {
 					// Hash id + title + description (ordered): pack updates usually bump
 					// the version in title/description, so id-only hashing would silently
 					// reuse stale sprite slots and force atlas fallback every boot.
-					values.add(profile.getId() + "/" + profile.getTitle().getString() + "/" + profile.getDescription().getString() + "/");
+					values.add(profile.getId() + "/" + profile.getDisplayName().getString() + "/" + profile.getDescription().getString() + "/");
 				}
 			}
 		}

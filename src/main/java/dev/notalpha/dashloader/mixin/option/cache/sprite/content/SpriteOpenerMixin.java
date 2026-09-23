@@ -43,11 +43,10 @@ public interface SpriteOpenerMixin {
 	private static void dashloaderSave(Collection<?> collection, Identifier id, Resource resource, CallbackInfoReturnable<SpriteContents> cir) {
 		var dashSpriteData = SpriteContentModule.SOURCE.get(CacheStatus.SAVE);
 		if (dashSpriteData != null) {
-			if (dashSpriteData.containsKey(id)) { // filter out sprites with the same id
-				dashSpriteData.put(id, null);
-				return;
-			}
-			dashSpriteData.put(id, cir.getReturnValue());
+			// Same sprite can be opened twice in one boot (double reload): keep the
+			// first result instead of poisoning the cache with null (which would
+			// force vanilla decoding on every load).
+			dashSpriteData.putIfAbsent(id, cir.getReturnValue());
 		}
 	}
 }

@@ -18,6 +18,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  */
 @Mixin(value = TextureAtlasSprite.class, remap = false)
 public interface TextureAtlasSpriteAccessor {
-    @Accessor("field_195670_c")
+    @Accessor("frames")
     NativeImage[] getFrames();
 }

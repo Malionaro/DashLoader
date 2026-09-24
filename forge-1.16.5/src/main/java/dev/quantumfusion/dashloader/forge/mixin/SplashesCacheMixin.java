@@ -9,7 +9,6 @@ import net.minecraft.resources.IResourceManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -33,21 +32,18 @@ import java.util.List;
  * {@link SplashModule#save()} snapshots real data. Never cancels; missing
  * cache entries fall back to vanilla loading.
  *
- * <p>The {@code possibleSplashes} field name was verified via {@code javap}
- * against the mapped snapshot jar. The {@code apply} descriptor below
+ * <p>The {@code apply} descriptor below
  * ({@code apply(Ljava/util/List;Lnet/minecraft/resources/IResourceManager;Lnet/minecraft/profiler/IProfiler;)V})
- * matches the mapped snapshot jar. Dev workspace is MCP-named so
- * {@code remap = false}; production needs the refmap pipeline (see
- * {@code PORTING_NOTES.md}).
+ * matches the mapped snapshot jar (full descriptor because the bridge
+ * {@code apply(Object,...)} overload shares the name). Dev workspace is
+ * MCP-named so {@code remap = false}; production needs the refmap pipeline
+ * (see {@code PORTING_NOTES.md}).
  */
 @Mixin(value = Splashes.class, remap = false)
 public abstract class SplashesCacheMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-splash");
 
-    @Shadow(remap = false)
-    private List<String> field_215280_c;
-
-    @Inject(method = "func_212853_a_", at = @At("HEAD"), remap = false)
+    @Inject(method = "apply(Ljava/util/List;Lnet/minecraft/resources/IResourceManager;Lnet/minecraft/profiler/IProfiler;)V", at = @At("HEAD"), remap = false)
     private void dashloader$serveAndStageSplashes(List<String> splashList,
             IResourceManager resourceManager, IProfiler profiler, CallbackInfo ci) {
         if (!SplashModule.isActive()) {

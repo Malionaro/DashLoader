@@ -75,7 +75,7 @@ public abstract class AtlasTextureStitchMixin {
         this.dashloader$atlasId = location;
     }
 
-    @Redirect(method = "func_229220_a_", at = @At(value = "NEW", target = "net/minecraft/client/renderer/texture/Stitcher"), remap = false)
+    @Redirect(method = "stitch", at = @At(value = "NEW", target = "net/minecraft/client/renderer/texture/Stitcher"), remap = false)
     private Stitcher dashloader$newStitcher(int maxWidth, int maxHeight, int mipLevel) {
         ResourceLocation atlasId = this.dashloader$atlasId;
         if (SpriteStitcherModule.isActive() && DashCacheBackend.getStatus() == CacheStatus.LOAD) {
@@ -93,7 +93,7 @@ public abstract class AtlasTextureStitchMixin {
         return new Stitcher(maxWidth, maxHeight, mipLevel);
     }
 
-    @Inject(method = "func_229220_a_", at = @At("HEAD"), remap = false)
+    @Inject(method = "stitch", at = @At("HEAD"), remap = false)
     private void dashloader$trackAtlas(IResourceManager resourceManager,
             Stream<ResourceLocation> sprites, IProfiler profiler, int mipLevel,
             CallbackInfoReturnable<AtlasTexture.SheetData> cir) {
@@ -104,7 +104,7 @@ public abstract class AtlasTextureStitchMixin {
         }
     }
 
-    @Inject(method = "func_229220_a_", at = @At("RETURN"), remap = false)
+    @Inject(method = "stitch", at = @At("RETURN"), remap = false)
     private void dashloader$stageSpriteContents(IResourceManager resourceManager,
             Stream<ResourceLocation> sprites, IProfiler profiler, int mipLevel,
             CallbackInfoReturnable<AtlasTexture.SheetData> cir) {

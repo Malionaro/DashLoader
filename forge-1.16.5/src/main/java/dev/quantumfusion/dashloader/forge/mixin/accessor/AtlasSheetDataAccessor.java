@@ -21,15 +21,15 @@ import java.util.List;
  */
 @Mixin(value = AtlasTexture.SheetData.class, remap = false)
 public interface AtlasSheetDataAccessor {
-    @Accessor("field_217808_d")
+    @Accessor("sprites")
     List<TextureAtlasSprite> getSprites();
 
-    @Accessor("field_217806_b")
+    @Accessor("width")
     int getWidth();
 
-    @Accessor("field_217807_c")
+    @Accessor("height")
     int getHeight();
 
-    @Accessor("field_229224_d_")
+    @Accessor("mipmapLevel")
     int getMipmapLevel();
 }

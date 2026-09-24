@@ -24,6 +24,7 @@ public class DashLoaderForge {
     private static final Logger LOGGER = LogManager.getLogger();
 
     public DashLoaderForge() {
+        DashLoaderConfig.register();
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
     }

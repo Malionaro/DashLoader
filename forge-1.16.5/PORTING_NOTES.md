@@ -35,7 +35,10 @@ permanent skips). Hashes match modern semantics:
 | Keep-first duplicates (sprites) | `SAVE.containsKey` guard at staging | `mixin/AtlasTextureStitchMixin.java` (`dashloader$stageSpriteContents`) |
 | Stitch param validation | `matches(maxWidth, maxHeight, mipLevel)`; mismatch → vanilla re-stitch + log | `sprite/stitch/DashTextureStitcher.java` (`ExportedData#matches`), `mixin/AtlasTextureStitchMixin.java` (`dashloader$newStitcher`) |
 | Missing-font fallback | every font falls back to vanilla (module always reports inactive) | `font/FontModule.java` |
-| Toast during SAVE | background `dashloader-save` thread + `DashToast` progress | `mixin/ModelManagerCacheMixin.java` (`startBackgroundSave`) |
+| Toast during SAVE | background `dashloader-save` thread + `DashToast` progress | `mixin/ResourceLoadProgressGuiMixin.java` (`startBackgroundSave`) |
+| Toast look | 200x40, animated lines, progress bar + glow, status + percent, fun fact, FAILED on crash, DONE 2s / CRASHED 10s hide | `ui/toast/DashToast.java`, `ui/DrawerUtil.java`, `ui/Color.java` |
+| Loading overlay dismiss | `setLoadingGui(null)` at reload-complete + SAVE driver | `mixin/ResourceLoadProgressGuiMixin.java` |
+| Multipart selectors staged | unbaked `Selector` + owner staged at `bakeModel` RETURN | `mixin/MultipartBakeMixin.java` (`SAVE_MULTIPART`) |
 | Config screen | toggle buttons bound to `ForgeConfigSpec`, incl. master switch | `ui/DashConfigScreen.java`, `DashLoaderConfig.java` |
 | Splashes served | LOAD replaces prepared list with cached texts | `mixin/SplashesCacheMixin.java` |
 | Models installed | TAIL of `ModelManager.apply` overwrites `modelRegistry` | `mixin/ModelManagerCacheMixin.java` (`dashloader$installAndSave`) |
@@ -43,12 +46,17 @@ permanent skips). Hashes match modern semantics:
 
 ## Partial skips (mappable in principle, simplified — each logged, none silent)
 
-1. **Multipart selectors**: unbaked `Selector` (`ICondition` lambdas) has no
-   stable serialized form. SAVE records multipart models as missing
-   (`model/ModelModule.java:111-115`, `139-148`); LOAD skips multipart entries
-   with a warning (`model/ModelModule.java:220-223`). The `Selector` Gson
-   adapter fails loudly if ever invoked
-   (`cache/CacheGson.java:176-193`).
+1. **Multipart selectors**: unbaked `Selector` condition trees (vanilla
+   `AndCondition` / `OrCondition` / `PropertyValueCondition` / `TRUE` /
+   `FALSE`, read via the condition accessor mixins) are staged at bake time
+   (`mixin/MultipartBakeMixin.java` → `ModelModule.SAVE_MULTIPART`) and
+   serialized as tagged JSON (`cache/CacheGson.java` selector adapter);
+   predicates rebuild via `getPredicate` on LOAD. Part models that are not
+   staged top models are snapshotted inline under synthetic
+   `/__dashloader_part_<n>` ids (skipped at registry install). Remaining
+   vanilla fallbacks (each logged): models without staged selectors (e.g.
+   replaced post-bake), modded `ICondition` implementations, uncacheable
+   part models.
 2. **Sprite pixel serving**: cached stitch *positions* are reused, but pixel
    decoding still runs vanilla — there is no clean 1.16.5 hook into the
    private `getStitchedSprites` path
@@ -103,10 +111,6 @@ Touch points: `mixin/ModelManagerCacheMixin.java:59-66`,
 
 ## Remaining gaps (with file:line)
 
-- Multipart models always bake vanilla (selectors deferred):
-  `src/main/java/dev/quantumfusion/dashloader/forge/model/ModelModule.java:111-115`
-- Selector JSON support explicitly absent:
-  `src/main/java/dev/quantumfusion/dashloader/forge/cache/CacheGson.java:176-193`
 - Sprite pixels decode vanilla on LOAD (positions cached):
   `src/main/java/dev/quantumfusion/dashloader/forge/mixin/AtlasTextureStitchMixin.java:53-57`
 - Restored sprites are non-animated:

@@ -15,6 +15,10 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  * <p>Dev workspace is MCP-named, so {@code remap = false}. Production
  * (SRG runtime) needs the refmap pipeline (see {@code PORTING_NOTES.md}).
  */
+
+/**
+ * @author Malionaro
+ */
 @Mixin(value = OrCondition.class, remap = false)
 public interface OrConditionAccessor {
     @Accessor("conditions")

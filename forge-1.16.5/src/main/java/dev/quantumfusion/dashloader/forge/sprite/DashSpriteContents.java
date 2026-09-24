@@ -40,8 +40,8 @@ import java.util.Objects;
  *       non-animated until that lands.</li>
  *   <li>Mipmaps are not stored (vanilla regenerates them at upload).</li>
  * </ul>
- */
-public final class DashSpriteContents {
+ * @author Malionaro
+ */public final class DashSpriteContents {
     public final ResourceLocation id;
     public final int width;
     public final int height;

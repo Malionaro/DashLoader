@@ -41,8 +41,8 @@ import java.util.Random;
  * {@code FAILED_COLOR} on crash, auto-hide timing (DONE 2s, CRASHED 10s).
  * The fun facts mirror modern {@code HahaManager} (config custom lines have
  * no Forge equivalent here, so the built-in list is used directly).
- */
-public final class DashToast implements IToast {
+ * @author Malionaro
+ */public final class DashToast implements IToast {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-toast");
 
     private static final int PROGRESS_BAR_HEIGHT = 2;

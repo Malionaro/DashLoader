@@ -39,6 +39,10 @@ import java.util.List;
  * MCP-named so {@code remap = false}; production needs the refmap pipeline
  * (see {@code PORTING_NOTES.md}).
  */
+
+/**
+ * @author Malionaro
+ */
 @Mixin(value = Splashes.class, remap = false)
 public abstract class SplashesCacheMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-splash");

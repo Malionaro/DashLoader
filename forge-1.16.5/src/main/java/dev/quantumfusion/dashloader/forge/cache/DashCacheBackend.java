@@ -58,8 +58,8 @@ import java.util.Map;
  * {@link #save(DashToastState)} snapshots the SAVE stores (updating the toast
  * when non-null); {@link #reset()} returns to {@link CacheStatus#IDLE} and
  * clears staged data to save memory.
- */
-public final class DashCacheBackend {
+ * @author Malionaro
+ */public final class DashCacheBackend {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-cache");
 
     private static final String MODELS_FILE = "models.json";

@@ -32,8 +32,8 @@ import java.util.function.Function;
  * entry stores the model as a model-id string resolved through
  * caller-supplied lookups (Hyphen int pointers are out of scope — see
  * {@code DashCacheBackend}).
- */
-public final class DashWeightedBakedModel {
+ * @author Malionaro
+ */public final class DashWeightedBakedModel {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-model");
 
     public final List<Entry> entries;

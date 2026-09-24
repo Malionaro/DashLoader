@@ -16,6 +16,10 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  * (SRG runtime) needs the refmap pipeline — same pending item as
  * {@code ModelManagerCacheMixin} (see {@code PORTING_NOTES.md}).
  */
+
+/**
+ * @author Malionaro
+ */
 @Mixin(value = TextureAtlasSprite.class, remap = false)
 public interface TextureAtlasSpriteAccessor {
     @Accessor("frames")

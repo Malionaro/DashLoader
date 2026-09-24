@@ -32,6 +32,10 @@ import org.apache.logging.log4j.Logger;
  *       dedicated server never loads client classes.</li>
  * </ul>
  */
+
+/**
+ * @author Malionaro
+ */
 @Mod(DashLoaderForge.MOD_ID)
 public class DashLoaderForge {
     public static final String MOD_ID = "dashloader";

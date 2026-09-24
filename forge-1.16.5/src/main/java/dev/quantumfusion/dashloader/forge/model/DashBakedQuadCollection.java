@@ -18,8 +18,8 @@ import java.util.function.Function;
  * directly because the Hyphen registry is out of scope (see
  * {@code DashCacheBackend} TODO). The shape — one collection per
  * cull-face plus one unculled collection — is unchanged.
- */
-public final class DashBakedQuadCollection {
+ * @author Malionaro
+ */public final class DashBakedQuadCollection {
     public final List<DashBakedQuad> quads;
 
     public DashBakedQuadCollection(List<DashBakedQuad> quads) {

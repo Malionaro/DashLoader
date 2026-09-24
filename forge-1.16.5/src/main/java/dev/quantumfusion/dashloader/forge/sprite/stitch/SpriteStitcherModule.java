@@ -23,8 +23,8 @@ import java.util.Map;
   * {@link #STITCHERS_SAVE} (keep-first) and {@code AtlasTextureStitchMixin}
   * swaps in a {@link DashTextureStitcher} on load when stitch parameters
   * match.
- */
-public final class SpriteStitcherModule {
+ * @author Malionaro
+ */public final class SpriteStitcherModule {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-stitch");
 
     /** SAVE-stage: finished stitch runs keyed by atlas id. Mirrors modern {@code STITCHERS_SAVE}. */

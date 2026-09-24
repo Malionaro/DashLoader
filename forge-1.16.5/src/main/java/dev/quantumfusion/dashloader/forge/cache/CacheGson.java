@@ -68,8 +68,8 @@ import java.util.List;
  *
  * <p>{@link net.minecraft.util.Direction} (enum) and all primitive/collection
  * shapes need no adapter.
- */
-public final class CacheGson {
+ * @author Malionaro
+ */public final class CacheGson {
     private CacheGson() {
     }
 

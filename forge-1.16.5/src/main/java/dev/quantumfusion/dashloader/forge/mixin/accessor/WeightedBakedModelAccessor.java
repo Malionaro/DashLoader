@@ -21,6 +21,10 @@ import java.util.List;
  * (SRG runtime) needs the refmap pipeline — same pending item as
  * {@code ModelManagerCacheMixin}.
  */
+
+/**
+ * @author Malionaro
+ */
 @Mixin(value = WeightedBakedModel.class, remap = false)
 public interface WeightedBakedModelAccessor {
     @Accessor("models")

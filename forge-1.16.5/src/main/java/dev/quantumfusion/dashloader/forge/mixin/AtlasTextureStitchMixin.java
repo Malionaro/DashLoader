@@ -62,6 +62,10 @@ import java.util.stream.Stream;
  * <p>Dev workspace is MCP-named so {@code remap = false}; production needs
  * the refmap pipeline (see {@code PORTING_NOTES.md}).
  */
+
+/**
+ * @author Malionaro
+ */
 @Mixin(value = AtlasTexture.class, remap = false)
 public abstract class AtlasTextureStitchMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-stitch");

@@ -7,8 +7,8 @@ package dev.quantumfusion.dashloader.forge.cache;
  * <p>Same three states: {@link #IDLE} (nothing staged), {@link #LOAD}
  * (a cache was found on disk and LOAD maps are populated),
  * {@link #SAVE} (no usable cache; SAVE maps are staged for writing).
- */
-public enum CacheStatus {
+ * @author Malionaro
+ */public enum CacheStatus {
     IDLE,
     LOAD,
     SAVE

@@ -62,8 +62,8 @@ import java.util.function.Function;
  *       synthetic part entries are restored for reference resolution but
  *       skipped at install (see {@link #isSyntheticKey}).</li>
  * </ul>
- */
-public final class ModelModule {
+ * @author Malionaro
+ */public final class ModelModule {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-model");
 
     /**

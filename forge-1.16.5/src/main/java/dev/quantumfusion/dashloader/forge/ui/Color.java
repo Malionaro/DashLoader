@@ -7,8 +7,8 @@ package dev.quantumfusion.dashloader.forge.ui;
  * Stored as {@code R,G,B,A} packed int; {@link #argb()} converts to the
  * packed ARGB int that 1.16.5 rendering ({@code AbstractGui#fill},
  * {@code FontRenderer#drawString}) expects.
- */
-public final class Color {
+ * @author Malionaro
+ */public final class Color {
     private final int rgba;
 
     public Color(int rgba) {

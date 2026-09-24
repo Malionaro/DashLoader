@@ -14,8 +14,8 @@ package dev.quantumfusion.dashloader.forge.ui.toast;
  * at ~100ups, fast attack / slow release via {@code divisionSpeed}) and the
  * DONE timestamp ({@link #setDone}/{@link #getTimeDone}) driving the
  * auto-hide timing in {@link DashToast}.
- */
-public final class DashToastState {
+ * @author Malionaro
+ */public final class DashToastState {
     // Volatile: the SAVE worker thread writes these while the render thread reads them.
     private volatile DashToastStatus status = DashToastStatus.IDLE;
     private volatile double targetProgress;

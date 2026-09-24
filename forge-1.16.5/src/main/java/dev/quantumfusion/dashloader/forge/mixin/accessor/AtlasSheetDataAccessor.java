@@ -19,6 +19,10 @@ import java.util.List;
  * (SRG runtime) needs the refmap pipeline — same pending item as
  * {@code ModelManagerCacheMixin} (see {@code PORTING_NOTES.md}).
  */
+
+/**
+ * @author Malionaro
+ */
 @Mixin(value = AtlasTexture.SheetData.class, remap = false)
 public interface AtlasSheetDataAccessor {
     @Accessor("sprites")

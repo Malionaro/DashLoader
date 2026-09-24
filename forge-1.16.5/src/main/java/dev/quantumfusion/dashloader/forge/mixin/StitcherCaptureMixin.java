@@ -31,6 +31,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * against the mapped snapshot jar; {@code remap = false} (dev workspace is
  * MCP-named).
  */
+
+/**
+ * @author Malionaro
+ */
 @Mixin(value = Stitcher.class, remap = false)
 public abstract class StitcherCaptureMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-stitch");

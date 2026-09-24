@@ -23,8 +23,8 @@ import java.util.Map;
   * {@link #SAVE} keep-first at {@code stitch} RETURN; {@link #save()}
   * snapshots whatever was staged (empty when textures were never stitched).
   * Missing sprites fall back to vanilla loading — same policy as modern.
- */
-public final class SpriteContentModule {
+ * @author Malionaro
+ */public final class SpriteContentModule {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-sprite");
 
     /** SAVE-stage: sprite contents keyed by sprite id. Mirrors modern {@code SOURCE}. */

@@ -16,8 +16,8 @@ import net.minecraftforge.fml.config.ModConfig;
  *
  * <p>There is no era counterpart at the base commit (era config moved to
  * {@code dashloader-core} months later, Nov 2021).
- */
-public final class DashLoaderConfig {
+ * @author Malionaro
+ */public final class DashLoaderConfig {
     public static final ForgeConfigSpec CLIENT_SPEC;
     public static final ForgeConfigSpec.BooleanValue ENABLE_CACHE;
     public static final ForgeConfigSpec.BooleanValue DEBUG;

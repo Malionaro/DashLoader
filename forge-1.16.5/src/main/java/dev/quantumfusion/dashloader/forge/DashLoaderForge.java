@@ -53,6 +53,6 @@ public class DashLoaderForge {
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
-        LOGGER.info("DashLoader Forge port: client setup (model/sprite/splash/toast modules ported, fonts skipped — see report).");
+        LOGGER.info("DashLoader Forge port: client setup (model/sprite/splash/toast/config wired; fonts are a documented permanent skip — see PORTING_NOTES.md).");
     }
 }

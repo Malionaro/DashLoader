@@ -19,10 +19,10 @@ import java.util.Map;
  * values are {@link DashSpriteContents} (the 1.16.5 content-side snapshot —
  * see its javadoc for the {@code SpriteContents} adaptation).
  *
- * <p>Hook TODO: populating {@link #SAVE} needs a hook where 1.16.5 loads
- * sprite pixels (the {@code AtlasTexture} stitch path); not wired yet, so
- * {@link #save()} snapshots whatever was staged (empty in this slice).
- * Missing sprites fall back to vanilla loading — same policy as modern.
+  * <p>Hook: {@code AtlasTextureStitchMixin} stages stitch outputs into
+  * {@link #SAVE} keep-first at {@code stitch} RETURN; {@link #save()}
+  * snapshots whatever was staged (empty when textures were never stitched).
+  * Missing sprites fall back to vanilla loading — same policy as modern.
  */
 public final class SpriteContentModule {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-sprite");
@@ -49,10 +49,21 @@ public final class SpriteContentModule {
         Map<String, DashSpriteContents> out = new LinkedHashMap<>(SAVE.size());
         List<String> skipped = new ArrayList<>();
         for (Map.Entry<ResourceLocation, DashSpriteContents> entry : SAVE.entrySet()) {
-            if (entry.getValue() != null) {
-                out.put(entry.getKey().toString(), entry.getValue());
-            } else {
+            // Per-entry skip resilience (modern parity): modded sprite content
+            // with no snapshot support must not abort the whole module — the
+            // LOAD path falls back to vanilla loading for missing sprites.
+            try {
+                if (entry.getValue() != null) {
+                    out.put(entry.getKey().toString(), entry.getValue());
+                } else {
+                    skipped.add(entry.getKey().toString());
+                }
+            } catch (RuntimeException e) {
                 skipped.add(entry.getKey().toString());
+                LOGGER.warn("Skipping uncacheable sprite {} ({}): {}", entry.getKey(),
+                        entry.getValue() == null ? "null"
+                                : entry.getValue().getClass().getName(),
+                        e.getMessage());
             }
         }
         if (!skipped.isEmpty()) {
@@ -62,10 +73,22 @@ public final class SpriteContentModule {
         return new Data(out);
     }
 
+    /** Empty snapshot used when the module is disabled (keeps the JSON shape stable). */
+    public static Data emptyData() {
+        return new Data(new LinkedHashMap<String, DashSpriteContents>());
+    }
+
     public static void load(Data data) {
         LOAD.clear();
+        if (data == null || data.sprites == null) {
+            return;
+        }
         for (Map.Entry<String, DashSpriteContents> entry : data.sprites.entrySet()) {
-            LOAD.put(new ResourceLocation(entry.getKey()), entry.getValue());
+            try {
+                LOAD.put(new ResourceLocation(entry.getKey()), entry.getValue());
+            } catch (RuntimeException e) {
+                LOGGER.warn("Skipping unrestorable cached sprite {}: {}", entry.getKey(), e.getMessage());
+            }
         }
         LOGGER.info("Sprite content restore: {} sprites.", LOAD.size());
     }

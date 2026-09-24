@@ -19,13 +19,10 @@ import java.util.Map;
  * {@link Data}, restore them into {@link #STITCHERS_LOAD} for
  * {@link DashTextureStitcher} to consume.
  *
- * <p>Hook TODO: in 1.16.5 stitching happens inside
- * {@code AtlasTexture#stitch}, which builds its own {@code Stitcher}
- * internally — capturing the finished stitcher (for
- * {@link DashTextureStitcher.Data#capture}) and swapping in a
- * {@link DashTextureStitcher} on load both need an
- * {@code AtlasTexture.stitch} hook, not wired yet. Until then
- * {@link #save()} snapshots whatever was staged (empty in this slice).
+  * <p>Hooks: {@code StitcherCaptureMixin} captures finished stitchers into
+  * {@link #STITCHERS_SAVE} (keep-first) and {@code AtlasTextureStitchMixin}
+  * swaps in a {@link DashTextureStitcher} on load when stitch parameters
+  * match.
  */
 public final class SpriteStitcherModule {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-stitch");
@@ -70,10 +67,22 @@ public final class SpriteStitcherModule {
 
     public static void load(Data data) {
         STITCHERS_LOAD.clear();
+        if (data == null || data.stitchers == null) {
+            return;
+        }
         for (Map.Entry<String, DashTextureStitcher.Data> entry : data.stitchers.entrySet()) {
-            STITCHERS_LOAD.put(new ResourceLocation(entry.getKey()), entry.getValue().export());
+            try {
+                STITCHERS_LOAD.put(new ResourceLocation(entry.getKey()), entry.getValue().export());
+            } catch (RuntimeException e) {
+                LOGGER.warn("Skipping unrestorable cached stitcher {}: {}", entry.getKey(), e.getMessage());
+            }
         }
         LOGGER.info("Stitch restore: {} atlases.", STITCHERS_LOAD.size());
+    }
+
+    /** Empty snapshot used when the module is disabled (keeps the JSON shape stable). */
+    public static Data emptyData() {
+        return new Data(new LinkedHashMap<String, DashTextureStitcher.Data>());
     }
 
     /** Snapshot data. Keys are atlas id strings. */

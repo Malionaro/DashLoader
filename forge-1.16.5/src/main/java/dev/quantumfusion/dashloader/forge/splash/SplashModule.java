@@ -47,9 +47,16 @@ public final class SplashModule {
         return new Data(new ArrayList<>(TEXTS));
     }
 
+    /** Empty snapshot used when the module is disabled (keeps the JSON shape stable). */
+    public static Data emptyData() {
+        return new Data(new ArrayList<String>());
+    }
+
     public static void load(Data data) {
         LOADED.clear();
-        LOADED.addAll(data.splashList);
+        if (data != null && data.splashList != null) {
+            LOADED.addAll(data.splashList);
+        }
         LOGGER.info("Splash restore: {} texts.", LOADED.size());
     }
 

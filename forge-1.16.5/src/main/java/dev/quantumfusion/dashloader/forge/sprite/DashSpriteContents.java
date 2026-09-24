@@ -1,5 +1,6 @@
 package dev.quantumfusion.dashloader.forge.sprite;
 
+import dev.quantumfusion.dashloader.forge.mixin.accessor.TextureAtlasSpriteAccessor;
 import net.minecraft.client.renderer.texture.NativeImage;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.ResourceLocation;
@@ -70,6 +71,41 @@ public final class DashSpriteContents {
             }
         }
         return new DashSpriteContents(info.getSpriteLocation(), width, height,
+                pixels, new ArrayList<Frame>());
+    }
+
+    /**
+     * Snapshot a stitched sprite for SAVE staging (called per sprite from
+     * {@code AtlasTextureStitchMixin} with per-entry skip resilience at the
+     * call site, mirroring modern per-sprite {@code try/catch}).
+     *
+     * <p>Pixels come from the first decoded frame ({@code frames[0]},
+     * exposed via {@link TextureAtlasSpriteAccessor}); dimensions are clamped
+     * to the frame so oversized atlas padding never overruns the buffer.
+     * Animation is recorded as static (same stub as {@link #toDash} — the
+     * {@code AnimationMetadataSection} round-trip is a cache-backend TODO).
+     *
+     * @throws IllegalArgumentException when the sprite has no decoded frames
+     */
+    public static DashSpriteContents fromSprite(TextureAtlasSprite sprite) {
+        NativeImage[] frames = ((TextureAtlasSpriteAccessor) sprite).getFrames();
+        if (frames == null || frames.length == 0 || frames[0] == null) {
+            throw new IllegalArgumentException("Sprite has no decoded frames: " + sprite.getName());
+        }
+        NativeImage image = frames[0];
+        int width = Math.min(sprite.getWidth(), image.getWidth());
+        int height = Math.min(sprite.getHeight(), image.getHeight());
+        if (width <= 0 || height <= 0) {
+            throw new IllegalArgumentException("Sprite has empty dimensions: " + sprite.getName());
+        }
+        int[] pixels = new int[width * height];
+        int count = 0;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                pixels[count++] = image.getPixelRGBA(x, y);
+            }
+        }
+        return new DashSpriteContents(sprite.getName(), width, height,
                 pixels, new ArrayList<Frame>());
     }
 

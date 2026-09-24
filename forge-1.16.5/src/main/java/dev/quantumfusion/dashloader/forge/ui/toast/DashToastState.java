@@ -16,10 +16,11 @@ package dev.quantumfusion.dashloader.forge.ui.toast;
  * </ul>
  */
 public final class DashToastState {
-    private DashToastStatus status = DashToastStatus.IDLE;
-    private double progress;
-    private String text = "Idle";
-    private long timeDone = System.currentTimeMillis();
+    // Volatile: the SAVE worker thread writes these while the render thread reads them.
+    private volatile DashToastStatus status = DashToastStatus.IDLE;
+    private volatile double progress;
+    private volatile String text = "Idle";
+    private volatile long timeDone = System.currentTimeMillis();
 
     public DashToastStatus getStatus() {
         return status;

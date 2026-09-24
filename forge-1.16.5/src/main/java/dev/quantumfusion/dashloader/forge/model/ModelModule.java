@@ -6,14 +6,17 @@ import net.minecraft.client.renderer.model.ModelBakery;
 import net.minecraft.client.renderer.model.MultipartBakedModel;
 import net.minecraft.client.renderer.model.SimpleBakedModel;
 import net.minecraft.client.renderer.model.WeightedBakedModel;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Forge 1.16.5 port of modern {@code ModelModule}
@@ -21,10 +24,9 @@ import java.util.Map;
  *
  * <p>What is kept from modern:
  * <ul>
- *   <li>Staging maps for the SAVE pass (populated from
- *       {@link ModelBakery#getTopBakedModels()}, the 1.16.5 counterpart of
- *       modern {@code ModelLoader} baked-model maps — see
- *       {@code DashModelCache} for the full bakery mapping table).</li>
+  *   <li>Staging maps for the SAVE pass (populated from
+  *       {@link ModelBakery#getTopBakedModels()}, the 1.16.5 counterpart of
+  *       modern {@code ModelLoader} baked-model maps).</li>
  *   <li>{@code instanceof} dispatch over the three cacheable
  *       implementations (basic / multipart / weighted); anything else
  *       (modded models) lands on the missing list with a warning and falls
@@ -48,10 +50,9 @@ import java.util.Map;
  *       caller of {@link Data} creation (modern keeps them in
  *       {@code MULTIPART_PREDICATES}; wiring that staging to the 1.16.5
  *       baking path is TODO).</li>
- *   <li>Installing restored models back into the bakery
- *       ({@code ModelBakery} fields are private) needs a
- *       {@code ModelManager.apply} hook — hook point documented in
- *       {@code ModelManagerCacheMixin}; not wired yet.</li>
+  *   <li>Installing restored models back into the bakery happens in
+  *       {@code ModelManagerCacheMixin} (TAIL of {@code apply} overwrites
+  *       {@code modelRegistry} entries with {@link #buildLoadedModels}).</li>
  * </ul>
  */
 public final class ModelModule {
@@ -59,6 +60,9 @@ public final class ModelModule {
 
     /** SAVE-stage: top baked models keyed by model id. Mirrors modern {@code BAKED_MODEL_PARTS}. */
     public static final Map<ResourceLocation, IBakedModel> SAVE_TOP_MODELS = new LinkedHashMap<>();
+
+    /** LOAD-stage: deserialized snapshot waiting to be installed (see {@link #buildLoadedModels}). */
+    private static volatile Data LOAD_DATA;
 
     private ModelModule() {
     }
@@ -70,6 +74,27 @@ public final class ModelModule {
 
     public static void reset() {
         SAVE_TOP_MODELS.clear();
+    }
+
+    /** Clears the LOAD snapshot to free memory (called on cache reset). */
+    public static void clearLoad() {
+        LOAD_DATA = null;
+    }
+
+    public static boolean hasLoad() {
+        Data data = LOAD_DATA;
+        return data != null
+                && data.basicModels != null
+                && (!data.basicModels.isEmpty()
+                        || (data.weightedModels != null && !data.weightedModels.isEmpty()));
+    }
+
+    /** Empty snapshot used when the module is disabled (keeps the JSON shape stable). */
+    public static Data emptyData() {
+        return new Data(new LinkedHashMap<String, DashBasicBakedModel>(),
+                new LinkedHashMap<String, DashMultipartBakedModel>(),
+                new LinkedHashMap<String, DashWeightedBakedModel>(),
+                new ArrayList<String>());
     }
 
     /**
@@ -130,6 +155,74 @@ public final class ModelModule {
         LOGGER.info("Model snapshot: {} basic, {} weighted, {} multipart-deferred, {} missing.",
                 basic.size(), weighted.size(), multipart.size(), missing.size());
         return new Data(basic, multipart, weighted, missing);
+    }
+
+    /**
+     * Stores the deserialized snapshot for later installation.
+     * Mirrors modern {@code ModelModule#load} (which fills
+     * {@code BLOCK_STATE_UNBAKED}); installation happens in
+     * {@code ModelManagerCacheMixin} once a sprite lookup is available.
+     */
+    public static void load(Data data) {
+        if (data == null) {
+            return;
+        }
+        LOAD_DATA = data;
+        int basic = data.basicModels == null ? 0 : data.basicModels.size();
+        int weighted = data.weightedModels == null ? 0 : data.weightedModels.size();
+        LOGGER.info("Model restore staged: {} basic, {} weighted.", basic, weighted);
+    }
+
+    /**
+     * Rebuilds vanilla models from the LOAD snapshot.
+     *
+     * <p>Per-entry skip resilience (modern parity): any model that fails to
+     * restore is skipped with a warning and left for vanilla baking instead
+     * of aborting the whole install. Basic models are restored first so
+     * weighted entries referencing them resolve; unresolvable references are
+     * skipped. Multipart entries are always skipped (selectors are a
+     * documented partial skip — see {@code PORTING_NOTES.md}).
+     */
+    public static Map<ResourceLocation, IBakedModel> buildLoadedModels(
+            Function<ResourceLocation, TextureAtlasSprite> spriteLookup) {
+        Data data = LOAD_DATA;
+        if (data == null) {
+            return Collections.emptyMap();
+        }
+        Map<ResourceLocation, IBakedModel> out = new LinkedHashMap<>();
+        if (data.basicModels != null) {
+            for (Map.Entry<String, DashBasicBakedModel> entry : data.basicModels.entrySet()) {
+                try {
+                    out.put(new ResourceLocation(entry.getKey()),
+                            entry.getValue().toVanilla(spriteLookup));
+                } catch (RuntimeException e) {
+                    LOGGER.warn("Skipping unrestorable cached model {}: {}", entry.getKey(), e.getMessage());
+                }
+            }
+        }
+        if (data.weightedModels != null) {
+            for (Map.Entry<String, DashWeightedBakedModel> entry : data.weightedModels.entrySet()) {
+                try {
+                    final Map<ResourceLocation, IBakedModel> built = out;
+                    WeightedBakedModel model = entry.getValue().toVanilla(key -> {
+                        IBakedModel part = built.get(new ResourceLocation(key));
+                        if (part == null) {
+                            throw new IllegalArgumentException("Referenced model not restored: " + key);
+                        }
+                        return part;
+                    });
+                    out.put(new ResourceLocation(entry.getKey()), model);
+                } catch (RuntimeException e) {
+                    LOGGER.warn("Skipping unrestorable cached model {}: {}", entry.getKey(), e.getMessage());
+                }
+            }
+        }
+        if (data.multipartModels != null && !data.multipartModels.isEmpty()) {
+            LOGGER.warn("Skipping {} cached multipart models (selector restore is a documented partial skip).",
+                    data.multipartModels.size());
+        }
+        LOGGER.info("Model restore built: {} models.", out.size());
+        return out;
     }
 
     /** Snapshot data. Keys are model id strings; values are Dash models. */

@@ -71,6 +71,10 @@ dependencies {
     // in ModelManagerCacheMixin / DashModelCache.
     compileOnly 'org.spongepowered:mixin:0.8.2'
     annotationProcessor 'org.spongepowered:mixin:0.8.2'
+    // Gson ships on the 1.16.5 runtime classpath (vanilla uses it); the cache
+    // backend (CacheGson/DashCacheBackend) serializes module Data POJOs with
+    // it, so compileOnly is enough — nothing is bundled into the mod jar.
+    compileOnly 'com.google.code.gson:gson:2.8.0'
     // Mixin's annotation processor needs Gson on the processor path
     // (its pom does not carry it transitively here). 2.8.0 matches MC 1.16.5.
     annotationProcessor 'com.google.code.gson:gson:2.8.0'

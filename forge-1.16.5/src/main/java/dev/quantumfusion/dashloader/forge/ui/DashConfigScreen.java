@@ -37,6 +37,8 @@ public final class DashConfigScreen extends Screen {
     @Override
     protected void init() {
         int y = 40;
+        y = addToggle(y, "Enable cache (master switch)", DashLoaderConfig.ENABLE_CACHE.get(),
+                value -> DashLoaderConfig.ENABLE_CACHE.set(value));
         y = addToggle(y, "Cache models", DashLoaderConfig.CACHE_MODELS.get(),
                 value -> DashLoaderConfig.CACHE_MODELS.set(value));
         y = addToggle(y, "Cache sprite contents", DashLoaderConfig.CACHE_SPRITES.get(),

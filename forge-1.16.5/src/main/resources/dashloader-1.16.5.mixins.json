@@ -5,9 +5,13 @@
   "client": [
     "ModelManagerCacheMixin",
     "SplashesCacheMixin",
+    "AtlasTextureStitchMixin",
+    "StitcherCaptureMixin",
     "accessor.MultipartBakedModelAccessor",
     "accessor.WeightedBakedModelAccessor",
-    "accessor.WeightedModelAccessor"
+    "accessor.WeightedModelAccessor",
+    "accessor.TextureAtlasSpriteAccessor",
+    "accessor.AtlasSheetDataAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

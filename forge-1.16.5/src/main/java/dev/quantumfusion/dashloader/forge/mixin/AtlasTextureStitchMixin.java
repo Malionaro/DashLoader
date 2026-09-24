@@ -66,6 +66,7 @@ public abstract class AtlasTextureStitchMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-stitch");
 
     /** Atlas currently being stitched on this thread (read by {@code StitcherCaptureMixin}). */
+    @Unique
     static final ThreadLocal<ResourceLocation> CURRENT_ATLAS = new ThreadLocal<>();
 
     /** Atlas id captured from the constructor (no reliable name-based shadow exists on 1.16.5). */

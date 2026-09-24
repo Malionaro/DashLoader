@@ -4,6 +4,7 @@ import dev.quantumfusion.dashloader.forge.cache.CacheStatus;
 import dev.quantumfusion.dashloader.forge.cache.DashCacheBackend;
 import dev.quantumfusion.dashloader.forge.sprite.stitch.DashTextureStitcher;
 import dev.quantumfusion.dashloader.forge.sprite.stitch.SpriteStitcherModule;
+import dev.quantumfusion.dashloader.forge.sprite.stitch.StitchState;
 import net.minecraft.client.renderer.texture.Stitcher;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
@@ -51,7 +52,7 @@ public abstract class StitcherCaptureMixin {
         }
         ResourceLocation atlasId;
         try {
-            atlasId = AtlasTextureStitchMixin.CURRENT_ATLAS.get();
+            atlasId = StitchState.CURRENT_ATLAS.get();
         } catch (Throwable t) {
             LOGGER.warn("DashLoader stitch capture failed (atlas lookup).", t);
             return;

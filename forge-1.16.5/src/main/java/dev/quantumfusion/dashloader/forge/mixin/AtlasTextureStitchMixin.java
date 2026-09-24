@@ -5,6 +5,7 @@ import dev.quantumfusion.dashloader.forge.cache.DashCacheBackend;
 import dev.quantumfusion.dashloader.forge.mixin.accessor.AtlasSheetDataAccessor;
 import dev.quantumfusion.dashloader.forge.sprite.DashSpriteContents;
 import dev.quantumfusion.dashloader.forge.sprite.SpriteContentModule;
+import dev.quantumfusion.dashloader.forge.sprite.stitch.StitchState;
 import dev.quantumfusion.dashloader.forge.sprite.stitch.DashTextureStitcher;
 import dev.quantumfusion.dashloader.forge.sprite.stitch.SpriteStitcherModule;
 import net.minecraft.client.renderer.texture.AtlasTexture;
@@ -65,11 +66,7 @@ import java.util.stream.Stream;
 public abstract class AtlasTextureStitchMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-stitch");
 
-    /** Atlas currently being stitched on this thread (read by {@code StitcherCaptureMixin}). */
-    @Unique
-    static final ThreadLocal<ResourceLocation> CURRENT_ATLAS = new ThreadLocal<>();
-
-    /** Atlas id captured from the constructor (no reliable name-based shadow exists on 1.16.5). */
+    /** Atlas id captured from the constructor (see {@link StitchState}). */
     @Unique
     private ResourceLocation dashloader$atlasId;
 
@@ -101,7 +98,7 @@ public abstract class AtlasTextureStitchMixin {
             Stream<ResourceLocation> sprites, IProfiler profiler, int mipLevel,
             CallbackInfoReturnable<AtlasTexture.SheetData> cir) {
         try {
-            CURRENT_ATLAS.set(this.dashloader$atlasId);
+            StitchState.CURRENT_ATLAS.set(this.dashloader$atlasId);
         } catch (Throwable t) {
             LOGGER.warn("DashLoader atlas tracking failed.", t);
         }
@@ -112,7 +109,7 @@ public abstract class AtlasTextureStitchMixin {
             Stream<ResourceLocation> sprites, IProfiler profiler, int mipLevel,
             CallbackInfoReturnable<AtlasTexture.SheetData> cir) {
         try {
-            CURRENT_ATLAS.remove();
+            StitchState.CURRENT_ATLAS.remove();
         } catch (Throwable t) {
             LOGGER.warn("DashLoader atlas tracking cleanup failed.", t);
         }

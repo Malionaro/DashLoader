@@ -76,7 +76,7 @@ public abstract class ModelManagerCacheMixin {
         }
     }
 
-    @Inject(method = "func_212853_a_", at = @At("HEAD"), remap = false)
+    @Inject(method = "func_212853_a_", at = @At("TAIL"), remap = false)
     private void dashloader$stageModels(ModelBakery bakery, IResourceManager resourceManager,
             IProfiler profiler, CallbackInfo ci) {
         try {
@@ -84,12 +84,16 @@ public abstract class ModelManagerCacheMixin {
         } catch (Throwable t) {
             LOGGER.warn("DashLoader cache init failed, continuing vanilla.", t);
         }
-        if (DashCacheBackend.getStatus() != CacheStatus.SAVE || !ModelModule.isActive() || bakery == null) {
+        if (DashCacheBackend.getStatus() != CacheStatus.SAVE || !ModelModule.isActive()) {
             return;
         }
+        // Stage from the finished model registry: Forge's ModelLoader does not
+        // fill ModelBakery top models (always empty at apply HEAD), but the
+        // registry is complete here at TAIL.
         try {
             ModelModule.SAVE_TOP_MODELS.clear();
-            ModelModule.SAVE_TOP_MODELS.putAll(bakery.getTopBakedModels());
+            ModelModule.SAVE_TOP_MODELS.putAll(field_174958_a);
+            LOGGER.info("DashLoader staged {} baked models.", ModelModule.SAVE_TOP_MODELS.size());
         } catch (Throwable t) {
             LOGGER.warn("DashLoader model staging failed, vanilla baking continues.", t);
         }

@@ -11,6 +11,10 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 /**
  * NeoForge mod entrypoint (client-only).
  */
+
+/**
+ * @author Malionaro
+ */
 @Mod(value = "dashloader", dist = Dist.CLIENT)
 public class DashLoaderNeoForge {
 	public DashLoaderNeoForge(ModContainer container) {

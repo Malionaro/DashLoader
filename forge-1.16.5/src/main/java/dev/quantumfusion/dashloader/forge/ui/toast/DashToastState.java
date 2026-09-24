@@ -2,25 +2,29 @@ package dev.quantumfusion.dashloader.forge.ui.toast;
 
 /**
  * Forge 1.16.5 port of modern {@code DashToastState}
- * ({@code fabric-1.21.4}).
+ * ({@code fabric-26.3}).
  *
- * <p>Simplifications (documented):
- * <ul>
- *   <li>Modern tracks a {@code taski} task tree (nested progress + translated
- *       names). There is no taski equivalent wired here, so progress is a
- *       plain {@code 0..1} double and text is a plain string set by the
- *       caching driver. The smoothing tick from modern is kept in spirit:
- *       none — {@link #getProgress()} returns the last set value.</li>
- *   <li>Modern translates text via {@code TranslationHelper}; this port
- *       uses raw strings (i18n TODO).</li>
- * </ul>
+ * <p>Yarn -&gt; MCP mapping: modern tracks a {@code taski} task tree
+ * (nested progress + translated names). There is no taski equivalent wired
+ * here, so the SAVE driver ({@code DashCacheBackend}) sets a plain
+ * {@code 0..1} target progress and a plain status string; translation is
+ * raw strings (i18n TODO).
+ *
+ * <p>Kept verbatim from modern: the progress smoothing ({@code tickProgress}
+ * at ~100ups, fast attack / slow release via {@code divisionSpeed}) and the
+ * DONE timestamp ({@link #setDone}/{@link #getTimeDone}) driving the
+ * auto-hide timing in {@link DashToast}.
  */
 public final class DashToastState {
     // Volatile: the SAVE worker thread writes these while the render thread reads them.
     private volatile DashToastStatus status = DashToastStatus.IDLE;
-    private volatile double progress;
+    private volatile double targetProgress;
     private volatile String text = "Idle";
     private volatile long timeDone = System.currentTimeMillis();
+
+    // Render-thread only easing state (mirrors modern currentProgress/lastUpdate).
+    private double currentProgress = 0;
+    private long lastUpdate = System.currentTimeMillis();
 
     public DashToastStatus getStatus() {
         return status;
@@ -30,16 +34,40 @@ public final class DashToastState {
         this.status = status;
     }
 
-    /** Progress in {@code 0..1}. NaN-safe (clamped to 0 like modern). */
-    public double getProgress() {
-        if (Double.isNaN(progress)) {
-            return 0.0;
-        }
-        return progress;
+    /** Target progress in {@code 0..1}, set by the SAVE driver. */
+    public void setProgress(double progress) {
+        this.targetProgress = progress;
     }
 
-    public void setProgress(double progress) {
-        this.progress = progress;
+    /**
+     * Smoothed progress in {@code 0..1} (NaN-safe, clamped to 0 like
+     * modern). Eases toward the target set by {@link #setProgress}.
+     */
+    public double getProgress() {
+        final long currentTime = System.currentTimeMillis();
+        while (currentTime > this.lastUpdate) {
+            this.tickProgress();
+            this.lastUpdate += 10; // ~100ups
+        }
+        return this.currentProgress;
+    }
+
+    private void tickProgress() {
+        if (Double.isNaN(this.currentProgress)) {
+            this.currentProgress = 0.0;
+        }
+        double actualProgress = this.targetProgress;
+        if (Double.isNaN(actualProgress)) {
+            actualProgress = 0.0;
+        }
+        final double divisionSpeed = (actualProgress < this.currentProgress) ? 3 : 30;
+        double step = (actualProgress - this.currentProgress) / divisionSpeed;
+        this.currentProgress += step;
+    }
+
+    /** Right-aligned progress text (modern shows the task progress text here). */
+    public String getProgressText() {
+        return (int) Math.round(getProgress() * 100.0) + "%";
     }
 
     public String getText() {

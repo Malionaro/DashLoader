@@ -64,9 +64,9 @@ public abstract class ModelManagerCacheMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-model");
 
     @Shadow(remap = false)
-    private Map<ResourceLocation, IBakedModel> modelRegistry;
+    private Map<ResourceLocation, IBakedModel> field_174958_a;
 
-    @Inject(method = "prepare", at = @At("HEAD"), remap = false)
+    @Inject(method = "func_212854_a_", at = @At("HEAD"), remap = false)
     private void dashloader$ensureCache(IResourceManager resourceManager, IProfiler profiler,
             CallbackInfoReturnable<ModelBakery> cir) {
         try {
@@ -76,7 +76,7 @@ public abstract class ModelManagerCacheMixin {
         }
     }
 
-    @Inject(method = "apply", at = @At("HEAD"), remap = false)
+    @Inject(method = "func_212853_a_", at = @At("HEAD"), remap = false)
     private void dashloader$stageModels(ModelBakery bakery, IResourceManager resourceManager,
             IProfiler profiler, CallbackInfo ci) {
         try {
@@ -95,7 +95,7 @@ public abstract class ModelManagerCacheMixin {
         }
     }
 
-    @Inject(method = "apply", at = @At("TAIL"), remap = false)
+    @Inject(method = "func_212853_a_", at = @At("TAIL"), remap = false)
     private void dashloader$installAndSave(ModelBakery bakery, IResourceManager resourceManager,
             IProfiler profiler, CallbackInfo ci) {
         if (DashCacheBackend.getStatus() == CacheStatus.LOAD && ModelModule.isActive() && ModelModule.hasLoad()) {
@@ -107,7 +107,7 @@ public abstract class ModelManagerCacheMixin {
                 int replaced = 0;
                 for (Map.Entry<ResourceLocation, IBakedModel> entry : restored.entrySet()) {
                     try {
-                        modelRegistry.put(entry.getKey(), entry.getValue());
+                        field_174958_a.put(entry.getKey(), entry.getValue());
                         replaced++;
                     } catch (RuntimeException e) {
                         LOGGER.warn("Skipping cached model install for {}: {}", entry.getKey(), e.getMessage());

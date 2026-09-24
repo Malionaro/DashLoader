@@ -26,26 +26,24 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * {@code AtlasTextureStitchMixin} for the current thread.
  *
  * <p>Keep-first duplicates (modern parity): an atlas stitched twice in one
- * boot keeps the first capture. Field names ({@code maxWidth},
- * {@code maxHeight}, {@code mipmapLevelStitcher}) verified via {@code javap}
- * against the mapped snapshot jar. Dev workspace is MCP-named so
- * {@code remap = false}; production needs the refmap pipeline (see
- * {@code PORTING_NOTES.md}).
+ * boot keeps the first capture. SRG names ({@code field_94316_e} etc.)
+ * because there is no refmap pipeline yet and {@code remap = false};
+ * MCP counterparts are {@code maxWidth}/{@code maxHeight}/{@code mipLevel}.
  */
 @Mixin(value = Stitcher.class, remap = false)
 public abstract class StitcherCaptureMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-stitch");
 
     @Shadow(remap = false)
-    private int maxWidth;
+    private int field_94316_e;
 
     @Shadow(remap = false)
-    private int maxHeight;
+    private int field_94313_f;
 
     @Shadow(remap = false)
-    private int mipmapLevelStitcher;
+    private int field_147971_a;
 
-    @Inject(method = "doStitch", at = @At("TAIL"), remap = false)
+    @Inject(method = "func_94305_f", at = @At("TAIL"), remap = false)
     private void dashloader$captureStitch(CallbackInfo ci) {
         if (DashCacheBackend.getStatus() != CacheStatus.SAVE || !SpriteStitcherModule.isActive()) {
             return;
@@ -62,7 +60,7 @@ public abstract class StitcherCaptureMixin {
         }
         try {
             SpriteStitcherModule.STITCHERS_SAVE.put(atlasId, DashTextureStitcher.Data.capture(
-                    (Stitcher) (Object) this, maxWidth, maxHeight, mipmapLevelStitcher));
+                    (Stitcher) (Object) this, field_94316_e, field_94313_f, field_147971_a));
         } catch (Throwable t) {
             LOGGER.warn("DashLoader stitch capture failed for {}.", atlasId, t);
         }

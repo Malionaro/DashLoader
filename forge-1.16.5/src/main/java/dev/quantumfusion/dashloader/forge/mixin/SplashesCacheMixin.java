@@ -45,9 +45,9 @@ public abstract class SplashesCacheMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-splash");
 
     @Shadow(remap = false)
-    private List<String> possibleSplashes;
+    private List<String> field_215280_c;
 
-    @Inject(method = "apply", at = @At("HEAD"), remap = false)
+    @Inject(method = "func_212853_a_", at = @At("HEAD"), remap = false)
     private void dashloader$serveAndStageSplashes(List<String> splashList,
             IResourceManager resourceManager, IProfiler profiler, CallbackInfo ci) {
         if (!SplashModule.isActive()) {

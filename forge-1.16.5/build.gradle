@@ -66,11 +66,11 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.16.5-36.2.42'
 
     // SpongePowered Mixin: Forge 1.16.5 ships Mixin 0.8.2 at runtime, so
-    // compileOnly + annotationProcessor is enough for the slice. Runtime
-    // refmap generation (MixinGradle) is still TODO — see the slice notes
-    // in ModelManagerCacheMixin / DashModelCache.
+    // compileOnly is enough. The AP is DELIBERATELY absent: it validates
+    // @Accessor/@Shadow targets against MCP (dev) names, but without a refmap
+    // pipeline all string references must be SRG names for production.
+    // Validation happens at runtime (Forge logs precisely).
     compileOnly 'org.spongepowered:mixin:0.8.2'
-    annotationProcessor 'org.spongepowered:mixin:0.8.2'
     // Gson ships on the 1.16.5 runtime classpath (vanilla uses it); the cache
     // backend (CacheGson/DashCacheBackend) serializes module Data POJOs with
     // it, so compileOnly is enough — nothing is bundled into the mod jar.

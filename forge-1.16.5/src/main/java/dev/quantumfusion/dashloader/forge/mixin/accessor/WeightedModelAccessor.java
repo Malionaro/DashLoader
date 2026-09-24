@@ -19,9 +19,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  */
 @Mixin(targets = "net.minecraft.client.renderer.model.WeightedBakedModel$WeightedModel", remap = false)
 public interface WeightedModelAccessor {
-    @Accessor("model")
+    @Accessor("field_185281_b")
     IBakedModel getModel();
 
-    @Accessor("itemWeight")
+    @Accessor("field_76292_a")
     int getItemWeight();
 }

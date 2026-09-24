@@ -2,6 +2,7 @@ package dev.quantumfusion.dashloader.forge.model;
 
 import dev.quantumfusion.dashloader.forge.mixin.accessor.WeightedBakedModelAccessor;
 import dev.quantumfusion.dashloader.forge.mixin.accessor.WeightedModelAccessor;
+import dev.quantumfusion.dashloader.forge.mixin.accessor.WeightedRandomItemAccessor;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.WeightedBakedModel;
 import org.apache.logging.log4j.LogManager;
@@ -52,7 +53,7 @@ public final class DashWeightedBakedModel {
         List<Entry> out = new ArrayList<>(raw.size());
         for (Object entry : raw) {
             WeightedModelAccessor access = (WeightedModelAccessor) entry;
-            out.add(new Entry(modelIds.apply(access.getModel()), access.getItemWeight()));
+            out.add(new Entry(modelIds.apply(access.getModel()), ((WeightedRandomItemAccessor) entry).getItemWeight()));
         }
         return new DashWeightedBakedModel(out);
     }

@@ -12,7 +12,8 @@
     "accessor.WeightedBakedModelAccessor",
     "accessor.WeightedModelAccessor",
     "accessor.TextureAtlasSpriteAccessor",
-    "accessor.AtlasSheetDataAccessor"
+    "accessor.AtlasSheetDataAccessor",
+    "accessor.WeightedRandomItemAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

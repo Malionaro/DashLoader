@@ -21,7 +21,4 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface WeightedModelAccessor {
     @Accessor("field_185281_b")
     IBakedModel getModel();
-
-    @Accessor("field_76292_a")
-    int getItemWeight();
 }

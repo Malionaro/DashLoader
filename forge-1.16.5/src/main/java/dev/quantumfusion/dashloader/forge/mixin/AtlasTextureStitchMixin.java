@@ -17,9 +17,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
@@ -66,12 +68,18 @@ public abstract class AtlasTextureStitchMixin {
     /** Atlas currently being stitched on this thread (read by {@code StitcherCaptureMixin}). */
     static final ThreadLocal<ResourceLocation> CURRENT_ATLAS = new ThreadLocal<>();
 
-    @Shadow(remap = false)
-    public abstract ResourceLocation getTextureLocation();
+    /** Atlas id captured from the constructor (no reliable name-based shadow exists on 1.16.5). */
+    @Unique
+    private ResourceLocation dashloader$atlasId;
+
+    @Inject(method = "<init>", at = @At("TAIL"), remap = false)
+    private void dashloader$captureId(ResourceLocation location, CallbackInfo ci) {
+        this.dashloader$atlasId = location;
+    }
 
     @Redirect(method = "stitch", at = @At(value = "NEW", target = "net/minecraft/client/renderer/texture/Stitcher"), remap = false)
     private Stitcher dashloader$newStitcher(int maxWidth, int maxHeight, int mipLevel) {
-        ResourceLocation atlasId = getTextureLocation();
+        ResourceLocation atlasId = this.dashloader$atlasId;
         if (SpriteStitcherModule.isActive() && DashCacheBackend.getStatus() == CacheStatus.LOAD) {
             DashTextureStitcher.ExportedData data = SpriteStitcherModule.STITCHERS_LOAD.get(atlasId);
             if (data != null) {
@@ -92,7 +100,7 @@ public abstract class AtlasTextureStitchMixin {
             Stream<ResourceLocation> sprites, IProfiler profiler, int mipLevel,
             CallbackInfoReturnable<AtlasTexture.SheetData> cir) {
         try {
-            CURRENT_ATLAS.set(getTextureLocation());
+            CURRENT_ATLAS.set(this.dashloader$atlasId);
         } catch (Throwable t) {
             LOGGER.warn("DashLoader atlas tracking failed.", t);
         }

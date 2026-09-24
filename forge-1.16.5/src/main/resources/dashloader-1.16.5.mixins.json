@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.quantumfusion.dashloader.forge.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "ModelManagerCacheMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -20,24 +20,26 @@ import dev.notalpha.dashloader.client.sprite.content.DashSprite;
 import dev.notalpha.dashloader.client.sprite.content.DashSpriteContents;
 import dev.notalpha.dashloader.client.sprite.content.SpriteContentModule;
 import dev.notalpha.dashloader.client.sprite.stitch.SpriteStitcherModule;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import java.nio.file.Path;
-import java.util.List;
 
 public class DashLoaderClient implements DashEntrypoint {
-	public static final Cache CACHE;
+	public static Cache CACHE;
 	public static boolean NEEDS_RELOAD = false;
 
-	static {
-		CacheFactory cacheManagerFactory = CacheFactory.create();
-		List<DashEntrypoint> entryPoints = FabricLoader.getInstance().getEntrypoints("dashloader", DashEntrypoint.class);
-		for (DashEntrypoint entryPoint : entryPoints) {
-			entryPoint.onDashLoaderInit(cacheManagerFactory);
+	/**
+	 * NeoForge-safe init: ServiceLoader kills mod construction under NeoForge's
+	 * module system (bare ExceptionInInitializerError when the provider's static
+	 * init re-enters), so entrypoints are invoked directly here.
+	 */
+	public static synchronized void init() {
+		if (CACHE != null) {
+			return;
 		}
-
+		CacheFactory cacheManagerFactory = CacheFactory.create();
+		new DashLoaderClient().onDashLoaderInit(cacheManagerFactory);
 		CACHE = cacheManagerFactory.build(Path.of("./dashloader-cache/client/"));
 	}
 

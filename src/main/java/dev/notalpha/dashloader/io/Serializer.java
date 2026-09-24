@@ -77,7 +77,7 @@ public class Serializer<O> {
 		io.rewind();
 		try {
 
-			IOHelper.save(path, task, io, measure, ConfigHandler.INSTANCE.config.compression);
+			IOHelper.save(path, task, io, measure, ConfigHandler.instance().config.compression);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -92,3 +92,4 @@ public class Serializer<O> {
 		}
 	}
 }
+

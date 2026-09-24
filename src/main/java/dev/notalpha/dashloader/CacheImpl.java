@@ -69,7 +69,7 @@ public final class CacheImpl implements Cache {
 			Path ourDir = getDir();
 
 			// Max caches
-			int maxCaches = ConfigHandler.INSTANCE.config.maxCaches;
+			int maxCaches = ConfigHandler.instance().config.maxCaches;
 			if (maxCaches != -1) {
 				DashLoader.LOG.info("Checking for cache count.");
 				try {
@@ -219,3 +219,4 @@ public final class CacheImpl implements Cache {
 		}
 	}
 }
+

@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_8",
   "client": [
     "ModelManagerCacheMixin",
+    "ResourceLoadProgressGuiMixin",
     "SplashesCacheMixin",
     "AtlasTextureStitchMixin",
     "StitcherCaptureMixin",

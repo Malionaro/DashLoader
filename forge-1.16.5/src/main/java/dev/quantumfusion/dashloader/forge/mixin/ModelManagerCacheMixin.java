@@ -1,12 +1,8 @@
 package dev.quantumfusion.dashloader.forge.mixin;
 
-import dev.quantumfusion.dashloader.forge.DashLoaderConfig;
 import dev.quantumfusion.dashloader.forge.cache.CacheStatus;
 import dev.quantumfusion.dashloader.forge.cache.DashCacheBackend;
 import dev.quantumfusion.dashloader.forge.model.ModelModule;
-import dev.quantumfusion.dashloader.forge.ui.toast.DashToast;
-import dev.quantumfusion.dashloader.forge.ui.toast.DashToastState;
-import dev.quantumfusion.dashloader.forge.ui.toast.DashToastStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ModelBakery;
@@ -49,9 +45,10 @@ import java.util.function.Function;
  * {@code BlockStatesLoader} equivalent — so LOAD installs <em>after</em>
  * vanilla baking: at TAIL of {@code apply}, restored models overwrite the
  * {@code modelRegistry} entries (vanilla result stays as the fallback for
- * anything skipped). SAVE stages the bakery's
- * {@link ModelBakery#getTopBakedModels()} at HEAD of {@code apply} and kicks
- * off the background Gson write (with toast) once per boot.
+ * anything skipped). SAVE stages the finished {@code modelRegistry} at TAIL
+ * of {@code apply}; the background Gson write (with toast) is kicked off
+ * once per boot by {@code ResourceLoadProgressGuiMixin} at reload-complete,
+ * after every staging hook has finished.
  *
  * <p>Descriptors below match the mapped snapshot jar:
  * {@code prepare(Lnet/minecraft/resources/IResourceManager;Lnet/minecraft/profiler/IProfiler;)Lnet/minecraft/client/renderer/model/ModelBakery;}
@@ -63,12 +60,20 @@ import java.util.function.Function;
 public abstract class ModelManagerCacheMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-model");
 
+    /** Reload start (approximation): set at {@code prepare} HEAD, read by the loading-screen hook for timing logs. */
+    private static volatile long reloadStart = System.currentTimeMillis();
+
+    public static long getReloadStart() {
+        return reloadStart;
+    }
+
     @Shadow(remap = false)
     private Map<ResourceLocation, IBakedModel> modelRegistry;
 
     @Inject(method = "prepare(Lnet/minecraft/resources/IResourceManager;Lnet/minecraft/profiler/IProfiler;)Lnet/minecraft/client/renderer/model/ModelBakery;", at = @At("HEAD"), remap = false)
     private void dashloader$ensureCache(IResourceManager resourceManager, IProfiler profiler,
             CallbackInfoReturnable<ModelBakery> cir) {
+        reloadStart = System.currentTimeMillis();
         try {
             DashCacheBackend.ensureLoaded();
         } catch (Throwable t) {
@@ -122,74 +127,8 @@ public abstract class ModelManagerCacheMixin {
                 LOGGER.warn("DashLoader model install failed, keeping vanilla models.", t);
             }
         }
-
-        if (DashCacheBackend.getStatus() == CacheStatus.SAVE
-                && DashLoaderConfig.ENABLE_CACHE.get()
-                && !DashCacheBackend.isSaveStarted()) {
-            DashCacheBackend.markSaveStarted();
-            startBackgroundSave();
-        }
-    }
-
-    /**
-     * Modern {@code SplashScreenMixin} equivalent: writes the cache on a
-     * background thread while a {@link DashToast} shows progress. Must be
-     * called on the client thread (toast registration is not thread-safe).
-     */
-    private static void startBackgroundSave() {
-        final DashToastState state;
-        try {
-            Minecraft minecraft = Minecraft.getInstance();
-            if (DashLoaderConfig.SHOW_CACHING_TOAST.get()
-                    && minecraft.getToastGui().getToast(DashToast.class, net.minecraft.client.gui.toasts.IToast.NO_TOKEN) == null) {
-                DashToast toast = new DashToast();
-                minecraft.getToastGui().add(toast);
-                state = toast.state;
-            } else {
-                state = new DashToastState();
-            }
-        } catch (Throwable t) {
-            LOGGER.warn("DashLoader toast setup failed, saving without toast.", t);
-            saveWithoutToast();
-            return;
-        }
-        state.setStatus(DashToastStatus.PROGRESS);
-        state.setText("caching");
-        final Thread thread = new Thread(() -> {
-            long start = System.currentTimeMillis();
-            boolean ok;
-            try {
-                ok = DashCacheBackend.save(state);
-            } catch (Throwable t) {
-                LOGGER.error("DashLoader background save crashed.", t);
-                ok = false;
-            }
-            if (ok) {
-                state.setText("Created cache in " + (System.currentTimeMillis() - start) + "ms");
-                state.setStatus(DashToastStatus.DONE);
-            } else {
-                state.setText("Internal error, please check logs.");
-                state.setStatus(DashToastStatus.CRASHED);
-            }
-            state.setDone();
-            DashCacheBackend.reset();
-        });
-        thread.setName("dashloader-save");
-        thread.setDaemon(true);
-        thread.start();
-    }
-
-    private static void saveWithoutToast() {
-        final Thread thread = new Thread(() -> {
-            try {
-                DashCacheBackend.save(new DashToastState());
-            } catch (Throwable t) {
-                LOGGER.error("DashLoader background save crashed.", t);
-            }
-            DashCacheBackend.reset();
-        });
-        thread.setName("dashloader-save");
-        thread.setDaemon(true);
-        thread.start();
+        // Background SAVE with toast is driven by ResourceLoadProgressGuiMixin
+        // at reload-complete (modern SplashScreenMixin parity), once every
+        // staging hook has finished — not here.
     }
 }

@@ -16,8 +16,8 @@ import java.util.List;
  *   <li>Config dir: {@link FMLPaths#CONFIGDIR}</li>
  *   <li>Dev environment: inverted {@link FMLEnvironment#production}</li>
  * </ul>
- */
-public final class LoaderAdapter {
+ * @author Malionaro
+ */public final class LoaderAdapter {
 	private LoaderAdapter() {
 	}
 

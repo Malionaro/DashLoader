@@ -16,8 +16,8 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
  * <pre>{@code
  * container.registerExtensionPoint(IConfigScreenFactory.class, new DashLoaderConfigScreenFactory());
  * }</pre>
- */
-public class DashLoaderConfigScreenFactory implements IConfigScreenFactory {
+ * @author Malionaro
+ */public class DashLoaderConfigScreenFactory implements IConfigScreenFactory {
 	@Override
 	public Screen createScreen(ModContainer container, Screen modListScreen) {
 		return new ConfigScreen(modListScreen);

@@ -1,19 +1,19 @@
 package dev.notalpha.dashloader.client.sprite.content;
 
+import com.mojang.blaze3d.platform.NativeImage;
 import dev.notalpha.dashloader.api.DashObject;
 import dev.notalpha.dashloader.api.registry.RegistryReader;
 import dev.notalpha.dashloader.api.registry.RegistryWriter;
 import dev.notalpha.dashloader.misc.UnsafeHelper;
 import dev.notalpha.dashloader.mixin.accessor.SpriteContentsAccessor;
 import dev.notalpha.hyphen.scan.annotations.DataNullable;
-import net.minecraft.client.texture.MipmapStrategy;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.SpriteContents;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
+import net.minecraft.client.renderer.texture.MipmapStrategy;
+import net.minecraft.client.renderer.texture.SpriteContents;
 
 public final class DashSpriteContents implements DashObject<SpriteContents, SpriteContents> {
 	private final static Method sodiumScanMethod = getSodiumScanner();
@@ -35,28 +35,28 @@ public final class DashSpriteContents implements DashObject<SpriteContents, Spri
 
 	public DashSpriteContents(SpriteContents contents, RegistryWriter writer) {
 		var access = (SpriteContentsAccessor) contents;
-		this.id = writer.add(contents.getId());
-		this.image = writer.add(access.getImage());
-		this.width = contents.getWidth();
-		this.height = contents.getHeight();
-		SpriteContents.Animation animation = access.getAnimation();
+		this.id = writer.add(contents.name());
+		this.image = writer.add(access.getOriginalImage());
+		this.width = contents.width();
+		this.height = contents.height();
+		SpriteContents.AnimatedTexture animation = access.getAnimatedTexture();
 		this.animation = animation == null ? null : new DashSpriteAnimation(animation);
 	}
 
 	public SpriteContents export(RegistryReader reader) {
 		final SpriteContents out = UnsafeHelper.allocateInstance(SpriteContents.class);
 		var access = (SpriteContentsAccessor) out;
-		access.setId(reader.get(this.id));
+		access.setName(reader.get(this.id));
 
 		NativeImage image = reader.get(this.image);
-		access.setImage(image);
+		access.setOriginalImage(image);
 		access.setHeight(height);
 		access.setWidth(width);
-		access.setMipmapLevelsImages(new NativeImage[]{image});
-		access.setAnimation(this.animation == null ? null : animation.export(out, reader));
+		access.setByMipLevel(new NativeImage[]{image});
+		access.setAnimatedTexture(this.animation == null ? null : animation.export(out, reader));
 		access.setAdditionalMetadata(List.of());
-		access.setStrategy(MipmapStrategy.AUTO);
-		access.setCutoffBias(0.0F);
+		access.setMipmapStrategy(MipmapStrategy.AUTO);
+		access.setAlphaCutoffBias(0.0F);
 		applySodiumScanning(out, image); // run important sodium method if present
 		return out;
 	}

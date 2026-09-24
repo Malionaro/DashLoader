@@ -10,12 +10,11 @@ import dev.notalpha.dashloader.client.ui.toast.DashToastStatus;
 import dev.notalpha.dashloader.config.ConfigHandler;
 import dev.notalpha.dashloader.misc.ProfilerUtil;
 import dev.notalpha.taski.builtin.StaticTask;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.SplashOverlay;
-import net.minecraft.client.gui.screen.TitleScreen;
-import net.minecraft.client.toast.Toast;
-import net.minecraft.resource.ResourceReload;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.Toast;
+import net.minecraft.client.gui.screens.LoadingOverlay;
+import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.server.packs.resources.ReloadInstance;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -24,40 +23,40 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = SplashOverlay.class, priority = 69420)
+@Mixin(value = LoadingOverlay.class, priority = 69420)
 public class SplashScreenMixin {
 	@Shadow
 	@Final
-	private MinecraftClient client;
+	private Minecraft minecraft;
 	@Shadow
-	private long reloadCompleteTime;
+	private long fadeOutStart;
 	@Shadow
 	@Final
-	private ResourceReload reload;
+	private ReloadInstance reload;
 	@Mutable
 	@Shadow
 	@Final
-	private boolean reloading;
+	private boolean fadeIn;
 
 	@Inject(
 			method = "tick",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J", shift = At.Shift.AFTER)
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMillis()J", shift = At.Shift.AFTER)
 	)
 	private void done(CallbackInfo ci) {
-		this.client.setOverlay(null);
-		if (this.client.currentScreen != null) {
-  			if (this.client.currentScreen instanceof TitleScreen) {
-  				this.client.currentScreen = new TitleScreen(false);
+		this.minecraft.setOverlay(null);
+		if (this.minecraft.screen != null) {
+  			if (this.minecraft.screen instanceof TitleScreen) {
+  				this.minecraft.screen = new TitleScreen(false);
   			}
 		}
 
 		DashLoader.LOG.info("Minecraft reloaded in {}", ProfilerUtil.getTimeStringFromStart(ProfilerUtil.RELOAD_START));
 		Cache cache = DashLoaderClient.CACHE;
-		if (DashLoaderClient.CACHE.getStatus() == CacheStatus.SAVE && client.getToastManager().getToast(DashToast.class, Toast.TYPE) == null) {
+		if (DashLoaderClient.CACHE.getStatus() == CacheStatus.SAVE && minecraft.getToastManager().getToast(DashToast.class, Toast.NO_TOKEN) == null) {
 			DashToastState rawState;
-			if (ConfigHandler.INSTANCE.config.showCachingToast) {
+			if (ConfigHandler.instance().config.showCachingToast) {
 				DashToast toast = new DashToast();
-				client.getToastManager().add(toast);
+				minecraft.getToastManager().addToast(toast);
 				rawState = toast.state;
 			} else {
 				rawState = new DashToastState();
@@ -74,9 +73,9 @@ public class SplashScreenMixin {
 					state.setStatus(DashToastStatus.DONE);
 				} else {
 					// Only show toast on fail.
-					if (!ConfigHandler.INSTANCE.config.showCachingToast) {
+					if (!ConfigHandler.instance().config.showCachingToast) {
 						DashToast toast = new DashToast();
-						client.getToastManager().add(toast);
+						minecraft.getToastManager().addToast(toast);
 						state = toast.state;
 					}
 					state.setOverwriteText("Internal error, Please check logs.");

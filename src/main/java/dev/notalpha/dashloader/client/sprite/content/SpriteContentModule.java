@@ -11,11 +11,10 @@ import dev.notalpha.dashloader.api.registry.RegistryWriter;
 import dev.notalpha.dashloader.config.ConfigHandler;
 import dev.notalpha.dashloader.config.Option;
 import dev.notalpha.taski.builtin.StepTask;
-import net.minecraft.client.texture.SpriteContents;
-import net.minecraft.util.Identifier;
-
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.client.renderer.texture.SpriteContents;
+import net.minecraft.resources.Identifier;
 
 public class SpriteContentModule implements DashModule<SpriteContentModule.Data> {
 	public final static CachingData<Map<Identifier, SpriteContents>> SOURCE = new CachingData<>();

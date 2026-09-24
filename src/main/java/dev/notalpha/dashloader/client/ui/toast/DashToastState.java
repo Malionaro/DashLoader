@@ -6,7 +6,7 @@ import dev.notalpha.taski.ParentTask;
 import dev.notalpha.taski.Task;
 import dev.notalpha.taski.builtin.AbstractTask;
 import dev.notalpha.taski.builtin.StaticTask;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 public final class DashToastState {
 	private final TranslationHelper translations;
@@ -18,7 +18,7 @@ public final class DashToastState {
 	private long timeDone = System.currentTimeMillis();
 
 	public DashToastState() {
-		var langCode = MinecraftClient.getInstance().getLanguageManager().getLanguage();
+		var langCode = Minecraft.getInstance().getLanguageManager().getSelected();
 		DashLoader.LOG.info(langCode);
 		this.translations = TranslationHelper.getInstance();
 	}

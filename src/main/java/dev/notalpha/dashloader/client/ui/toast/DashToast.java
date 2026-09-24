@@ -3,16 +3,16 @@ package dev.notalpha.dashloader.client.ui.toast;
 import dev.notalpha.dashloader.client.ui.Color;
 import dev.notalpha.dashloader.client.ui.DrawerUtil;
 import dev.notalpha.dashloader.misc.HahaManager;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.toast.Toast;
-import net.minecraft.client.toast.ToastManager;
-import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.toasts.Toast;
+import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.util.Mth;
 
 public class DashToast implements Toast {
 	private static final int PROGRESS_BAR_HEIGHT = 2;
@@ -36,16 +36,16 @@ public class DashToast implements Toast {
 		}
 	}
 
-	public int getWidth() {
+	public int width() {
 		return 200;
 	}
 
-	public int getHeight() {
+	public int height() {
 		return 40;
 	}
 
 	@Override
-	public Visibility getVisibility() {
+	public Visibility getWantedVisibility() {
 		return visibility;
 	}
 
@@ -70,9 +70,9 @@ public class DashToast implements Toast {
 	}
 
 	@Override
-	public void draw(DrawContext context, TextRenderer textRenderer, long startTime) {
-		final int width = this.getWidth();
-		final int height = this.getHeight();
+	public void render(GuiGraphics context, Font textRenderer, long startTime) {
+		final int width = this.width();
+		final int height = this.height();
 		final int barY = height - PROGRESS_BAR_HEIGHT;
 
 		// Tick progress
@@ -100,13 +100,13 @@ public class DashToast implements Toast {
 
 		// Draw progress text
 		String progressText = this.state.getProgressText();
-		int progressTextY = this.fact != null ? barY - PADDING : (barY / 2) + (textRenderer.fontHeight / 2);
+		int progressTextY = this.fact != null ? barY - PADDING : (barY / 2) + (textRenderer.lineHeight / 2);
 		DrawerUtil.drawText(context, textRenderer, PADDING, progressTextY, this.state.getText(), DrawerUtil.STATUS_COLOR);
-		DrawerUtil.drawText(context, textRenderer, (width - PADDING) - textRenderer.getWidth(progressText), progressTextY, progressText, DrawerUtil.STATUS_COLOR);
+		DrawerUtil.drawText(context, textRenderer, (width - PADDING) - textRenderer.width(progressText), progressTextY, progressText, DrawerUtil.STATUS_COLOR);
 
 		if (this.fact != null) {
 			// Draw the fun fact
-			DrawerUtil.drawText(context, textRenderer, PADDING, textRenderer.fontHeight + PADDING, this.fact, DrawerUtil.FOREGROUND_COLOR);
+			DrawerUtil.drawText(context, textRenderer, PADDING, textRenderer.lineHeight + PADDING, this.fact, DrawerUtil.FOREGROUND_COLOR);
 		}
 
 		// Draw progress bar
@@ -190,11 +190,11 @@ public class DashToast implements Toast {
 			return false;
 		}
 
-		public void draw(DrawContext context) {
+		public void draw(GuiGraphics context) {
 			DrawerUtil.drawRect(context, (int) x, (int) y, width, height, color);
 		}
 
-		public void drawGlow(DrawContext context, int clipWidth, int clipHeight) {
+		public void drawGlow(GuiGraphics context, int clipWidth, int clipHeight) {
 			if (this.colorKind != ColorKind.Neutral) {
 				DrawerUtil.drawGlowClipped(context, x, y, width, height, (getWeight() + 2.0f) / 3.0f, this.color, false, true, false, true, 0, 0, clipWidth, clipHeight);
 			}
@@ -213,7 +213,7 @@ public class DashToast implements Toast {
 				case Crashed -> DrawerUtil.FAILED_COLOR;
 			};
 
-			return DrawerUtil.withOpacity(color, MathHelper.clamp(((this.x) / (this.width)), 0.0f, 1.0f));
+			return DrawerUtil.withOpacity(color, Mth.clamp(((this.x) / (this.width)), 0.0f, 1.0f));
 		}
 
 		public float getWeight() {

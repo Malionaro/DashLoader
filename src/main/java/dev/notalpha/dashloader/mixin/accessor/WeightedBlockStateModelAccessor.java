@@ -1,13 +1,13 @@
 package dev.notalpha.dashloader.mixin.accessor;
 
-import net.minecraft.client.render.model.WeightedBlockStateModel;
-import net.minecraft.client.render.model.BlockStateModel;
-import net.minecraft.util.collection.WeightedPool;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.resources.model.WeightedVariants;
+import net.minecraft.util.random.WeightedList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(WeightedBlockStateModel.class)
+@Mixin(WeightedVariants.class)
 public interface WeightedBlockStateModelAccessor {
-	@Accessor("models")
-	WeightedPool<BlockStateModel> getModels();
+	@Accessor("list")
+	WeightedList<BlockStateModel> getModels();
 }

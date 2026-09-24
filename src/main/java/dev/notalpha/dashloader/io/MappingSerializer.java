@@ -87,7 +87,7 @@ public class MappingSerializer {
 
 		try {
 			io.rewind();
-			IOHelper.save(path, new StepTask(""), io, measure, ConfigHandler.INSTANCE.config.compression);
+			IOHelper.save(path, new StepTask(""), io, measure, ConfigHandler.instance().config.compression);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

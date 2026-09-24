@@ -5,13 +5,13 @@ import dev.notalpha.dashloader.api.registry.RegistryReader;
 import dev.notalpha.dashloader.api.registry.RegistryWriter;
 import dev.notalpha.dashloader.client.Dazy;
 import dev.notalpha.dashloader.client.sprite.content.DashSprite;
-import net.minecraft.client.render.model.BakedQuad;
-import net.minecraft.client.render.model.ErrorCollectingSpriteGetter;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.util.math.Direction;
 import org.joml.Vector3f;
 
 import java.util.Arrays;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.core.Direction;
 
 public final class DashBakedQuad implements DashObject<BakedQuad, DashBakedQuad.DazyImpl> {
 	public final float[] positions;
@@ -42,7 +42,7 @@ public final class DashBakedQuad implements DashObject<BakedQuad, DashBakedQuad.
 		};
 		this.uvs = new long[]{bakedQuad.packedUV0(), bakedQuad.packedUV1(), bakedQuad.packedUV2(), bakedQuad.packedUV3()};
 		this.colorIndex = bakedQuad.tintIndex();
-		this.face = bakedQuad.face();
+		this.face = bakedQuad.direction();
 		this.shade = bakedQuad.shade();
 		this.sprite = writer.add(bakedQuad.sprite());
 		this.lightEmission = bakedQuad.lightEmission();
@@ -100,8 +100,8 @@ public final class DashBakedQuad implements DashObject<BakedQuad, DashBakedQuad.
 		}
 
 		@Override
-		protected BakedQuad resolve(ErrorCollectingSpriteGetter spriteLoader) {
-			Sprite sprite = this.sprite.get(spriteLoader);
+		protected BakedQuad resolve(SpriteGetter spriteLoader) {
+			TextureAtlasSprite sprite = this.sprite.get(spriteLoader);
 			return new BakedQuad(
 					new Vector3f(positions[0], positions[1], positions[2]),
 					new Vector3f(positions[3], positions[4], positions[5]),

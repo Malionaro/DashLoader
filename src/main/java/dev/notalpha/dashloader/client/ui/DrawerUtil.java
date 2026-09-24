@@ -1,8 +1,8 @@
 package dev.notalpha.dashloader.client.ui;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 
 public class DrawerUtil {
 	public static final float GLOW_SIZE = 30f;
@@ -20,22 +20,22 @@ public class DrawerUtil {
 			new Color(0xa9, 0xdc, 0x76)
 	};
 
-	public static void drawRect(DrawContext context, int x, int y, int width, int height, Color color) {
+	public static void drawRect(GuiGraphics context, int x, int y, int width, int height, Color color) {
 		final int x2 = width + x;
 		final int y2 = height + y;
 		context.fill(x, y, x2, y2, color.argb());
 	}
 
-	public static void drawText(DrawContext context, TextRenderer textRenderer, int x, int y, String text, Color color) {
-		context.drawTextWithShadow(textRenderer, Text.of(text), x, y - (textRenderer.fontHeight), color.argb());
+	public static void drawText(GuiGraphics context, Font textRenderer, int x, int y, String text, Color color) {
+		context.drawString(textRenderer, Component.nullToEmpty(text), x, y - (textRenderer.lineHeight), color.argb());
 	}
 
 	/**
 	 * Flat approximation of the old vertex glow: nested expanding rects with
-	 * decreasing opacity. Uses only high-level {@link DrawContext} calls so it
+	 * decreasing opacity. Uses only high-level {@link GuiGraphics} calls so it
 	 * survives the 1.21.6 render rewrite (no more immediate mode).
 	 */
-	public static void drawGlow(DrawContext context, float x, float y, float width, float height, float strength, Color color, boolean topLeft, boolean topRight, boolean bottomLeft, boolean bottomRight) {
+	public static void drawGlow(GuiGraphics context, float x, float y, float width, float height, float strength, Color color, boolean topLeft, boolean topRight, boolean bottomLeft, boolean bottomRight) {
 		drawGlowClipped(context, x, y, width, height, strength, color, topLeft, topRight, bottomLeft, bottomRight,
 				(int) x - (int) GLOW_SIZE - 1, (int) y - (int) GLOW_SIZE - 1,
 				(int) width + (int) (GLOW_SIZE * 2) + 2, (int) height + (int) (GLOW_SIZE * 2) + 2);
@@ -45,7 +45,7 @@ public class DrawerUtil {
 	 * Flat glow approximation clipped to a bounding box, so it never paints
 	 * outside its widget (there is no scissor on the toast path).
 	 */
-	public static void drawGlowClipped(DrawContext context, float x, float y, float width, float height, float strength, Color color,
+	public static void drawGlowClipped(GuiGraphics context, float x, float y, float width, float height, float strength, Color color,
 	                                   boolean topLeft, boolean topRight, boolean bottomLeft, boolean bottomRight,
 	                                   int clipX, int clipY, int clipWidth, int clipHeight) {
 		if (!topLeft && !topRight && !bottomLeft && !bottomRight) {

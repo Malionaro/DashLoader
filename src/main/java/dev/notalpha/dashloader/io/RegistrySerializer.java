@@ -41,12 +41,24 @@ public class RegistrySerializer {
 		this.serializers = new Object2ObjectOpenHashMap<>();
 		for (DashObjectClass<?, ?> dashObject : dashObjects) {
 			Class<?> dashClass = dashObject.getDashClass();
-			this.serializers.put(dashClass, new Serializer<>(dashClass));
+			try {
+				this.serializers.put(dashClass, new Serializer<>(dashClass));
+			} catch (RuntimeException e) {
+				// A single unscannable DashObject (e.g. vanilla types with
+				// non-public constructors like Unihex IntContents on NeoForge)
+				// must never kill the whole cache. Data of this type is
+				// skipped at save time via the usual per-entry fallbacks.
+				DashLoader.LOG.error("Could not create serializer for {}, data of this type will be skipped.", dashClass.getName(), e);
+			}
 		}
 	}
 
 	public <D extends DashObject<?, ?>> Serializer<D> getSerializer(DashObjectClass<?, D> dashObject) {
-		return (Serializer<D>) this.serializers.get(dashObject.getDashClass());
+		Serializer<?> serializer = this.serializers.get(dashObject.getDashClass());
+		if (serializer == null) {
+			throw new RuntimeException("No serializer for " + dashObject.getDashClass().getName() + " (scanning failed, see log above)");
+		}
+		return (Serializer<D>) serializer;
 	}
 
 	public CacheInfo serialize(Path dir, RegistryWriterImpl factory, Consumer<Task> taskConsumer) throws IOException {
@@ -139,7 +151,7 @@ public class RegistrySerializer {
 			task.setSubTask(serializingTask);
 
 			int fileSize = (int) fragment.info.fileSize;
-			IOHelper.save(fragmentFilePath(dir, k), serializingTask, io, fileSize, ConfigHandler.INSTANCE.config.compression);
+			IOHelper.save(fragmentFilePath(dir, k), serializingTask, io, fileSize, ConfigHandler.instance().config.compression);
 			task.next();
 		}
 
@@ -184,7 +196,7 @@ public class RegistrySerializer {
 			});
 		}
 
-		if (ConfigHandler.INSTANCE.config.singleThreadedReading) {
+		if (ConfigHandler.instance().config.singleThreadedReading) {
 			for (Runnable runnable : runnables) {
 				runnable.run();
 			}

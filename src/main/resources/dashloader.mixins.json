@@ -2,7 +2,6 @@
   "required": true,
   "minVersion": "0.8",
   "package": "dev.notalpha.dashloader.mixin",
-  "plugin": "dev.notalpha.dashloader.mixin.MixinPlugin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "accessor.BitmapFontAccessor",
@@ -19,9 +18,7 @@
     "accessor.UnihexFontAccessor",
     "accessor.ZipResourcePackAccessor",
     "accessor.ZipWrapperResourcePackAccessor",
-    "main.BootstrapMixin",
     "main.KeyboardMixin",
-    "main.MainMixin",
     "main.MinecraftClientMixin",
     "main.ReloadableResourceManagerImplMixin",
     "main.SplashScreenMixin",

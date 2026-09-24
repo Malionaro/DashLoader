@@ -5,19 +5,18 @@ import dev.notalpha.dashloader.api.registry.RegistryReader;
 import dev.notalpha.dashloader.api.registry.RegistryWriter;
 import dev.notalpha.dashloader.client.Dazy;
 import dev.notalpha.dashloader.client.sprite.content.DashSprite;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.render.model.BakedQuad;
-import net.minecraft.client.render.model.Baker;
-import net.minecraft.client.render.model.BlockModelPart;
-import net.minecraft.client.render.model.BlockStateModel;
-import net.minecraft.client.render.model.ErrorCollectingSpriteGetter;
-import net.minecraft.client.render.model.ResolvableModel;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.util.math.random.Random;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Cached form of a {@link BlockStateModel} (1.21.5+ model system).
@@ -37,12 +36,12 @@ public final class DashBlockStateModel implements DashObject<BlockStateModel, Da
 
 	public DashBlockStateModel(BlockStateModel model, RegistryWriter writer) {
 		List<BlockModelPart> collected = new ArrayList<>();
-		model.addParts(Random.create(), collected);
+		model.collectParts(RandomSource.create(), collected);
 		this.parts = new ArrayList<>(collected.size());
 		for (BlockModelPart part : collected) {
 			this.parts.add(writer.add(part));
 		}
-		this.sprite = writer.add(model.particleSprite());
+		this.sprite = writer.add(model.particleIcon());
 	}
 
 	@Override
@@ -82,7 +81,7 @@ public final class DashBlockStateModel implements DashObject<BlockStateModel, Da
 		}
 
 		@Override
-		protected BlockStateModel resolve(ErrorCollectingSpriteGetter spriteLoader) {
+		protected BlockStateModel resolve(SpriteGetter spriteLoader) {
 			List<BlockModelPart> partsOut = new ArrayList<>(this.parts.size());
 			for (DashBlockModelPart.DazyImpl part : this.parts) {
 				partsOut.add(part.get(spriteLoader));
@@ -93,20 +92,20 @@ public final class DashBlockStateModel implements DashObject<BlockStateModel, Da
 		/** Direct {@link BlockStateModel} implementation backed by cached data. */
 		public static final class Impl implements BlockStateModel {
 			private final List<BlockModelPart> parts;
-			private final Sprite sprite;
+			private final TextureAtlasSprite sprite;
 
-			public Impl(List<BlockModelPart> parts, Sprite sprite) {
+			public Impl(List<BlockModelPart> parts, TextureAtlasSprite sprite) {
 				this.parts = parts;
 				this.sprite = sprite;
 			}
 
 			@Override
-			public void addParts(Random random, List<BlockModelPart> parts) {
+			public void collectParts(RandomSource random, List<BlockModelPart> parts) {
 				parts.addAll(this.parts);
 			}
 
 			@Override
-			public Sprite particleSprite() {
+			public TextureAtlasSprite particleIcon() {
 				return this.sprite;
 			}
 
@@ -126,10 +125,10 @@ public final class DashBlockStateModel implements DashObject<BlockStateModel, Da
 	}
 
 	/**
-	 * {@link BlockStateModel.UnbakedGrouped} wrapper used to inject cached models
+	 * {@link BlockStateModel.UnbakedRoot} wrapper used to inject cached models
 	 * into the vanilla bake pipeline on LOAD ({@link BlockStatesLoader} shortcut).
 	 */
-	public static final class DashUnbakedGrouped implements BlockStateModel.UnbakedGrouped {
+	public static final class DashUnbakedGrouped implements BlockStateModel.UnbakedRoot {
 		private final Dazy<? extends BlockStateModel> model;
 
 		public DashUnbakedGrouped(Dazy<? extends BlockStateModel> model) {
@@ -137,24 +136,24 @@ public final class DashBlockStateModel implements DashObject<BlockStateModel, Da
 		}
 
 		@Override
-		public BlockStateModel bake(BlockState state, Baker baker) {
-			return this.model.get(baker.getSpriteGetter());
+		public BlockStateModel bake(BlockState state, ModelBaker baker) {
+			return this.model.get(baker.sprites());
 		}
 
 		@Override
-		public Object getEqualityGroup(BlockState state) {
+		public Object visualEqualityGroup(BlockState state) {
 			return state;
 		}
 
 		@Override
-		public void resolve(ResolvableModel.Resolver resolver) {
+		public void resolveDependencies(ResolvableModel.Resolver resolver) {
 		}
 	}
 
 	/** Resolves {@link BakedQuad}s eagerly; used only for equality checks, never stored. */
 	public static List<BakedQuad> collectQuads(BlockStateModel model) {
 		List<BlockModelPart> parts = new ArrayList<>();
-		model.addParts(Random.create(), parts);
+		model.collectParts(RandomSource.create(), parts);
 		List<BakedQuad> out = new ArrayList<>();
 		for (BlockModelPart part : parts) {
 			out.addAll(part.getQuads(null));

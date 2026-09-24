@@ -1,0 +1,110 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.16', changing: true
+    }
+}
+apply plugin: 'net.minecraftforge.gradle'
+// Only edit below this line, the above lines are required for ForgeGradle.
+apply plugin: 'java'
+
+version = '1.0.0-wip'
+group = 'dev.quantumfusion.dashloader'
+archivesBaseName = 'dashloader-forge-1.16.5'
+
+// Forge 1.16.5 targets Java 8. Gradle itself must run on Java 8-16
+// (see gradle.properties: org.gradle.java.home), NOT on Java 17+.
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+
+minecraft {
+    // NOTE (2026-09-24 spike): 'official' (Mojang) names would be closest to
+    // modern yarn/mojmap, but the official mapping pipeline for 1.16.5 does
+    // not complete in this environment (a previous attempt also left only a
+    // .pom with no mapped jar in minecraft_user_repo). snapshot_20210309 is
+    // fully cached and proven to work here, so the skeleton uses MCP names.
+    // Revisit official_1.16.5 if the pipeline issue is ever diagnosed.
+    //   mappings channel: 'official', version: '1.16.5'
+    mappings channel: 'snapshot', version: '20210309-1.16.5'
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                dashloader {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                dashloader {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+// Example: add a dependency (Jei, Patchouli, ...) if the vertical slice needs one.
+// dependencies {
+//     minecraft 'net.minecraftforge:forge:1.16.5-36.2.42'
+// }
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.16.5-36.2.42'
+}
+
+// Example configuration to allow publishing using the maven-publish task.
+// This is an example of using the maven-publish plugin to publish your mod to a
+// maven repository. It is not required, and you can remove this block if you
+// do not intend to publish.
+// https://docs.gradle.org/current/userguide/publishing_maven.html
+// tasks.withType(PublishToMavenLocal).configureEach {
+//     dependsOn 'reobfJar'
+// }
+
+processResources {
+    // this will ensure that this task is redone when the versions change.
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', '1.16.5'
+
+    // replace stuff in mods.toml / pack.mcmeta, nothing else.
+    // NOTE: filesMatching needs one pattern per call (a List arg matches nothing).
+    filesMatching('META-INF/mods.toml') {
+        expand 'version': project.version, 'mcversion': '1.16.5'
+    }
+    filesMatching('pack.mcmeta') {
+        expand 'version': project.version, 'mcversion': '1.16.5'
+    }
+}
+
+// Example configuration to allow publishing using the maven-publish task
+jar {
+    // the manifest is read by ForgeGradle; the 'Automatic-Module-Name' etc.
+    // entries below follow the 1.16.5 MDK defaults.
+    manifest {
+        attributes([
+            'Specification-Title'     : 'dashloader',
+            'Specification-Vendor'    : 'quantumfusion',
+            'Specification-Version'   : '1', // We are version 1 of ourselves
+            'Implementation-Title'    : project.name,
+            'Implementation-Version'  : project.jar.archiveVersion,
+            'Implementation-Vendor'   : 'quantumfusion',
+            'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+    // Reobfuscation is handled by the 'reobfJar' task; include it in archives.
+    finalizedBy 'reobfJar'
+}

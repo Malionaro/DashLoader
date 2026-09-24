@@ -31,3 +31,6 @@ bin/
 
 # Ignore Gradle build output directory
 build
+
+# Forge run directory (client/server test runs)
+/run/

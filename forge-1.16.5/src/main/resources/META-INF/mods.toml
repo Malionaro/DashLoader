@@ -1,0 +1,24 @@
+modLoader="javafml"
+loaderVersion="[36,)"
+license="MIT"
+
+[[mods]]
+modId="dashloader"
+version="${version}"
+displayName="DashLoader (Forge 1.16.5 port, WIP skeleton)"
+authors="QuantumFusion"
+description="WIP skeleton for a DashLoader Forge 1.16.5 port. No caching features yet."
+
+[[dependencies.dashloader]]
+modId="forge"
+mandatory=true
+versionRange="[36,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.dashloader]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.16.5,1.17)"
+ordering="NONE"
+side="BOTH"

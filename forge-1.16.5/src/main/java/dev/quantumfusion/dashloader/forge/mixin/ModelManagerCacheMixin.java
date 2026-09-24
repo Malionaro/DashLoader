@@ -115,6 +115,12 @@ public abstract class ModelManagerCacheMixin {
                 Map<ResourceLocation, IBakedModel> restored = ModelModule.buildLoadedModels(sprites);
                 int replaced = 0;
                 for (Map.Entry<ResourceLocation, IBakedModel> entry : restored.entrySet()) {
+                    // Synthetic inline part ids only exist for reference
+                    // resolution (multipart components); they are not real
+                    // registry entries.
+                    if (ModelModule.isSyntheticKey(entry.getKey())) {
+                        continue;
+                    }
                     try {
                         modelRegistry.put(entry.getKey(), entry.getValue());
                         replaced++;

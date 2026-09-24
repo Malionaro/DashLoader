@@ -11,13 +11,25 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import dev.quantumfusion.dashloader.forge.mixin.accessor.AndConditionAccessor;
+import dev.quantumfusion.dashloader.forge.mixin.accessor.OrConditionAccessor;
+import dev.quantumfusion.dashloader.forge.mixin.accessor.PropertyValueConditionAccessor;
+import dev.quantumfusion.dashloader.forge.mixin.accessor.SelectorAccessor;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.model.ItemTransformVec3f;
+import net.minecraft.client.renderer.model.VariantList;
+import net.minecraft.client.renderer.model.multipart.AndCondition;
+import net.minecraft.client.renderer.model.multipart.ICondition;
+import net.minecraft.client.renderer.model.multipart.OrCondition;
+import net.minecraft.client.renderer.model.multipart.PropertyValueCondition;
 import net.minecraft.client.renderer.model.multipart.Selector;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector3f;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Shared Gson instance for the Forge 1.16.5 cache backend.
@@ -42,13 +54,16 @@ import java.lang.reflect.Type;
  *       gui, ground, fixed}, each with {@code rotation/translation/scale}
  *       {@link Vector3f}s) written as float triples and rebuilt with the
  *       8-arg constructor.</li>
- *   <li>{@link Selector} — explicitly unsupported: predicates are arbitrary
- *       lambdas and the unbaked condition tree ({@code ICondition}
- *       implementations) has no stable serialized form. The adapter throws
- *       loudly if ever invoked; in practice it never is because
- *       {@code ModelModule} defers multipart models to the missing list
- *       (vanilla fallback), so multipart maps are always empty. See
- *       {@code PORTING_NOTES.md}.</li>
+ *   <li>{@link Selector} — the unbaked condition tree ({@code AndCondition} /
+ *       {@code OrCondition} / {@code PropertyValueCondition} /
+ *       {@code TRUE} / {@code FALSE}, read via the condition accessor
+ *       mixins) written as tagged JSON objects; predicates are arbitrary
+ *       lambdas and are rebuilt via {@code Selector#getPredicate} on LOAD,
+ *       so only the tree is stored. The part-model {@code VariantList} is
+ *       likewise bake-time only (the baked part is cached separately), so a
+ *       deserialized selector carries an empty one. Unknown (modded)
+ *       {@code ICondition} implementations fail loudly instead of
+ *       corrupting the cache.</li>
  * </ul>
  *
  * <p>{@link net.minecraft.util.Direction} (enum) and all primitive/collection
@@ -62,7 +77,7 @@ public final class CacheGson {
         return new GsonBuilder()
                 .registerTypeAdapter(ResourceLocation.class, new ResourceLocationAdapter())
                 .registerTypeAdapter(ItemCameraTransforms.class, new ItemCameraTransformsAdapter())
-                .registerTypeAdapter(Selector.class, new UnsupportedSelectorAdapter())
+                .registerTypeAdapter(Selector.class, new SelectorAdapter())
                 .setPrettyPrinting()
                 .disableHtmlEscaping()
                 .create();
@@ -173,23 +188,95 @@ public final class CacheGson {
     }
 
     /**
-     * PERMANENT partial skip (see {@code PORTING_NOTES.md}): unbaked
-     * multipart {@code Selector}s cannot be serialized on this toolchain.
-     * Never invoked for empty multipart maps; fails loudly otherwise.
+     * Serializes unbaked multipart {@link Selector}s as their condition
+     * tree. Only vanilla {@code ICondition} implementations are supported
+     * (anything else throws loudly — a corrupt cache entry is worse than a
+     * vanilla fallback).
      */
-    private static final class UnsupportedSelectorAdapter
+    private static final class SelectorAdapter
             implements JsonSerializer<Selector>, JsonDeserializer<Selector> {
         @Override
         public JsonElement serialize(Selector src, Type typeOfSrc, JsonSerializationContext context) {
-            throw new UnsupportedOperationException(
-                    "Multipart Selector serialization is unsupported on 1.16.5 (see PORTING_NOTES.md).");
+            if (src == null) {
+                return null;
+            }
+            JsonObject out = new JsonObject();
+            out.add("condition", writeCondition(((SelectorAccessor) src).getCondition()));
+            return out;
         }
 
         @Override
         public Selector deserialize(JsonElement json, Type typeOfT,
                 JsonDeserializationContext context) throws JsonParseException {
-            throw new JsonParseException(
-                    "Multipart Selector deserialization is unsupported on 1.16.5 (see PORTING_NOTES.md).");
+            if (json == null || json.isJsonNull()) {
+                return null;
+            }
+            ICondition condition = readCondition(json.getAsJsonObject().get("condition"));
+            // The VariantList is bake-time only (the baked part model is
+            // cached separately), so restored selectors carry an empty one;
+            // only the condition tree is used (via getPredicate) on LOAD.
+            return new Selector(condition, new VariantList(Collections.emptyList()));
+        }
+
+        private static JsonObject writeCondition(ICondition condition) {
+            JsonObject out = new JsonObject();
+            if (condition == null || condition == ICondition.TRUE) {
+                out.addProperty("type", "true");
+            } else if (condition == ICondition.FALSE) {
+                out.addProperty("type", "false");
+            } else if (condition instanceof PropertyValueCondition) {
+                PropertyValueConditionAccessor access = (PropertyValueConditionAccessor) condition;
+                out.addProperty("type", "property");
+                out.addProperty("key", access.getKey());
+                out.addProperty("value", access.getValue());
+            } else if (condition instanceof AndCondition) {
+                out.addProperty("type", "and");
+                JsonArray values = new JsonArray();
+                for (ICondition sub : ((AndConditionAccessor) condition).getConditions()) {
+                    values.add(writeCondition(sub));
+                }
+                out.add("values", values);
+            } else if (condition instanceof OrCondition) {
+                out.addProperty("type", "or");
+                JsonArray values = new JsonArray();
+                for (ICondition sub : ((OrConditionAccessor) condition).getConditions()) {
+                    values.add(writeCondition(sub));
+                }
+                out.add("values", values);
+            } else {
+                throw new UnsupportedOperationException(
+                        "Unsupported multipart condition: " + condition.getClass().getName());
+            }
+            return out;
+        }
+
+        private static ICondition readCondition(JsonElement json) {
+            if (json == null || json.isJsonNull()) {
+                return ICondition.TRUE;
+            }
+            JsonObject obj = json.getAsJsonObject();
+            String type = obj.has("type") ? obj.get("type").getAsString() : "true";
+            if ("true".equals(type)) {
+                return ICondition.TRUE;
+            } else if ("false".equals(type)) {
+                return ICondition.FALSE;
+            } else if ("property".equals(type)) {
+                return new PropertyValueCondition(
+                        obj.get("key").getAsString(), obj.get("value").getAsString());
+            } else if ("and".equals(type)) {
+                return new AndCondition(readConditionList(obj.getAsJsonArray("values")));
+            } else if ("or".equals(type)) {
+                return new OrCondition(readConditionList(obj.getAsJsonArray("values")));
+            }
+            throw new JsonParseException("Unknown multipart condition type: " + type);
+        }
+
+        private static List<ICondition> readConditionList(JsonArray values) {
+            List<ICondition> out = new ArrayList<>(values.size());
+            for (JsonElement element : values) {
+                out.add(readCondition(element));
+            }
+            return out;
         }
     }
 }

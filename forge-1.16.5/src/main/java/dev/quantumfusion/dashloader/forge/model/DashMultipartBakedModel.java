@@ -50,8 +50,10 @@ import java.util.function.Predicate;
  *
  * <p>Saving needs the unbaked {@link Selector} list alongside the baked
  * model (same requirement as modern, which keeps the
- * {@code MULTIPART_PREDICATES} map for this). Wiring that map to the 1.16.5
- * baking path is a documented TODO in {@link ModelModule}.
+ * {@code MULTIPART_PREDICATES} map for this). That map is
+ * {@link ModelModule#SAVE_MULTIPART}, populated by
+ * {@code MultipartBakeMixin} from the 1.16.5 baking path; models without
+ * staged selectors (e.g. replaced post-bake) fall back to vanilla.
  */
 public final class DashMultipartBakedModel {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-model");
@@ -129,7 +131,7 @@ public final class DashMultipartBakedModel {
     /** Serializable component: model-id string + unbaked selector + owner id. */
     public static final class Component {
         public final String model;
-        /** Runtime unbaked object — serialization of selectors is a cache-backend TODO. */
+        /** Unbaked condition tree — serialized by the {@code CacheGson} selector adapter. */
         public final Selector selector;
         public final ResourceLocation stateOwner;
 

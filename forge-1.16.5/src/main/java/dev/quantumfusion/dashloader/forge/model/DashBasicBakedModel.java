@@ -142,27 +142,16 @@ public final class DashBasicBakedModel {
         if (vanilla == null || vanilla.isEmpty()) {
             return out;
         }
-        List<IBakedModel> bakedTargets;
-        try {
-            bakedTargets = ((ItemOverrideListAccessor) list).getOverrideBakedModels();
-        } catch (Throwable t) {
-            LOGGER.debug("Skipping overrides: no baked-target accessor.", t);
-            return out;
-        }
         for (int i = 0; i < vanilla.size(); i++) {
             ItemOverride override = vanilla.get(i);
-            IBakedModel target = bakedTargets != null && i < bakedTargets.size() ? bakedTargets.get(i) : null;
-            if (override == null || target == null) {
+            if (override == null || override.getLocation() == null) {
                 continue;
             }
-            String targetId;
-            try {
-                targetId = modelIds.apply(target);
-            } catch (RuntimeException e) {
-                LOGGER.warn("Skipping override target not in cache ({}): {}",
-                        override.getLocation(), e.getMessage());
-                continue;
-            }
+            // Target id comes straight from the override (verified via javap:
+            // getLocation() returns the model field), no instance-identity
+            // lookup: baked override targets are often copies, not registry
+            // instances, so identity matching misses them.
+            String targetId = override.getLocation().toString();
             Map<ResourceLocation, Float> predicates;
             try {
                 predicates = ((ItemOverrideAccessor) override).getPredicateMap();

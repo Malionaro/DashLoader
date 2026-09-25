@@ -83,7 +83,12 @@ public class DashTextureStitcher extends Stitcher {
         }
         remainingSlots -= 1;
         slot.contents = info;
-        if (slot.width != info.getSpriteWidth() || slot.height != info.getSpriteHeight()) {
+        // Changed-dimensions check on SOURCE dims (Info size). Packed slot
+        // dims differ for animated strips (packed height = source x frames),
+        // so packed-vs-source always falls back for entity sprites.
+        int expectedWidth = slot.sourceWidth > 0 ? slot.sourceWidth : slot.width;
+        int expectedHeight = slot.sourceHeight > 0 ? slot.sourceHeight : slot.height;
+        if (expectedWidth != info.getSpriteWidth() || expectedHeight != info.getSpriteHeight()) {
             LOGGER.warn("Sprite {} changed dimensions since last launch, falling back.", id);
             doFallback();
         }
@@ -136,15 +141,26 @@ public class DashTextureStitcher extends Stitcher {
         public TextureAtlasSprite.Info contents;
         public final int x;
         public final int y;
+        /** Packed dims for {@code ISpriteLoader#load}. */
         public final int width;
         public final int height;
+        /** Source dims for the changed-dimensions check (0 = unknown, legacy cache). */
+        public final int sourceWidth;
+        public final int sourceHeight;
 
         public Slot(TextureAtlasSprite.Info contents, int x, int y, int width, int height) {
+            this(contents, x, y, width, height, 0, 0);
+        }
+
+        public Slot(TextureAtlasSprite.Info contents, int x, int y, int width, int height,
+                int sourceWidth, int sourceHeight) {
             this.contents = contents;
             this.x = x;
             this.y = y;
             this.width = width;
             this.height = height;
+            this.sourceWidth = sourceWidth;
+            this.sourceHeight = sourceHeight;
         }
     }
 
@@ -173,7 +189,9 @@ public class DashTextureStitcher extends Stitcher {
             final int width = stitcher.getCurrentWidth();
             final int height = stitcher.getCurrentHeight();
             stitcher.getStitchSlots((info, x, y, w, h) ->
-                    slots.put(info.getSpriteLocation().toString(), new DashTextureSlot(x, y, w, h)));
+                    slots.put(info.getSpriteLocation().toString(),
+                            new DashTextureSlot(x, y, w, h,
+                                    info.getSpriteWidth(), info.getSpriteHeight())));
             return new Data(slots, width, height, maxWidth, maxHeight, mipLevel);
         }
 
@@ -182,7 +200,8 @@ public class DashTextureStitcher extends Stitcher {
             for (Map.Entry<String, DashTextureSlot> entry : slots.entrySet()) {
                 DashTextureSlot slot = entry.getValue();
                 out.put(new ResourceLocation(entry.getKey()),
-                        new Slot(null, slot.x, slot.y, slot.width, slot.height));
+                        new Slot(null, slot.x, slot.y, slot.width, slot.height,
+                                slot.sourceWidth, slot.sourceHeight));
             }
             return new ExportedData(out, width, height, maxWidth, maxHeight, mipLevel);
         }

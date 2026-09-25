@@ -61,27 +61,27 @@ public abstract class ResourceLoadProgressGuiMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-cache");
 
     @Shadow(remap = false)
-    private Minecraft mc;
+    private Minecraft field_212974_b;
 
     @Shadow(remap = false)
-    private IAsyncReloader asyncReloader;
+    private IAsyncReloader field_212975_c;
 
     @Shadow(remap = false)
-    private long fadeOutStart;
+    private long field_212979_g;
 
-    @Inject(method = "render(Lcom/mojang/blaze3d/matrix/MatrixStack;IIF)V",
+    @Inject(method = "func_230430_a_(Lcom/mojang/blaze3d/matrix/MatrixStack;IIF)V",
             at = @At("TAIL"), remap = false)
     private void dashloader$onReloadComplete(MatrixStack matrices, int mouseX, int mouseY, float partialTicks,
             CallbackInfo ci) {
         try {
-            if (!asyncReloader.fullyDone()) {
+            if (!field_212975_c.fullyDone()) {
                 return;
             }
             // Dismiss the overlay at reload-complete (modern parity). Vanilla
             // would do this ~1s later once its fade finishes; the reload
             // itself (join + completedCallback + screen init) already ran.
-            if (fadeOutStart != -1L && mc.getLoadingGui() != null) {
-                mc.setLoadingGui(null);
+            if (field_212979_g != -1L && field_212974_b.getLoadingGui() != null) {
+                field_212974_b.setLoadingGui(null);
             }
             LOGGER.info("Minecraft reloaded in {}ms.",
                     System.currentTimeMillis() - ModelManagerCacheMixin.getReloadStart());

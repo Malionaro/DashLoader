@@ -12,18 +12,27 @@ import java.util.List;
  * ({@code fabric-26.3}).
  *
  * <p>PERMANENT skip (see {@code PORTING_NOTES.md} — documented here and
- * there, as required):
+ * there, as required). Precise reason (javap-verified against the mapped
+ * snapshot jar, not the pre-1.13 ascii/unicode-page assumption):
  * <ul>
- *   <li>Modern caches {@code FontStorage} glyph providers
- *       ({@code TrueTypeFont}, {@code UnihexFont}, {@code BitmapFont}, ...).
- *       1.16.5 has no {@code FontStorage} and no provider system — text goes
- *       through the legacy {@code FontRenderer} ({@code fontRenderer} on
- *       {@code Minecraft}), whose glyph cache is a GPU-uploaded
- *       {@code NativeImage} atlas with no snapshottable CPU-side model.</li>
+ *   <li>1.16.5 DOES have a provider system ({@code Font} with
+ *       {@code List<IGlyphProvider> glyphProviders} + {@code List<FontTexture>
+ *       textures}), but providers are TTF/JSON-driven ({@code IGlyphInfo}
+ *       with {@code uploadGlyph(x, y)} writing straight to GPU) — there is no
+ *       CPU-side glyph atlas model to snapshot. {@code FontTexture} holds only
+ *       {@code textureLocation}, render types, {@code colored} and a packing
+ *       {@code Entry} tree (javap: no {@code NativeImage} field); the pixels
+ *       live in GL memory.</li>
+ *   <li>The only readback ({@code NativeImage#downloadFromTexture}) needs a
+ *       live GL context at LOAD time (reload-listener thread has none safely)
+ *       and would re-upload anyway on first text render — caching saves
+ *       nothing while risking glyph UV mismatches (the {@code Entry} packing
+ *       order is allocation-order dependent) and text corruption.</li>
  *   <li>There is no mappable hook: modern shortcuts {@code FontManager}
  *       reload; the 1.16.5 counterpart ({@code FontResourceManager}) builds
- *       {@code FontRenderer} instances eagerly from TTF streams with no
- *       intermediate cacheable representation.</li>
+ *       {@code Font} instances eagerly from TTF streams with no cacheable
+ *       intermediate, and {@code FontRenderer} resolves fonts per-frame via
+ *       {@code Function<ResourceLocation, Font>}.</li>
  * </ul>
  *
  * <p>Missing-font fallback equivalent: this module always falls back to

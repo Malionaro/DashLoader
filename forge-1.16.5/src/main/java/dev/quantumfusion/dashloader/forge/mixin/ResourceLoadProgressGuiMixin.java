@@ -4,6 +4,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import dev.quantumfusion.dashloader.forge.DashLoaderConfig;
 import dev.quantumfusion.dashloader.forge.cache.CacheStatus;
 import dev.quantumfusion.dashloader.forge.cache.DashCacheBackend;
+import dev.quantumfusion.dashloader.forge.cache.ReloadClock;
 import dev.quantumfusion.dashloader.forge.ui.toast.DashToast;
 import dev.quantumfusion.dashloader.forge.ui.toast.DashToastState;
 import dev.quantumfusion.dashloader.forge.ui.toast.DashToastStatus;
@@ -84,7 +85,7 @@ public abstract class ResourceLoadProgressGuiMixin {
                 field_212974_b.setLoadingGui(null);
             }
             LOGGER.info("Minecraft reloaded in {}ms.",
-                    System.currentTimeMillis() - ModelManagerCacheMixin.getReloadStart());
+                    System.currentTimeMillis() - ReloadClock.getReloadStart());
             if (DashCacheBackend.getStatus() == CacheStatus.SAVE
                     && DashLoaderConfig.ENABLE_CACHE.get()
                     && !DashCacheBackend.isSaveStarted()) {

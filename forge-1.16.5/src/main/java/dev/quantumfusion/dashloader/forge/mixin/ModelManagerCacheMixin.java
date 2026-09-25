@@ -2,6 +2,7 @@ package dev.quantumfusion.dashloader.forge.mixin;
 
 import dev.quantumfusion.dashloader.forge.cache.CacheStatus;
 import dev.quantumfusion.dashloader.forge.cache.DashCacheBackend;
+import dev.quantumfusion.dashloader.forge.cache.ReloadClock;
 import dev.quantumfusion.dashloader.forge.mixin.accessor.MultipartAccessor;
 import dev.quantumfusion.dashloader.forge.model.ModelModule;
 import net.minecraft.block.Block;
@@ -66,20 +67,14 @@ import java.util.function.Function;
 public abstract class ModelManagerCacheMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-model");
 
-    /** Reload start (approximation): set at {@code prepare} HEAD, read by the loading-screen hook for timing logs. */
-    private static volatile long reloadStart = System.currentTimeMillis();
-
-    public static long getReloadStart() {
-        return reloadStart;
-    }
-
+    /** Reload start tracking lives in {@link ReloadClock} (no statics allowed in mixins). */
     @Shadow(remap = false)
     private Map<ResourceLocation, IBakedModel> field_174958_a;
 
     @Inject(method = "func_212854_a_(Lnet/minecraft/resources/IResourceManager;Lnet/minecraft/profiler/IProfiler;)Lnet/minecraft/client/renderer/model/ModelBakery;", at = @At("HEAD"), remap = false)
     private void dashloader$ensureCache(IResourceManager resourceManager, IProfiler profiler,
             CallbackInfoReturnable<ModelBakery> cir) {
-        reloadStart = System.currentTimeMillis();
+        ReloadClock.setReloadStart(System.currentTimeMillis());
         try {
             DashCacheBackend.ensureLoaded();
         } catch (Throwable t) {

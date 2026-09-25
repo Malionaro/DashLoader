@@ -406,7 +406,17 @@ public final class ModelModule {
             }
         }
         LOGGER.info("Model restore built: {} models.", out.size());
-        return out;
+        // Synthetic inline parts exist only for reference resolution above;
+        // the registry keeps real ids only (see isSyntheticKey).
+        Map<ResourceLocation, IBakedModel> real = new LinkedHashMap<>();
+        for (Map.Entry<ResourceLocation, IBakedModel> entry : out.entrySet()) {
+            if (!isSyntheticKey(entry.getKey())) {
+                real.put(entry.getKey(), entry.getValue());
+            }
+        }
+        LOGGER.info("Model restore installs: {} real models ({} synthetic parts held back).",
+                real.size(), out.size() - real.size());
+        return real;
     }
 
     /** SAVE-stage unbaked data for one baked multipart model (see {@link #SAVE_MULTIPART}). */

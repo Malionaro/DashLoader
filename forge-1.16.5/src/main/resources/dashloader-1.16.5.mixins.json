@@ -18,6 +18,8 @@
     "accessor.PropertyValueConditionAccessor",
     "accessor.WeightedBakedModelAccessor",
     "accessor.WeightedModelAccessor",
+    "accessor.ItemOverrideAccessor",
+    "accessor.ItemOverrideListAccessor",
     "accessor.TextureAtlasSpriteAccessor",
     "accessor.AtlasSheetDataAccessor",
     "accessor.WeightedRandomItemAccessor"

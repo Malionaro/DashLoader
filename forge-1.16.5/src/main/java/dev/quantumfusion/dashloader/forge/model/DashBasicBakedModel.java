@@ -1,13 +1,18 @@
 package dev.quantumfusion.dashloader.forge.model;
 
+import dev.quantumfusion.dashloader.forge.mixin.accessor.ItemOverrideAccessor;
+import dev.quantumfusion.dashloader.forge.mixin.accessor.ItemOverrideListAccessor;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.model.ItemOverride;
 import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.model.SimpleBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -43,28 +48,36 @@ import java.util.function.Function;
  *
  * <p>Intentional simplifications (documented):
  * <ul>
- *   <li>{@code ItemCameraTransforms} is carried as a vanilla runtime object
- *       (not serialized field-by-field yet) — cache-backend TODO.</li>
- *   <li>{@code ItemOverrideList} is reset to {@link ItemOverrideList#EMPTY}
- *       on restore. Item overrides depend on {@code ModelBakery} context and
- *       are out of scope for this slice.</li>
+ *   <li>{@code ItemCameraTransforms} is carried field-by-field as float
+ *       triples via the Gson adapter ({@code CacheGson}).</li>
+ *   <li>{@code ItemOverrideList} is preserved as predicate maps + target
+ *       model-id strings (see {@link DashItemOverride}). Only overrides whose
+ *       target resolves to an already-restored (cached) model are rebuilt;
+ *       the rest are skipped with a warning (vanilla fallback for that
+ *       override). Targets that are not staged top models are skipped at SAVE
+ *       the same way.</li>
  * </ul>
  */
 public final class DashBasicBakedModel {
+    private static final Logger LOGGER = LogManager.getLogger("dashloader-model");
+
     public final DashBakedQuadCollection generalQuads;
     public final Map<Direction, DashBakedQuadCollection> faceQuads;
     public final boolean ambientOcclusion;
     public final boolean gui3d;
     public final boolean sideLit;
     public final ResourceLocation particleSpriteId;
-    /** Runtime object, not yet serialized — see class javadoc. */
+    /** Runtime object, serialized field-by-field via {@code CacheGson}. */
     public final ItemCameraTransforms cameraTransforms;
+    /** Override entries (predicates + target model id); empty when none. Never null for new snapshots. */
+    public final List<DashItemOverride> itemOverrides;
 
     public DashBasicBakedModel(DashBakedQuadCollection generalQuads,
             Map<Direction, DashBakedQuadCollection> faceQuads,
             boolean ambientOcclusion, boolean gui3d, boolean sideLit,
             ResourceLocation particleSpriteId,
-            ItemCameraTransforms cameraTransforms) {
+            ItemCameraTransforms cameraTransforms,
+            List<DashItemOverride> itemOverrides) {
         this.generalQuads = generalQuads;
         this.faceQuads = faceQuads;
         this.ambientOcclusion = ambientOcclusion;
@@ -72,9 +85,26 @@ public final class DashBasicBakedModel {
         this.sideLit = sideLit;
         this.particleSpriteId = particleSpriteId;
         this.cameraTransforms = cameraTransforms;
+        this.itemOverrides = itemOverrides == null
+                ? new ArrayList<DashItemOverride>()
+                : new ArrayList<DashItemOverride>(itemOverrides);
     }
 
+    /** Legacy overload: no override context, overrides snapshot as empty. */
     public static DashBasicBakedModel toDash(SimpleBakedModel model) {
+        return toDash(model, part -> {
+            throw new IllegalArgumentException("No model-id context for overrides");
+        });
+    }
+
+    /**
+     * Snapshot a vanilla model, resolving override targets through
+     * {@code modelIds}. Override targets that are not staged top models are
+     * skipped with a warning (vanilla fallback for that override) instead of
+     * failing the whole model.
+     */
+    public static DashBasicBakedModel toDash(SimpleBakedModel model,
+            Function<IBakedModel, String> modelIds) {
         Random random = new Random();
         DashBakedQuadCollection general = DashBakedQuadCollection.toDash(model.getQuads(null, null, random));
         Map<Direction, DashBakedQuadCollection> faces = new EnumMap<>(Direction.class);
@@ -85,12 +115,88 @@ public final class DashBasicBakedModel {
         ResourceLocation particleId = model.getParticleTexture() == null
                 ? null
                 : model.getParticleTexture().getName();
+        List<DashItemOverride> overrides = snapshotOverrides(model, modelIds);
         return new DashBasicBakedModel(general, faces,
                 model.isAmbientOcclusion(), model.isGui3d(), model.isSideLit(),
-                particleId, model.getItemCameraTransforms());
+                particleId, model.getItemCameraTransforms(), overrides);
     }
 
+    private static List<DashItemOverride> snapshotOverrides(SimpleBakedModel model,
+            Function<IBakedModel, String> modelIds) {
+        List<DashItemOverride> out = new ArrayList<>();
+        ItemOverrideList list;
+        try {
+            list = model.getOverrides();
+        } catch (Throwable t) {
+            return out;
+        }
+        if (list == null || list == ItemOverrideList.EMPTY) {
+            return out;
+        }
+        List<ItemOverride> vanilla;
+        try {
+            vanilla = list.getOverrides();
+        } catch (Throwable t) {
+            return out;
+        }
+        if (vanilla == null || vanilla.isEmpty()) {
+            return out;
+        }
+        List<IBakedModel> bakedTargets;
+        try {
+            bakedTargets = ((ItemOverrideListAccessor) list).getOverrideBakedModels();
+        } catch (Throwable t) {
+            LOGGER.debug("Skipping overrides: no baked-target accessor.", t);
+            return out;
+        }
+        for (int i = 0; i < vanilla.size(); i++) {
+            ItemOverride override = vanilla.get(i);
+            IBakedModel target = bakedTargets != null && i < bakedTargets.size() ? bakedTargets.get(i) : null;
+            if (override == null || target == null) {
+                continue;
+            }
+            String targetId;
+            try {
+                targetId = modelIds.apply(target);
+            } catch (RuntimeException e) {
+                LOGGER.warn("Skipping override target not in cache ({}): {}",
+                        override.getLocation(), e.getMessage());
+                continue;
+            }
+            Map<ResourceLocation, Float> predicates;
+            try {
+                predicates = ((ItemOverrideAccessor) override).getPredicateMap();
+            } catch (Throwable t) {
+                LOGGER.warn("Skipping override with unreadable predicates for {}.", override.getLocation());
+                continue;
+            }
+            Map<String, Float> stored = new java.util.LinkedHashMap<>();
+            if (predicates != null) {
+                for (Map.Entry<ResourceLocation, Float> e : predicates.entrySet()) {
+                    if (e.getKey() != null && e.getValue() != null) {
+                        stored.put(e.getKey().toString(), e.getValue());
+                    }
+                }
+            }
+            out.add(new DashItemOverride(stored, targetId));
+        }
+        return out;
+    }
+
+    /** Legacy overload: overrides resolve to {@link ItemOverrideList#EMPTY} (targets unknown). */
     public SimpleBakedModel toVanilla(Function<ResourceLocation, TextureAtlasSprite> spriteLookup) {
+        return toVanilla(spriteLookup, key -> {
+            throw new IllegalArgumentException("Referenced model not restored: " + key);
+        });
+    }
+
+    /**
+     * Rebuild a vanilla model, resolving override targets through
+     * {@code models}. Unresolvable targets are skipped with a warning; when
+     * none resolve the overrides reset to {@link ItemOverrideList#EMPTY}.
+     */
+    public SimpleBakedModel toVanilla(Function<ResourceLocation, TextureAtlasSprite> spriteLookup,
+            Function<String, IBakedModel> models) {
         List<BakedQuad> general = generalQuads.toVanilla(spriteLookup);
         Map<Direction, List<BakedQuad>> faces = new EnumMap<>(Direction.class);
         for (Map.Entry<Direction, DashBakedQuadCollection> entry : faceQuads.entrySet()) {
@@ -108,9 +214,64 @@ public final class DashBasicBakedModel {
         ItemCameraTransforms transforms = cameraTransforms == null
                 ? ItemCameraTransforms.DEFAULT
                 : cameraTransforms;
+        ItemOverrideList overrides = buildOverrides(models);
         return new SimpleBakedModel(general, faces,
                 ambientOcclusion, gui3d, sideLit,
-                particle, transforms, ItemOverrideList.EMPTY);
+                particle, transforms, overrides);
+    }
+
+    private ItemOverrideList buildOverrides(Function<String, IBakedModel> models) {
+        if (itemOverrides == null || itemOverrides.isEmpty()) {
+            return ItemOverrideList.EMPTY;
+        }
+        List<ItemOverride> rebuilt = new ArrayList<>(itemOverrides.size());
+        List<IBakedModel> targets = new ArrayList<>(itemOverrides.size());
+        for (DashItemOverride entry : itemOverrides) {
+            if (entry == null || entry.model == null) {
+                continue;
+            }
+            IBakedModel target;
+            try {
+                target = models.apply(entry.model);
+            } catch (RuntimeException e) {
+                LOGGER.warn("Skipping unrestorable override target {}: {}", entry.model, e.getMessage());
+                continue;
+            }
+            if (target == null) {
+                LOGGER.warn("Skipping unrestorable override target {}: resolved null.", entry.model);
+                continue;
+            }
+            Map<ResourceLocation, Float> predicates = new java.util.LinkedHashMap<>();
+            if (entry.predicates != null) {
+                for (Map.Entry<String, Float> e : entry.predicates.entrySet()) {
+                    try {
+                        if (e.getKey() != null && e.getValue() != null) {
+                            predicates.put(new ResourceLocation(e.getKey()), e.getValue());
+                        }
+                    } catch (RuntimeException ex) {
+                        LOGGER.warn("Skipping bad override predicate {} for {}.", e.getKey(), entry.model);
+                    }
+                }
+            }
+            try {
+                rebuilt.add(new ItemOverride(new ResourceLocation(entry.model), predicates));
+                targets.add(target);
+            } catch (RuntimeException e) {
+                LOGGER.warn("Skipping unrestorable override for {}: {}", entry.model, e.getMessage());
+            }
+        }
+        if (rebuilt.isEmpty()) {
+            return ItemOverrideList.EMPTY;
+        }
+        int restored = rebuilt.size();
+        int skipped = itemOverrides.size() - restored;
+        if (skipped > 0) {
+            LOGGER.warn("Restored {}/{} item overrides (skipped {} without cached targets).",
+                    restored, itemOverrides.size(), skipped);
+        } else {
+            LOGGER.debug("Restored {} item overrides.", restored);
+        }
+        return new RestoredItemOverrideList(rebuilt, targets);
     }
 
     @Override
@@ -123,7 +284,8 @@ public final class DashBasicBakedModel {
                 && sideLit == that.sideLit
                 && Objects.equals(generalQuads, that.generalQuads)
                 && Objects.equals(faceQuads, that.faceQuads)
-                && Objects.equals(particleSpriteId, that.particleSpriteId);
+                && Objects.equals(particleSpriteId, that.particleSpriteId)
+                && Objects.equals(itemOverrides, that.itemOverrides);
     }
 
     @Override
@@ -134,6 +296,7 @@ public final class DashBasicBakedModel {
         result = 31 * result + (gui3d ? 1 : 0);
         result = 31 * result + (sideLit ? 1 : 0);
         result = 31 * result + (particleSpriteId == null ? 0 : particleSpriteId.hashCode());
+        result = 31 * result + (itemOverrides == null ? 0 : itemOverrides.hashCode());
         return result;
     }
 }

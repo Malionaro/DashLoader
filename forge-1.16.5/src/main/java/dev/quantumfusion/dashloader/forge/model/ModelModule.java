@@ -161,7 +161,7 @@ public final class ModelModule {
             }
             try {
                 if (model instanceof SimpleBakedModel) {
-                    basic.put(key, DashBasicBakedModel.toDash((SimpleBakedModel) model));
+                    basic.put(key, DashBasicBakedModel.toDash((SimpleBakedModel) model, modelIds));
                 } else if (model instanceof WeightedBakedModel) {
                     weighted.put(key, DashWeightedBakedModel.toDash((WeightedBakedModel) model, modelIds));
                 } else if (model instanceof MultipartBakedModel) {
@@ -228,7 +228,14 @@ public final class ModelModule {
         }
         if (part instanceof SimpleBakedModel) {
             String synthKey = syntheticPartKey(ownerKey, basic, weighted);
-            basic.put(synthKey, DashBasicBakedModel.toDash((SimpleBakedModel) part));
+            basic.put(synthKey, DashBasicBakedModel.toDash((SimpleBakedModel) part, nested -> {
+                String nestedId = idsByModel.get(nested);
+                if (nestedId == null) {
+                    throw new IllegalArgumentException("Nested model is not a staged top model: "
+                            + nested.getClass().getName());
+                }
+                return nestedId;
+            }));
             idsByModel.put(part, synthKey);
             return synthKey;
         }
@@ -299,9 +306,11 @@ public final class ModelModule {
      * of aborting the whole install. Basic models are restored first so
      * weighted/multipart entries referencing them (including synthetic
      * inline part ids) resolve; unresolvable references are skipped.
-     * Synthetic part entries are built for reference resolution but filtered
-     * out of the returned map by the caller via {@link #isSyntheticKey} so
-     * the model registry keeps only real ids.
+     * Basic overrides resolve to already-restored models, so basics build in
+     * two passes (bare first, then with overrides — forward references like
+     * bow pulling variants resolve). Synthetic part entries are built for
+     * reference resolution but filtered out of the returned map by the caller
+     * via {@link #isSyntheticKey} so the model registry keeps only real ids.
      */
     public static Map<ResourceLocation, IBakedModel> buildLoadedModels(
             Function<ResourceLocation, TextureAtlasSprite> spriteLookup) {
@@ -311,12 +320,48 @@ public final class ModelModule {
         }
         Map<ResourceLocation, IBakedModel> out = new LinkedHashMap<>();
         if (data.basicModels != null) {
+            // Pass 1: bare models (EMPTY overrides) so every id resolves.
             for (Map.Entry<String, DashBasicBakedModel> entry : data.basicModels.entrySet()) {
                 try {
+                    DashBasicBakedModel dash = entry.getValue();
+                    DashBasicBakedModel bare = new DashBasicBakedModel(
+                            dash.generalQuads, dash.faceQuads,
+                            dash.ambientOcclusion, dash.gui3d, dash.sideLit,
+                            dash.particleSpriteId, dash.cameraTransforms,
+                            Collections.<DashItemOverride>emptyList());
                     out.put(new ResourceLocation(entry.getKey()),
-                            entry.getValue().toVanilla(spriteLookup));
+                            bare.toVanilla(spriteLookup, key -> {
+                                throw new IllegalArgumentException("Overrides deferred to pass 2: " + key);
+                            }));
                 } catch (RuntimeException e) {
                     LOGGER.warn("Skipping unrestorable cached model {}: {}", entry.getKey(), e.getMessage());
+                }
+            }
+            // Pass 2: rebuild with overrides resolved against pass-1 models.
+            // Unresolvable override targets are skipped per-override with a
+            // warning (vanilla fallback for that override); models whose own
+            // quads fail stay on their pass-1 bare version.
+            final Map<ResourceLocation, IBakedModel> built = out;
+            for (Map.Entry<String, DashBasicBakedModel> entry : data.basicModels.entrySet()) {
+                ResourceLocation id = new ResourceLocation(entry.getKey());
+                if (!built.containsKey(id)) {
+                    continue;
+                }
+                DashBasicBakedModel dash = entry.getValue();
+                if (dash == null || dash.itemOverrides == null || dash.itemOverrides.isEmpty()) {
+                    continue;
+                }
+                try {
+                    built.put(id, dash.toVanilla(spriteLookup, key -> {
+                        IBakedModel part = built.get(new ResourceLocation(key));
+                        if (part == null) {
+                            throw new IllegalArgumentException("Referenced model not restored: " + key);
+                        }
+                        return part;
+                    }));
+                } catch (RuntimeException e) {
+                    LOGGER.warn("Keeping bare cached model {} (override rebuild failed): {}",
+                            entry.getKey(), e.getMessage());
                 }
             }
         }

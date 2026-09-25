@@ -21,6 +21,6 @@ import java.util.List;
  */
 @Mixin(value = ItemOverrideList.class, remap = false)
 public interface ItemOverrideListAccessor {
-    @Accessor("overrideBakedModels")
+    @Accessor("field_209582_c")
     List<IBakedModel> getOverrideBakedModels();
 }

@@ -22,6 +22,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  */
 @Mixin(value = Selector.class, remap = false)
 public interface SelectorAccessor {
-    @Accessor("condition")
+    @Accessor("field_188167_a")
     ICondition getCondition();
 }

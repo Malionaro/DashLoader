@@ -22,6 +22,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  */
 @Mixin(value = Multipart.class, remap = false)
 public interface MultipartAccessor {
-    @Accessor("stateContainer")
+    @Accessor("field_188140_b")
     StateContainer<Block, BlockState> getStateContainer();
 }

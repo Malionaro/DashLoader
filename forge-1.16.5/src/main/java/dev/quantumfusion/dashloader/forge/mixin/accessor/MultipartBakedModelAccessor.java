@@ -23,6 +23,6 @@ import java.util.function.Predicate;
  */
 @Mixin(value = MultipartBakedModel.class, remap = false)
 public interface MultipartBakedModelAccessor {
-    @Accessor("selectors")
+    @Accessor("field_188626_f")
     List<Pair<Predicate<BlockState>, IBakedModel>> getSelectors();
 }

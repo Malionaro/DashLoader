@@ -17,6 +17,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  */
 @Mixin(value = AndCondition.class, remap = false)
 public interface AndConditionAccessor {
-    @Accessor("conditions")
+    @Accessor("field_188121_c")
     Iterable<? extends ICondition> getConditions();
 }

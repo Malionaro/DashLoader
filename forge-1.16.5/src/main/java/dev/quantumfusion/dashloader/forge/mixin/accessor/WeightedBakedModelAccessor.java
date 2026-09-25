@@ -23,6 +23,6 @@ import java.util.List;
  */
 @Mixin(value = WeightedBakedModel.class, remap = false)
 public interface WeightedBakedModelAccessor {
-    @Accessor("models")
+    @Accessor("field_177565_b")
     List<?> getModels();
 }

@@ -17,9 +17,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  */
 @Mixin(value = PropertyValueCondition.class, remap = false)
 public interface PropertyValueConditionAccessor {
-    @Accessor("key")
+    @Accessor("field_188125_d")
     String getKey();
 
-    @Accessor("value")
+    @Accessor("field_188126_e")
     String getValue();
 }

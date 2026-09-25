@@ -20,6 +20,6 @@ import java.util.Map;
  */
 @Mixin(value = ItemOverride.class, remap = false)
 public interface ItemOverrideAccessor {
-    @Accessor("mapResourceValues")
+    @Accessor("field_188029_b")
     Map<ResourceLocation, Float> getPredicateMap();
 }

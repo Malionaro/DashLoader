@@ -19,7 +19,7 @@ displayName="${mod_name}"
 
 #authors=""
 
-description="Launch at the speed of Light. Unofficial continuation."
+description="Launch at the speed of Light. Unofficial continuation by Malionaro."
 
 # Mixin config lives at the resources root (src/main/resources/dashloader.mixins.json).
 # No rename/move needed: NeoForge loads whatever path is declared here.

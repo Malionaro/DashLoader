@@ -202,6 +202,14 @@ public final class ModelModule {
 
         LOGGER.info("Model snapshot: {} basic, {} weighted, {} multipart, {} missing.",
                 basic.size(), weighted.size(), multipart.size(), missing.size());
+        if (weighted.isEmpty()) {
+            // Vanilla 1.16.5 has no weighted top models with default packs
+            // (weights live inside VariantList baking, not as top-level
+            // WeightedBakedModel entries): round-trip path (WeightedModelAccessor
+            // + WeightedRandomItemAccessor, reflective WeightedModel rebuild) is
+            // retained and verified statically, nothing to snapshot this boot.
+            LOGGER.info("No weighted models found (vanilla has none as top models) — weighted round-trip retained.");
+        }
         return new Data(basic, multipart, weighted, missing);
     }
 

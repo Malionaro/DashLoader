@@ -90,6 +90,10 @@ public class DashToast implements Toast {
 		this.lines = newList;
 		this.lines.addAll(newListPrio);
 
+		// Clip everything to the toast bounds (lines and glow would
+		// otherwise spill over the toast edges onto the screen).
+		context.enableScissor(0, 0, width, height);
+
 		// Draw the ui
 		DrawerUtil.drawRect(context, 0, 0, width, height, DrawerUtil.BACKGROUND_COLOR);
 
@@ -120,6 +124,8 @@ public class DashToast implements Toast {
 		}
 		// Progress bar glow
 		DrawerUtil.drawGlowClipped(context, 0, barY, (int) (width * progress), PROGRESS_BAR_HEIGHT, 0.75f, progressColor, true, true, true, true, 0, 0, width, height);
+
+		context.disableScissor();
 	}
 
 	public enum ColorKind {

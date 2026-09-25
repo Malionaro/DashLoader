@@ -40,10 +40,16 @@ The original community gathers around the [upstream project](https://github.com/
 
 ### Sponsors
 
-[YourKit](https://www.yourkit.com/java/profiler/) makes amazing profilers for both Java and .NET. We use their Java Profiler to understand where to optimize further and make DashLoader faster.
+<p align="center"><a href="https://www.yourkit.com/java/profiler/"><img alt="YourKit" src="https://img.shields.io/badge/YourKit-Java_Profiler?style=for-the-badge&logo=yourkit&label=Sponsor&color=%231476C5"></a></p>
 
-[JetBrains](https://www.jetbrains.com/) creates excellent IDEs for all programmers and have provided us with access to their enterprise products for use to develop DashLoader and Hyphen.
+YourKit makes amazing profilers for both Java and .NET. We use their Java Profiler to understand where to optimize further and make DashLoader faster.
+
+<p align="center"><a href="https://www.jetbrains.com/"><img alt="JetBrains" src="https://img.shields.io/badge/JetBrains-Developer_Tools?style=for-the-badge&logo=jetbrains&label=Sponsor&color=%23000000"></a></p>
+
+JetBrains creates excellent IDEs for all programmers and have provided us with access to their enterprise products for use to develop DashLoader and Hyphen.
 
 ### Donate
 
-I have a [Ko-Fi page](https://ko-fi.com/notequalalpha) if you would like to support me. Please only support me if you like what I do, and you are not in a bad financial situation to do so.
+<p align="center"><a href="https://ko-fi.com/notequalalpha"><img alt="ko-fi page" src="https://img.shields.io/badge/Support%20Me-kofi?style=for-the-badge&logo=kofi&logoColor=%23FF6433&label=Ko-fi&color=%23FF6433"></a></p>
+
+I have a Ko-Fi page (button above) if you would like to support me. Please only support me if you like what I do, and you are not in a bad financial situation to do so.

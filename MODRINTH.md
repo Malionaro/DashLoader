@@ -42,4 +42,5 @@ DashLoader is client-side only and safe to ship in modpacks. Consider pre-shippi
 
 - Licensed under **LGPL-3.0-only** (see `LICENCE`)
 - Original project: [alphaqu/DashLoader](https://github.com/alphaqu/DashLoader) by AlphaQ
+- Continuation by [Malionaro](https://github.com/Malionaro)
 - This fork: ports, multi-version build matrix, and fixes for 1.21.5+

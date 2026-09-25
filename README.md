@@ -1,15 +1,12 @@
 <p align="center"><img src="./src/main/resources/dashloader/textures/icon.png" alt="Logo" width="128"></p>
 <h1 align="center">DashLoader<br/>
 
-<a href="https://github.com/Malionaro/DashLoader/releases"><img alt="GitHub Releases" src="https://img.shields.io/github/v/release/Malionaro/DashLoader?label=Download&logo=github&color=%2336A853"></a>
-<a href="https://github.com/alphaqu/DashLoader"><img alt="Upstream Project" src="https://img.shields.io/badge/Upstream-alphaqu%2FDashLoader?logo=github&label=Upstream&color=%23181717"></a>
+<a href="https://github.com/alphaqu/DashLoader/releases"><img alt="GitHub Releases" src="https://img.shields.io/github/v/release/alphaqu/DashLoader?label=Download&logo=github&color=%2336A853"></a>
 <a href="https://ko-fi.com/notequalalpha"><img alt="ko-fi page" src="https://img.shields.io/badge/Support%20Me-kofi?logo=kofi&logoColor=%23FF6433&label=Ko-fi&color=%23FF6433"></a>
 </h1>
 
 > [!IMPORTANT]
-> Looking for builds for Minecraft 1.21.5 and newer, including NeoForge and Forge ports? Check out the [Releases page](https://github.com/Malionaro/DashLoader/releases).
->
-> Please report any issues you find with DashLoader [here](https://github.com/Malionaro/DashLoader/issues)!
+> Welcome to the codebase where DashLoader lives! Please report any issues you find with DashLoader [here](https://github.com/alphaqu/DashLoader/issues).
 
 ### Welcome to DashLoader!
 
@@ -36,7 +33,7 @@ Fabric builds require Fabric Loader 0.19.5 or newer. Quilt is compatible with th
 
 ### Community
 
-The community gathers around the [upstream project](https://github.com/alphaqu/DashLoader). For this codebase, please use [GitHub Issues](https://github.com/Malionaro/DashLoader/issues).
+If you need help or want to talk about DashLoader, check the [issue tracker](https://github.com/alphaqu/DashLoader/issues) — and please report any bugs you find there.
 
 ### Sponsors
 

@@ -58,12 +58,12 @@ public abstract class MultipartBakeMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-model");
 
     @Shadow(remap = false)
-    private List<Selector> selectors;
+    private List<Selector> field_188139_a;
 
     @Shadow(remap = false)
-    private StateContainer<Block, BlockState> stateContainer;
+    private StateContainer<Block, BlockState> field_188140_b;
 
-    @Inject(method = "bakeModel", at = @At("RETURN"), remap = false)
+    @Inject(method = "func_225613_a_", at = @At("RETURN"), remap = false)
     private void dashloader$captureSelectors(ModelBakery bakery,
             Function<RenderMaterial, TextureAtlasSprite> textureGetter, IModelTransform transform,
             ResourceLocation location, CallbackInfoReturnable<IBakedModel> cir) {
@@ -74,7 +74,7 @@ public abstract class MultipartBakeMixin {
             if (!(cir.getReturnValue() instanceof MultipartBakedModel)) {
                 return;
             }
-            Block owner = stateContainer.getOwner();
+            Block owner = field_188140_b.getOwner();
             if (owner == null) {
                 return;
             }
@@ -83,7 +83,7 @@ public abstract class MultipartBakeMixin {
                 return;
             }
             ModelModule.stageMultipartSelectors((MultipartBakedModel) cir.getReturnValue(),
-                    new ArrayList<>(selectors), ownerId);
+                    new ArrayList<>(field_188139_a), ownerId);
         } catch (Throwable t) {
             LOGGER.warn("DashLoader multipart staging failed for {}.", location, t);
         }

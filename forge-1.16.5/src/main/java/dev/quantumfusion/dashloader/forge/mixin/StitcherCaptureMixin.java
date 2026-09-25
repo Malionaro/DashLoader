@@ -36,15 +36,15 @@ public abstract class StitcherCaptureMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-stitch");
 
     @Shadow(remap = false)
-    private int maxWidth;
+    private int field_94316_e;
 
     @Shadow(remap = false)
-    private int maxHeight;
+    private int field_94313_f;
 
     @Shadow(remap = false)
-    private int mipmapLevelStitcher;
+    private int field_147971_a;
 
-    @Inject(method = "doStitch", at = @At("TAIL"), remap = false)
+    @Inject(method = "func_94305_f", at = @At("TAIL"), remap = false)
     private void dashloader$captureStitch(CallbackInfo ci) {
         if (DashCacheBackend.getStatus() != CacheStatus.SAVE || !SpriteStitcherModule.isActive()) {
             return;
@@ -61,7 +61,7 @@ public abstract class StitcherCaptureMixin {
         }
         try {
             SpriteStitcherModule.STITCHERS_SAVE.put(atlasId, DashTextureStitcher.Data.capture(
-                    (Stitcher) (Object) this, maxWidth, maxHeight, mipmapLevelStitcher));
+                    (Stitcher) (Object) this, field_94316_e, field_94313_f, field_147971_a));
         } catch (Throwable t) {
             LOGGER.warn("DashLoader stitch capture failed for {}.", atlasId, t);
         }

@@ -74,9 +74,9 @@ public abstract class ModelManagerCacheMixin {
     }
 
     @Shadow(remap = false)
-    private Map<ResourceLocation, IBakedModel> modelRegistry;
+    private Map<ResourceLocation, IBakedModel> field_174958_a;
 
-    @Inject(method = "prepare(Lnet/minecraft/resources/IResourceManager;Lnet/minecraft/profiler/IProfiler;)Lnet/minecraft/client/renderer/model/ModelBakery;", at = @At("HEAD"), remap = false)
+    @Inject(method = "func_212854_a_(Lnet/minecraft/resources/IResourceManager;Lnet/minecraft/profiler/IProfiler;)Lnet/minecraft/client/renderer/model/ModelBakery;", at = @At("HEAD"), remap = false)
     private void dashloader$ensureCache(IResourceManager resourceManager, IProfiler profiler,
             CallbackInfoReturnable<ModelBakery> cir) {
         reloadStart = System.currentTimeMillis();
@@ -87,7 +87,7 @@ public abstract class ModelManagerCacheMixin {
         }
     }
 
-    @Inject(method = "apply(Lnet/minecraft/client/renderer/model/ModelBakery;Lnet/minecraft/resources/IResourceManager;Lnet/minecraft/profiler/IProfiler;)V", at = @At("TAIL"), remap = false)
+    @Inject(method = "func_212853_a_(Lnet/minecraft/client/renderer/model/ModelBakery;Lnet/minecraft/resources/IResourceManager;Lnet/minecraft/profiler/IProfiler;)V", at = @At("TAIL"), remap = false)
     private void dashloader$stageModels(ModelBakery bakery, IResourceManager resourceManager,
             IProfiler profiler, CallbackInfo ci) {
         try {
@@ -103,7 +103,7 @@ public abstract class ModelManagerCacheMixin {
         // registry is complete here at TAIL.
         try {
             ModelModule.SAVE_TOP_MODELS.clear();
-            ModelModule.SAVE_TOP_MODELS.putAll(modelRegistry);
+            ModelModule.SAVE_TOP_MODELS.putAll(field_174958_a);
             LOGGER.info("DashLoader staged {} baked models.", ModelModule.SAVE_TOP_MODELS.size());
             stageMultipartFallback(bakery);
         } catch (Throwable t) {
@@ -162,7 +162,7 @@ public abstract class ModelManagerCacheMixin {
         }
     }
 
-    @Inject(method = "apply(Lnet/minecraft/client/renderer/model/ModelBakery;Lnet/minecraft/resources/IResourceManager;Lnet/minecraft/profiler/IProfiler;)V", at = @At("TAIL"), remap = false)
+    @Inject(method = "func_212853_a_(Lnet/minecraft/client/renderer/model/ModelBakery;Lnet/minecraft/resources/IResourceManager;Lnet/minecraft/profiler/IProfiler;)V", at = @At("TAIL"), remap = false)
     private void dashloader$installAndSave(ModelBakery bakery, IResourceManager resourceManager,
             IProfiler profiler, CallbackInfo ci) {
         if (DashCacheBackend.getStatus() == CacheStatus.LOAD && ModelModule.isActive() && ModelModule.hasLoad()) {
@@ -180,7 +180,7 @@ public abstract class ModelManagerCacheMixin {
                         continue;
                     }
                     try {
-                        modelRegistry.put(entry.getKey(), entry.getValue());
+                        field_174958_a.put(entry.getKey(), entry.getValue());
                         replaced++;
                     } catch (RuntimeException e) {
                         LOGGER.warn("Skipping cached model install for {}: {}", entry.getKey(), e.getMessage());

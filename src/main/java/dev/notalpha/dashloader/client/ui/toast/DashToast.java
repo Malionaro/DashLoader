@@ -1,6 +1,5 @@
 package dev.notalpha.dashloader.client.ui.toast;
 
-import dev.notalpha.dashloader.DashLoader;
 import dev.notalpha.dashloader.client.ui.Color;
 import dev.notalpha.dashloader.client.ui.DrawerUtil;
 import dev.notalpha.dashloader.misc.HahaManager;
@@ -28,7 +27,11 @@ public class DashToast implements Toast {
 	private float progress = 0;
 	private Color progressColor = DrawerUtil.getProgressColor(progress);
 	private Visibility visibility = Visibility.SHOW;
-	private static boolean loggedFirstRender = false;
+	// First update() call happens when the toast leaves the ToastManager queue
+	// and actually becomes visible. Hide timers run from here, not from the
+	// save-thread timestamps: otherwise a toast that waited in the queue
+	// (vanilla toasts occupying slots) would hide instantly on arrival.
+	private long firstUpdateTime = -1;
 
 	public DashToast() {
 		this.state = new DashToastState();
@@ -55,6 +58,9 @@ public class DashToast implements Toast {
 
 	@Override
 	public void update(ToastManager manager, long time) {
+		if (firstUpdateTime == -1) {
+			firstUpdateTime = System.currentTimeMillis();
+		}
 		// Get progress
 		if (state.getStatus() == DashToastStatus.CRASHED) {
 			progress = (float) this.state.getProgress();
@@ -64,9 +70,10 @@ public class DashToast implements Toast {
 			progressColor = DrawerUtil.getProgressColor(progress);
 		}
 
-		if (state.getStatus() == DashToastStatus.CRASHED && System.currentTimeMillis() - state.getTimeDone() > 10000) {
+		long effectiveDoneTime = Math.max(state.getTimeDone(), firstUpdateTime);
+		if (state.getStatus() == DashToastStatus.CRASHED && System.currentTimeMillis() - effectiveDoneTime > 10000) {
 			visibility = Visibility.HIDE;
-		} else if (state.getStatus() == DashToastStatus.DONE && System.currentTimeMillis() - state.getTimeDone() > 2000) {
+		} else if (state.getStatus() == DashToastStatus.DONE && System.currentTimeMillis() - effectiveDoneTime > 2000) {
 			visibility = Visibility.HIDE;
 		} else {
 			visibility = Visibility.SHOW;
@@ -75,10 +82,6 @@ public class DashToast implements Toast {
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor context, Font textRenderer, long startTime) {
-		if (!loggedFirstRender) {
-			loggedFirstRender = true;
-			DashLoader.LOG.info("DashToast first extractRenderState, status={}", state.getStatus());
-		}
 		final int width = this.width();
 		final int height = this.height();
 		final int barY = height - PROGRESS_BAR_HEIGHT;

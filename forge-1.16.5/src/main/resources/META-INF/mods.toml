@@ -6,7 +6,7 @@ license="MIT"
 modId="dashloader"
 version="${version}"
 displayName="DashLoader (Forge 1.16.5 port, WIP skeleton)"
-authors="QuantumFusion"
+authors="QuantumFusion, Malionaro"
 description="Launch at the speed of Light. Unofficial continuation by Malionaro."
 
 [[dependencies.dashloader]]

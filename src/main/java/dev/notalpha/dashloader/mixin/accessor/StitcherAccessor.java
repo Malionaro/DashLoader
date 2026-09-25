@@ -4,10 +4,6 @@ import net.minecraft.client.renderer.texture.Stitcher;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-/**
- * @author Malionaro
- */
-
 @Mixin(Stitcher.class)
 public interface StitcherAccessor {
 	@Accessor

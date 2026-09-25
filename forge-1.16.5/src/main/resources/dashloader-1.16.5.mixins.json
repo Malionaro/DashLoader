@@ -11,6 +11,7 @@
     "AtlasTextureStitchMixin",
     "StitcherCaptureMixin",
     "accessor.MultipartBakedModelAccessor",
+    "accessor.MultipartAccessor",
     "accessor.SelectorAccessor",
     "accessor.AndConditionAccessor",
     "accessor.OrConditionAccessor",

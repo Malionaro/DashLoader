@@ -2,11 +2,17 @@ package dev.quantumfusion.dashloader.forge.mixin;
 
 import dev.quantumfusion.dashloader.forge.cache.CacheStatus;
 import dev.quantumfusion.dashloader.forge.cache.DashCacheBackend;
+import dev.quantumfusion.dashloader.forge.mixin.accessor.MultipartAccessor;
 import dev.quantumfusion.dashloader.forge.model.ModelModule;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.IUnbakedModel;
 import net.minecraft.client.renderer.model.ModelBakery;
 import net.minecraft.client.renderer.model.ModelManager;
+import net.minecraft.client.renderer.model.MultipartBakedModel;
+import net.minecraft.client.renderer.model.multipart.Multipart;
+import net.minecraft.client.renderer.model.multipart.Selector;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.profiler.IProfiler;
@@ -99,8 +105,60 @@ public abstract class ModelManagerCacheMixin {
             ModelModule.SAVE_TOP_MODELS.clear();
             ModelModule.SAVE_TOP_MODELS.putAll(modelRegistry);
             LOGGER.info("DashLoader staged {} baked models.", ModelModule.SAVE_TOP_MODELS.size());
+            stageMultipartFallback(bakery);
         } catch (Throwable t) {
             LOGGER.warn("DashLoader model staging failed, vanilla baking continues.", t);
+        }
+    }
+
+    /**
+     * Fallback multipart staging: the bake-time hook
+     * ({@code MultipartBakeMixin}) misses when the cache was IDLE during
+     * baking (pack hash not ready at {@code prepare} HEAD). At apply TAIL the
+     * bakery still holds the unbaked {@link Multipart} per id, so re-stage
+     * any baked multipart model without staged selectors from
+     * {@code bakery.getUnbakedModel}. Identity-keyed like the bake hook; never
+     * overwrites existing staging.
+     */
+    private static void stageMultipartFallback(ModelBakery bakery) {
+        if (bakery == null) {
+            return;
+        }
+        int restaged = 0;
+        for (Map.Entry<ResourceLocation, IBakedModel> entry : ModelModule.SAVE_TOP_MODELS.entrySet()) {
+            IBakedModel baked = entry.getValue();
+            if (!(baked instanceof MultipartBakedModel)) {
+                continue;
+            }
+            if (ModelModule.SAVE_MULTIPART.containsKey(baked)) {
+                continue;
+            }
+            try {
+                IUnbakedModel unbaked = bakery.getUnbakedModel(entry.getKey());
+                if (!(unbaked instanceof Multipart)) {
+                    continue;
+                }
+                Multipart multipart = (Multipart) unbaked;
+                java.util.List<Selector> selectors = multipart.getSelectors();
+                Block owner;
+                try {
+                    owner = ((MultipartAccessor) multipart).getStateContainer().getOwner();
+                } catch (Throwable t) {
+                    LOGGER.debug("Multipart fallback: no state container for {}.", entry.getKey());
+                    continue;
+                }
+                if (owner == null || owner.getRegistryName() == null || selectors == null) {
+                    continue;
+                }
+                ModelModule.stageMultipartSelectors((MultipartBakedModel) baked,
+                        new java.util.ArrayList<>(selectors), owner.getRegistryName());
+                restaged++;
+            } catch (Throwable t) {
+                LOGGER.debug("Multipart fallback staging failed for {}.", entry.getKey(), t);
+            }
+        }
+        if (restaged > 0) {
+            LOGGER.info("DashLoader restaged {} multipart selectors from bakery (bake-hook miss).", restaged);
         }
     }
 

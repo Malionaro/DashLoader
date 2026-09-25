@@ -291,7 +291,15 @@ public final class DashToast implements IToast {
         }
 
         public void draw(MatrixStack matrices) {
-            DrawerUtil.drawRect(matrices, (int) x, (int) y, width, height, color);
+            // Clip to the toast bounds (no scissor API on 1.16.5): lines must
+            // never spill over the toast edges onto the screen.
+            int rx1 = Math.max(0, (int) x);
+            int ry1 = Math.max(0, (int) y);
+            int rx2 = Math.min(func_230445_a_(), (int) x + width);
+            int ry2 = Math.min(func_238540_d_(), (int) y + height);
+            if (rx2 > rx1 && ry2 > ry1) {
+                DrawerUtil.drawRect(matrices, rx1, ry1, rx2 - rx1, ry2 - ry1, color);
+            }
         }
 
         public void drawGlow(MatrixStack matrices, int clipWidth, int clipHeight) {

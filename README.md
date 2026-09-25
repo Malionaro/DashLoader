@@ -7,9 +7,9 @@
 </h1>
 
 > [!IMPORTANT]
-> Upstream development ended with Minecraft 1.21.4. This repository continues maintenance and ports for newer versions.
+> Looking for builds for Minecraft 1.21.5 and newer, including NeoForge and Forge ports? Check out the [Releases page](https://github.com/Malionaro/DashLoader/releases).
 >
-> Downloads are on the [Releases page](https://github.com/Malionaro/DashLoader/releases) — please report any issues you find with DashLoader [here](https://github.com/Malionaro/DashLoader/issues).
+> Please report any issues you find with DashLoader [here](https://github.com/Malionaro/DashLoader/issues)!
 
 ### Welcome to DashLoader!
 
@@ -36,20 +36,20 @@ Fabric builds require Fabric Loader 0.19.5 or newer. Quilt is compatible with th
 
 ### Community
 
-The original community gathers around the [upstream project](https://github.com/alphaqu/DashLoader). For this codebase, please use [GitHub Issues](https://github.com/Malionaro/DashLoader/issues).
+The community gathers around the [upstream project](https://github.com/alphaqu/DashLoader). For this codebase, please use [GitHub Issues](https://github.com/Malionaro/DashLoader/issues).
 
 ### Sponsors
 
-<p align="center"><a href="https://www.yourkit.com/java/profiler/"><img alt="YourKit" src="https://img.shields.io/badge/YourKit-Java_Profiler?style=for-the-badge&logo=yourkit&label=Sponsor&color=%231476C5"></a></p>
+<a href="https://www.yourkit.com/java/profiler/"><img alt="YourKit" src="https://img.shields.io/badge/Sponsor-YourKit?style=for-the-badge&logo=yourkit&label=Sponsor&color=%231476C5"></a>
 
 YourKit makes amazing profilers for both Java and .NET. We use their Java Profiler to understand where to optimize further and make DashLoader faster.
 
-<p align="center"><a href="https://www.jetbrains.com/"><img alt="JetBrains" src="https://img.shields.io/badge/JetBrains-Developer_Tools?style=for-the-badge&logo=jetbrains&label=Sponsor&color=%23000000"></a></p>
+<a href="https://www.jetbrains.com/"><img alt="JetBrains" src="https://img.shields.io/badge/Sponsor-JetBrains?style=for-the-badge&logo=jetbrains&label=Sponsor&color=%23000000"></a>
 
 JetBrains creates excellent IDEs for all programmers and have provided us with access to their enterprise products for use to develop DashLoader and Hyphen.
 
 ### Donate
 
-<p align="center"><a href="https://ko-fi.com/notequalalpha"><img alt="ko-fi page" src="https://img.shields.io/badge/Support%20Me-kofi?style=for-the-badge&logo=kofi&logoColor=%23FF6433&label=Ko-fi&color=%23FF6433"></a></p>
+<a href="https://ko-fi.com/notequalalpha"><img alt="ko-fi page" src="https://img.shields.io/badge/Ko--fi-Support%20Me?style=for-the-badge&logo=kofi&logoColor=%23FF6433&label=Ko-fi&color=%23FF6433"></a>
 
 I have a Ko-Fi page (button above) if you would like to support me. Please only support me if you like what I do, and you are not in a bad financial situation to do so.

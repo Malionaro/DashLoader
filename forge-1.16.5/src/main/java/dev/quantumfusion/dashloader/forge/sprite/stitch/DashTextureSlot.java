@@ -5,8 +5,8 @@ import java.util.Objects;
 /**
  * Forge 1.16.5 port of modern {@code DashTextureSlot}
  * ({@code fabric-1.21.4}): cached atlas position + size of one sprite.
- * @author Malionaro
- */public final class DashTextureSlot {
+ */
+public final class DashTextureSlot {
     public final int x;
     public final int y;
     public final int width;

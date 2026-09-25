@@ -56,10 +56,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  *       (models, sprites, stitch captures, splashes) has finished.</li>
  * </ul>
  */
-
-/**
- * @author Malionaro
- */
 @Mixin(value = ResourceLoadProgressGui.class, remap = false)
 public abstract class ResourceLoadProgressGuiMixin {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-cache");

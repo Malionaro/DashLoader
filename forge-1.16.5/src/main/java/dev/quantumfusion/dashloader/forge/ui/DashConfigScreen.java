@@ -25,8 +25,8 @@ import net.minecraft.util.text.StringTextComponent;
  *   <li>Buttons refresh their labels in place via
  *       {@code Widget#setMessage} (1.16.5 API, verified via {@code javap}).</li>
  * </ul>
- * @author Malionaro
- */public final class DashConfigScreen extends Screen {
+ */
+public final class DashConfigScreen extends Screen {
     private final Screen parent;
 
     public DashConfigScreen(Screen parent) {

@@ -20,8 +20,8 @@ import java.util.List;
  *
  * <p>This module is serialization-trivial (plain strings) and needs no
  * Hyphen support.
- * @author Malionaro
- */public final class SplashModule {
+ */
+public final class SplashModule {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-splash");
 
     /** Staged splash texts. Mirrors modern {@code SplashModule.TEXTS}. */

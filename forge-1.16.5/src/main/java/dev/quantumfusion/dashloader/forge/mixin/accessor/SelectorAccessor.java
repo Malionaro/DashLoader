@@ -20,10 +20,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  * <p>Dev workspace is MCP-named, so {@code remap = false}. Production
  * (SRG runtime) needs the refmap pipeline (see {@code PORTING_NOTES.md}).
  */
-
-/**
- * @author Malionaro
- */
 @Mixin(value = Selector.class, remap = false)
 public interface SelectorAccessor {
     @Accessor("condition")

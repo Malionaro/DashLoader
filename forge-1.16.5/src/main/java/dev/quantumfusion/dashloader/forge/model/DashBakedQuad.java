@@ -38,8 +38,8 @@ import java.util.function.Function;
  *
  * <p>Serialization: plain fields, Hyphen-free. The cache backend
  * ({@code DashCacheBackend}) still has to pick these up — see its TODO.
- * @author Malionaro
- */public final class DashBakedQuad {
+ */
+public final class DashBakedQuad {
     public final int[] vertexData;
     public final int tintIndex;
     public final Direction face;

@@ -54,8 +54,8 @@ import java.util.function.Predicate;
  * {@link ModelModule#SAVE_MULTIPART}, populated by
  * {@code MultipartBakeMixin} from the 1.16.5 baking path; models without
  * staged selectors (e.g. replaced post-bake) fall back to vanilla.
- * @author Malionaro
- */public final class DashMultipartBakedModel {
+ */
+public final class DashMultipartBakedModel {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-model");
 
     public final List<Component> components;

@@ -49,8 +49,8 @@ import java.util.function.Function;
  *       on restore. Item overrides depend on {@code ModelBakery} context and
  *       are out of scope for this slice.</li>
  * </ul>
- * @author Malionaro
- */public final class DashBasicBakedModel {
+ */
+public final class DashBasicBakedModel {
     public final DashBakedQuadCollection generalQuads;
     public final Map<Direction, DashBakedQuadCollection> faceQuads;
     public final boolean ambientOcclusion;

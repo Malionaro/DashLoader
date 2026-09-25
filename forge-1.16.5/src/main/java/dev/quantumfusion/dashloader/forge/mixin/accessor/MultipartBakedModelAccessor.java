@@ -21,10 +21,6 @@ import java.util.function.Predicate;
  * (SRG runtime) needs the refmap pipeline — same pending item as
  * {@code ModelManagerCacheMixin}.
  */
-
-/**
- * @author Malionaro
- */
 @Mixin(value = MultipartBakedModel.class, remap = false)
 public interface MultipartBakedModelAccessor {
     @Accessor("selectors")

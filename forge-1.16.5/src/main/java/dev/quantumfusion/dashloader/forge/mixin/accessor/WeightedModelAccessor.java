@@ -17,10 +17,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  * (SRG runtime) needs the refmap pipeline — same pending item as
  * {@code ModelManagerCacheMixin}.
  */
-
-/**
- * @author Malionaro
- */
 @Mixin(targets = "net.minecraft.client.renderer.model.WeightedBakedModel$WeightedModel", remap = false)
 public interface WeightedModelAccessor {
     @Accessor("model")

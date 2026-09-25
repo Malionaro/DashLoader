@@ -35,8 +35,8 @@ import java.util.Map;
  * stitching); {@link #doStitch()} falls back if not every cached slot was
  * re-requested. With no cached data every method delegates to
  * {@code super}.
- * @author Malionaro
- */public class DashTextureStitcher extends Stitcher {
+ */
+public class DashTextureStitcher extends Stitcher {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-stitch");
 
     private ExportedData data;

@@ -31,8 +31,8 @@ import java.util.List;
  * modern's per-entry fallback for uncacheable fonts. {@link #isActive()}
  * still reads the config flag so the UI toggle is honest: enabling it logs a
  * one-time warning and changes nothing.
- * @author Malionaro
- */public final class FontModule {
+ */
+public final class FontModule {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-font");
     private static boolean warned;
 

@@ -13,8 +13,8 @@ import net.minecraft.client.gui.FontRenderer;
  * {@link FontRenderer#drawString}. Colors, the progress-color ramp, the glow
  * approximation (nested expanding rects with decreasing opacity) and the
  * text baseline adjustment ({@code y - lineHeight}) are kept verbatim.
- * @author Malionaro
- */public final class DrawerUtil {
+ */
+public final class DrawerUtil {
     public static final float GLOW_SIZE = 30f;
     public static final float GLOW_STRENGTH = 0.1f;
     public static final Color FAILED_COLOR = new Color(250, 68, 51);

@@ -49,7 +49,6 @@ public class DashLoaderClient implements DashEntrypoint {
 		}
 
 		CACHE = cacheManagerFactory.build(Path.of("./dashloader-cache/client/"));
-		ApiSmokeTest.run();
 	}
 
 	@Override

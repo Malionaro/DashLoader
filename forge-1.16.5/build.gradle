@@ -11,7 +11,7 @@ apply plugin: 'net.minecraftforge.gradle'
 // Only edit below this line, the above lines are required for ForgeGradle.
 apply plugin: 'java'
 
-version = '5.1.0-beta.9.4-1.16.5'
+version = '5.1.0-beta.9.5-1.16.5'
 group = 'dev.quantumfusion.dashloader'
 archivesBaseName = 'dashloader-forge-1.16.5'
 

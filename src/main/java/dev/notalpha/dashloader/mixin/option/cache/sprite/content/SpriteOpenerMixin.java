@@ -1,5 +1,6 @@
 package dev.notalpha.dashloader.mixin.option.cache.sprite.content;
 
+import dev.notalpha.dashloader.DashLoader;
 import dev.notalpha.dashloader.api.cache.CacheStatus;
 import dev.notalpha.dashloader.client.sprite.content.SpriteContentModule;
 import net.minecraft.client.renderer.texture.SpriteContents;
@@ -27,10 +28,18 @@ public interface SpriteOpenerMixin {
 			SpriteContents result = original.loadSprite(spriteLocation, resource);
 
 			SpriteContentModule.SOURCE.visit(CacheStatus.SAVE, map -> {
-				// Same sprite can be opened twice in one boot (double reload): keep the
-				// first result instead of poisoning the cache with null (which would
-				// force vanilla decoding on every load).
-				map.putIfAbsent(spriteLocation, result);
+				if (map.containsKey(spriteLocation)) {
+					SpriteContents existing = map.get(spriteLocation);
+					if (existing != null && !SpriteContentModule.sameContents(existing, result)) {
+						// Same id, different texture (e.g. wither painting vs. wither
+						// effect icon): force the vanilla mechanism by caching null.
+						DashLoader.LOG.warn("Duplicate sprite {} with different contents, using vanilla loading.", spriteLocation);
+						map.put(spriteLocation, null);
+					}
+					// Identical double open or already-poisoned id: keep as is.
+				} else {
+					map.put(spriteLocation, result);
+				}
 			});
 			return result;
 		};

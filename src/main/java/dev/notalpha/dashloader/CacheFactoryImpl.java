@@ -4,7 +4,6 @@ import dev.notalpha.dashloader.api.DashModule;
 import dev.notalpha.dashloader.api.DashObject;
 import dev.notalpha.dashloader.api.cache.Cache;
 import dev.notalpha.dashloader.api.cache.CacheFactory;
-import dev.notalpha.dashloader.api.cache.CacheHolder;
 import dev.notalpha.dashloader.api.registry.RegistryWriter;
 import dev.notalpha.dashloader.registry.MissingHandler;
 import org.apache.logging.log4j.LogManager;
@@ -72,9 +71,6 @@ public class CacheFactoryImpl implements CacheFactory {
 			id += 1;
 		}
 
-		CacheImpl cache = new CacheImpl(cacheDir.resolve(DashLoader.MOD_HASH + "/"), modules, dashObjects, this.missingHandlers);
-		// Make the cache reachable through the public api for other mods.
-		CacheHolder.set(cache);
-		return cache;
+		return new CacheImpl(cacheDir.resolve(DashLoader.MOD_HASH + "/"), modules, dashObjects, this.missingHandlers);
 	}
 }

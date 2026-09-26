@@ -22,6 +22,9 @@
       "dev.notalpha.dashloader.client.ModMenuCompat"
     ]
   },
+  "provides": [
+    "dashloader-api"
+  ],
   "license": "LGPL-3.0-only",
   "icon": "dashloader/textures/icon.png",
   "environment": "client",

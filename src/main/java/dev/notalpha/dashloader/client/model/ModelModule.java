@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Map;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.WeightedVariants;
@@ -54,6 +55,8 @@ public class ModelModule implements DashModule<ModelModule.Data> {
 
 		var outBlockModels = new IntIntList(new ArrayList<>(blockModels.size()));
 
+		final AtomicInteger uncacheableBlockModels = new AtomicInteger();
+
 		task.doForEach(blockModels, (state, model) -> {
 			if (model == null) return;
 
@@ -62,8 +65,15 @@ public class ModelModule implements DashModule<ModelModule.Data> {
 				// constructs the DashObject itself - never pass DashObjects here.
 				final int modelPtr = factory.add(model);
 				outBlockModels.put(factory.add(state), modelPtr);
-			} catch (RuntimeException ignored) {
-				// states without resolvable models (e.g. missing) are filled by vanilla on LOAD
+			} catch (RuntimeException e) {
+				// States without resolvable models (e.g. missing) are filled by vanilla on
+				// LOAD, so skipping them is safe. Log the first few so mod users can see
+				// which assets are not cached instead of silently losing speed.
+				if (uncacheableBlockModels.get() < 3) {
+					DashLoader.LOG.warn("Skipping uncacheable block model {} ({}): {}",
+							state, model.getClass().getName(), e.getMessage());
+				}
+				uncacheableBlockModels.getAndIncrement();
 			}
 		});
 

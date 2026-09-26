@@ -5,18 +5,14 @@ import dev.notalpha.dashloader.client.ui.DrawerUtil;
 import dev.notalpha.dashloader.misc.HahaManager;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.toast.Toast;
 import net.minecraft.client.toast.ToastManager;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.function.BiConsumer;
 
 public class DashToast implements Toast {
 	private static final int PROGRESS_BAR_HEIGHT = 2;
@@ -43,10 +39,6 @@ public class DashToast implements Toast {
 		for (int i = 0; i < LINES; i++) {
 			this.lines.add(new Line());
 		}
-	}
-
-	private static void drawVertex(Matrix4f m4f, VertexConsumer consumer, float z, float x, float y, Color color) {
-		consumer.vertex(m4f, x, y, z).color(color.red(), color.green(), color.blue(), color.alpha());
 	}
 
 	public int getWidth() {
@@ -115,11 +107,9 @@ public class DashToast implements Toast {
 		DrawerUtil.drawRect(context, 0, 0, width, height, DrawerUtil.BACKGROUND_COLOR);
 
 		// Draw the background lines.
-		this.drawRaw(context, (matrix4f, consumer) -> {
-			for (Line line : lines) {
-				line.draw(matrix4f, consumer);
-			}
-		});
+		for (Line line : lines) {
+			line.draw(context);
+		}
 
 		// Draw progress text
 		String progressText = this.state.getProgressText();
@@ -137,22 +127,14 @@ public class DashToast implements Toast {
 		DrawerUtil.drawRect(context, 0, barY, (int) (width * progress), PROGRESS_BAR_HEIGHT, progressColor);
 
 		// Epic rtx graphics. aka I slapped some glow on the things.
-		this.drawRaw(context, (matrix4f, consumer) -> {
-			// Line glow
-			for (Line line : lines) {
-				line.drawGlow(matrix4f, consumer);
-			}
-			// Progress bar glow
-			DrawerUtil.drawGlow(matrix4f, consumer, 0, barY, (int) (width * progress), PROGRESS_BAR_HEIGHT, 0.75f, progressColor, true, true, true, true);
-		});
+		// Line glow
+		for (Line line : lines) {
+			line.drawGlow(context, width, height);
+		}
+		// Progress bar glow
+		DrawerUtil.drawGlowClipped(context, 0, barY, (int) (width * progress), PROGRESS_BAR_HEIGHT, 0.75f, progressColor, true, true, true, true, 0, 0, width, height);
+
 		context.disableScissor();
-	}
-
-	private void drawRaw(DrawContext context, BiConsumer<Matrix4f, VertexConsumer> consumer) {
-		var matrix = context.getMatrices().peek().getPositionMatrix();
-		var vertexConsumer = context.vertexConsumers.getBuffer(RenderLayer.getGui());
-
-		consumer.accept(matrix, vertexConsumer);
 	}
 
 	public enum ColorKind {
@@ -183,8 +165,8 @@ public class DashToast implements Toast {
 			// Move the values
 			this.x += (float) (speedBoost * (0.8 + (2.5 * progress))) * delta;
 
-			// Check if not visible
-			if (x > screenWidth || x + width < 0) {
+			// Check if not visible. Lines are kept inside the toast so no scissor is needed.
+			if (x > screenWidth || x + width < 0 || x + width > screenWidth) {
 				// Randomize position
 				this.x = -width;
 				this.y = screenHeight * DashToast.this.random.nextFloat();
@@ -223,17 +205,13 @@ public class DashToast implements Toast {
 			return false;
 		}
 
-		public void draw(Matrix4f b4, VertexConsumer c) {
-			Color end = DrawerUtil.withOpacity(color, 0f);
-			drawVertex(b4, c, 0f, x + width, y, color); // right top
-			drawVertex(b4, c, 0f, x, y, end); // left top
-			drawVertex(b4, c, 0f, x, y + height, end); // left bottom
-			drawVertex(b4, c, 0f, x + width, y + height, color); // right bottom
+		public void draw(DrawContext context) {
+			DrawerUtil.drawRect(context, (int) x, (int) y, width, height, color);
 		}
 
-		public void drawGlow(Matrix4f b4, VertexConsumer c) {
+		public void drawGlow(DrawContext context, int clipWidth, int clipHeight) {
 			if (this.colorKind != ColorKind.Neutral) {
-				DrawerUtil.drawGlow(b4, c, x, y, width, height, (getWeight() + 2.0f) / 3.0f, this.color, false, true, false, true);
+				DrawerUtil.drawGlowClipped(context, x, y, width, height, (getWeight() + 2.0f) / 3.0f, this.color, false, true, false, true, 0, 0, clipWidth, clipHeight);
 			}
 		}
 

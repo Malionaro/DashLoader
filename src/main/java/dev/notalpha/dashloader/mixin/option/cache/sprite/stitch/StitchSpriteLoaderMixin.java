@@ -44,15 +44,17 @@ public final class StitchSpriteLoaderMixin {
 	@Inject(method = "<init>", at = @At("RETURN"))
 	private void dashloaderPinToCachedSize(Identifier id, int maxTextureSize, int width, int height, CallbackInfo ci) {
 		var map = SpriteStitcherModule.STITCHERS_LOAD.get(CacheStatus.LOAD);
-		if (map == null) {
-			return;
+		var data = map == null ? null : map.get(id);
+		if (data != null) {
+			this.width = data.width;
+			this.height = data.height;
+		} else {
+			// No cached packing (fresh cache): do not inherit the size of the
+			// atlas that is being replaced, otherwise a 64x pack would keep its
+			// 4096x2048 texture and the old pack stays visible in it.
+			this.width = 0;
+			this.height = 0;
 		}
-		var data = map.get(id);
-		if (data == null) {
-			return;
-		}
-		this.width = data.width;
-		this.height = data.height;
 	}
 
 	@WrapOperation(

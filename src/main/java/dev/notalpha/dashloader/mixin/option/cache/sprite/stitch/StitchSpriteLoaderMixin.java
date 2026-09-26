@@ -13,9 +13,11 @@ import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -27,6 +29,37 @@ public final class StitchSpriteLoaderMixin {
 	@Shadow
 	@Final
 	private Identifier id;
+
+	@Shadow
+	@Mutable
+	private int width;
+
+	@Shadow
+	@Mutable
+	private int height;
+
+	/**
+	 * {@code SpriteLoader.fromAtlas} passes the previous atlas dimensions and
+	 * vanilla then uses {@code max(stitched, previous)} as the atlas size. When a
+	 * cached packing is served, that keeps the atlas at the size of the pack
+	 * that was active before (e.g. 4096x2048 after unloading a 64x pack) while
+	 * only the small cached image is uploaded, so the untouched part of the
+	 * texture still holds the old pack (and the mip levels are never rewritten).
+	 * Pin the atlas to the cached packing so texture and image always match.
+	 */
+	@Inject(method = "<init>", at = @At("RETURN"))
+	private void dashloaderPinToCachedSize(Identifier id, int maxTextureSize, int width, int height, CallbackInfo ci) {
+		var map = SpriteStitcherModule.STITCHERS_LOAD.get(CacheStatus.LOAD);
+		if (map == null) {
+			return;
+		}
+		var data = map.get(id);
+		if (data == null) {
+			return;
+		}
+		this.width = data.width;
+		this.height = data.height;
+	}
 
 	@WrapOperation(
 			method = "stitch",

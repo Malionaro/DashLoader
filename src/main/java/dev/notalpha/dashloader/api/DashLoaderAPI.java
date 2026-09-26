@@ -1,8 +1,8 @@
 package dev.notalpha.dashloader.api;
 
-import dev.notalpha.dashloader.api.cache.Cache;
-import dev.notalpha.dashloader.api.cache.CacheHolder;
 import dev.notalpha.dashloader.api.cache.CacheStatus;
+import dev.notalpha.dashloader.api.cache.CacheStatusBus;
+import dev.notalpha.dashloader.client.DashLoaderClient;
 
 /**
  * Status change notifications for other mods.
@@ -39,15 +39,11 @@ public final class DashLoaderAPI {
 	 * @param action The action to run.
 	 */
 	public static void whenLoaded(Runnable action) {
-		Cache cache = CacheHolder.get();
-		if (cache == null) {
-			return;
-		}
-		if (cache.getStatus() == CacheStatus.LOAD) {
+		if (DashLoaderClient.CACHE.getStatus() == CacheStatus.LOAD) {
 			action.run();
 			return;
 		}
-		CacheHolder.addListener(status -> {
+		CacheStatusBus.addListener(status -> {
 			if (status == CacheStatus.LOAD) {
 				action.run();
 			}
@@ -62,6 +58,6 @@ public final class DashLoaderAPI {
 	 * @param listener The listener which receives the new status.
 	 */
 	public static void addStatusListener(java.util.function.Consumer<CacheStatus> listener) {
-		CacheHolder.addListener(listener);
+		CacheStatusBus.addListener(listener);
 	}
 }

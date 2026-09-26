@@ -12,7 +12,6 @@ import net.minecraft.client.toast.ToastManager;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,12 +107,9 @@ public class DashToast implements Toast {
 		this.lines = newList;
 		this.lines.addAll(newListPrio);
 
-		// Setup scissor
-		{
-			Vector4f vec = new Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
-			vec.mul(context.getMatrices().peek().getPositionMatrix());
-			context.enableScissor((int) vec.x, (int) vec.y, (int) (vec.x + width), (int) (vec.y + height));
-		}
+		// Clip everything to the toast bounds (lines and glow would
+		// otherwise spill over the toast edges onto the screen).
+		context.enableScissor(0, 0, width, height);
 
 		// Draw the ui
 		DrawerUtil.drawRect(context, 0, 0, width, height, DrawerUtil.BACKGROUND_COLOR);

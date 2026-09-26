@@ -89,16 +89,17 @@ public class SpriteContentModule implements DashModule<SpriteContentModule.Data>
 			if (width != imageB.getWidth() || height != imageB.getHeight()) {
 				return false;
 			}
-			// FNV-1a over all pixels; sprites are small and duplicates are rare.
-			long hashA = 0xcbf29ce484222325L;
-			long hashB = 0xcbf29ce484222325L;
+			// Compare every pixel instead of hashing: a hash could collide and
+			// then two different sprites would be treated as identical. Sprites are
+			// small and duplicates are rare, so this costs nothing in practice.
 			for (int y = 0; y < height; y++) {
 				for (int x = 0; x < width; x++) {
-					hashA = (hashA ^ (imageA.getColorArgb(x, y) & 0xFFFFFFFFL)) * 0x100000001b3L;
-					hashB = (hashB ^ (imageB.getColorArgb(x, y) & 0xFFFFFFFFL)) * 0x100000001b3L;
+					if (imageA.getColorArgb(x, y) != imageB.getColorArgb(x, y)) {
+						return false;
+					}
 				}
 			}
-			return hashA == hashB;
+			return true;
 		} catch (RuntimeException e) {
 			// Unreadable image data: play it safe and treat as different so the
 			// vanilla mechanism is used.

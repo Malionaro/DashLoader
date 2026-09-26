@@ -24,30 +24,6 @@ public final class StitchSpriteLoaderMixin {
 
 
 
-	/**
-	 * {@code SpriteLoader.fromAtlas} passes the previous atlas dimensions and
-	 * vanilla then uses {@code max(stitched, previous)} as the atlas size. When a
-	 * cached packing is served, that keeps the atlas at the size of the pack
-	 * that was active before (e.g. 4096x2048 after unloading a 64x pack) instead
-	 * of the size the cached packing was made for. Pin it so the atlas matches
-	 * the cached packing.
-	 */
-	@Inject(method = "<init>", at = @At("RETURN"))
-	private void dashloaderPinToCachedSize(Identifier id, int maxTextureSize, int width, int height, CallbackInfo ci) {
-		var map = SpriteStitcherModule.STITCHERS_LOAD.get(CacheStatus.LOAD);
-		var data = map == null ? null : map.get(id);
-		if (data != null) {
-			this.width = data.width;
-			this.height = data.height;
-		} else {
-			// No cached packing (fresh cache): do not inherit the size of the
-			// atlas that is being replaced, otherwise a 64x pack would keep its
-			// 4096x2048 texture and the old pack stays visible in it.
-			this.width = 0;
-			this.height = 0;
-		}
-	}
-
 	@WrapOperation(
 			method = "stitch",
 			at = @At(value = "NEW", target = "(III)Lnet/minecraft/client/texture/TextureStitcher;")

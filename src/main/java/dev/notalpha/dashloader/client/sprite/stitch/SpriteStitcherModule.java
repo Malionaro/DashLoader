@@ -35,13 +35,22 @@ public class SpriteStitcherModule implements DashModule<SpriteStitcherModule.Dat
 		task.run(new StepTask("Caching Stitchers"), (stepTask) -> stepTask.doForEach(STITCHERS_SAVE.get(CacheStatus.SAVE), (pair) -> {
 			var identifier = pair.getLeft();
 			var textureStitcher = pair.getRight();
-			// Same atlas can be stitched twice in one boot (double reload): keep the first
-			// result instead of dropping the atlas from the cache entirely.
-			if (stitchers.containsKey(identifier)) {
-				DashLoader.LOG.info("Duplicate stitcher {}, keeping first result.", identifier);
+			var fresh = new DashTextureStitcher.Data<>(writer, textureStitcher);
+			var existing = stitchers.get(identifier);
+			if (existing != null) {
+				if (sameStitch(existing, fresh)) {
+					// Same atlas stitched twice in one boot (double reload) with an
+					// identical result: keep the first one.
+					DashLoader.LOG.info("Duplicate stitcher {}, keeping first result.", identifier);
+				} else {
+					// Same atlas id, different packing: drop it from the cache like
+					// upstream instead of freezing a wrong layout.
+					DashLoader.LOG.warn("Duplicate stitcher {} with different results, dropping from cache.", identifier);
+					stitchers.remove(identifier);
+				}
 				return;
 			}
-			stitchers.put(identifier, new DashTextureStitcher.Data<>(writer, textureStitcher));
+			stitchers.put(identifier, fresh);
 		}));
 
 		var output = new IntObjectList<DashTextureStitcher.Data<?>>();
@@ -71,6 +80,38 @@ public class SpriteStitcherModule implements DashModule<SpriteStitcherModule.Dat
 	@Override
 	public Class<Data> getDataClass() {
 		return Data.class;
+	}
+
+	/**
+	 * Compares two stitch results of the same atlas id. Only used for duplicate
+	 * ids, never on the hot path.
+	 */
+	private static boolean sameStitch(DashTextureStitcher.Data<?> a, DashTextureStitcher.Data<?> b) {
+		if (a == b) {
+			return true;
+		}
+		if (a.width != b.width || a.height != b.height
+				|| a.maxWidth != b.maxWidth || a.maxHeight != b.maxHeight
+				|| a.mipLevel != b.mipLevel) {
+			return false;
+		}
+		var slotsA = a.slots.list();
+		var slotsB = b.slots.list();
+		if (slotsA.size() != slotsB.size()) {
+			return false;
+		}
+		for (int i = 0; i < slotsA.size(); i++) {
+			var entryA = slotsA.get(i);
+			var entryB = slotsB.get(i);
+			var slotA = entryA.value();
+			var slotB = entryB.value();
+			if (entryA.key() != entryB.key()
+					|| slotA.x != slotB.x || slotA.y != slotB.y
+					|| slotA.width != slotB.width || slotA.height != slotB.height) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override

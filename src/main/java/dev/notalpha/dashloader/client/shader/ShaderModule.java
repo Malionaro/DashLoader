@@ -1,5 +1,7 @@
 package dev.notalpha.dashloader.client.shader;
 
+import dev.notalpha.dashloader.DashLoader;
+
 import dev.notalpha.dashloader.api.CachingData;
 import dev.notalpha.dashloader.api.DashModule;
 import dev.notalpha.dashloader.api.cache.Cache;
@@ -46,12 +48,23 @@ public class ShaderModule implements DashModule<ShaderModule.Data> {
 //		var out3 = new IntIntList(new ArrayList<>(data3.size()));
 
 		data1.forEach((identifier, entry) -> {
-			out.put(factory.add(identifier), entry);
+			try {
+				out.put(factory.add(identifier), entry);
+			} catch (RuntimeException e) {
+				DashLoader.LOG.warn("Skipping uncacheable shader {}: {}", identifier, e.getMessage());
+			}
 		});
 
-		data2.forEach(((identifier, entry) -> {
-			out2.put(factory.add(identifier), factory.add(entry));
-		}));
+		data2.forEach((identifier, entry) -> {
+			// Register the value first: if it cannot be serialised, nothing is added
+			// at all and the shader is compiled the normal way on the next boot.
+			try {
+				int entryPointer = factory.add(entry);
+				out2.put(factory.add(identifier), entryPointer);
+			} catch (RuntimeException e) {
+				DashLoader.LOG.warn("Skipping uncacheable shader program {} ({}): {}", identifier, entry.getClass().getName(), e.getMessage());
+			}
+		});
 
 //		data3.forEach((identifier, entry) -> {
 //			out3.put(factory.add(identifier), factory.add(entry));

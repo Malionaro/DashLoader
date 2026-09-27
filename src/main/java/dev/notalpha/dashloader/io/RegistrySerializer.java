@@ -34,7 +34,6 @@ public class RegistrySerializer {
 	// 20MB
 	private static final int MIN_PER_THREAD_FRAGMENT_SIZE = 1024 * 1024 * 20;
 	// 1GB
-	private static final int MAX_FRAGMENT_SIZE = 1024 * 1024 * 1024;
 	private final Object2ObjectMap<Class<?>, Serializer<?>> serializers;
 
 	public RegistrySerializer(List<DashObjectClass<?, ?>> dashObjects) {
@@ -96,8 +95,8 @@ public class RegistrySerializer {
 
 		// Calculate amount of fragments required.
 		// One fragment per MIN_PER_THREAD_FRAGMENT_SIZE per thread, so that both
-		// writing and reading can actually use every thread. The old term
-		// "size / MAX_FRAGMENT_SIZE" forced small caches into a single fragment,
+		// writing and reading can actually use every thread. A former "one
+		// fragment per gigabyte" rule forced small caches into a single fragment,
 		// which serialised and loaded them on one thread only.
 		int maxFragments = (int) Math.min(piece.size / MIN_PER_THREAD_FRAGMENT_SIZE, Integer.MAX_VALUE);
 		int fragmentCount = Integer.max(Math.min(ThreadHandler.THREADS, maxFragments), 1);

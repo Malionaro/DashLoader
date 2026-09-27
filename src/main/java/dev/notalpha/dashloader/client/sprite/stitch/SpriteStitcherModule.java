@@ -35,7 +35,15 @@ public class SpriteStitcherModule implements DashModule<SpriteStitcherModule.Dat
 		task.run(new StepTask("Caching Stitchers"), (stepTask) -> stepTask.doForEach(STITCHERS_SAVE.get(CacheStatus.SAVE), (pair) -> {
 			var identifier = pair.getLeft();
 			var textureStitcher = pair.getRight();
-			var fresh = new DashTextureStitcher.Data<>(writer, textureStitcher);
+			DashTextureStitcher.Data<?> fresh;
+			try {
+				fresh = new DashTextureStitcher.Data<>(writer, textureStitcher);
+			} catch (RuntimeException e) {
+				// A modded Stitchable cannot be serialised: drop this atlas from the
+				// cache instead of failing the whole save. Vanilla stitches it then.
+				DashLoader.LOG.warn("Skipping uncacheable stitcher {}: {}", identifier, e.getMessage());
+				return;
+			}
 			var existing = stitchers.get(identifier);
 			if (existing != null) {
 				if (sameStitch(existing, fresh)) {

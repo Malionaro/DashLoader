@@ -229,7 +229,7 @@ public class RegistrySerializer {
 		}
 	}
 
-	private Path fragmentFilePath(Path dir, int fragment) {
+	private static Path fragmentFilePath(Path dir, int fragment) {
 		return dir.resolve("fragment-" + fragment + ".bin");
 	}
 }

@@ -98,7 +98,7 @@ public class ConfigListWidget extends ContainerObjectSelectionList<ConfigListWid
 					this.label,
 					(ConfigListWidget.this.width - textRenderer.width(label)) / 2,
 					this.getY() + entryHeight - ConfigListWidget.this.minecraft.font.lineHeight - 1,
-					0xFFFFFF,
+					0xFFFFFFFF,
 					false
 			);
 		}
@@ -150,7 +150,7 @@ public class ConfigListWidget extends ContainerObjectSelectionList<ConfigListWid
 					this.label,
 					x,
 					y + (entryHeight - ConfigListWidget.this.minecraft.font.lineHeight) / 2,
-					0xFFFFFF,
+					0xFFFFFFFF,
 					false
 			);
 

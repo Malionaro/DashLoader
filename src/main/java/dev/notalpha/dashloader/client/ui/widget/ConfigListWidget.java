@@ -95,7 +95,7 @@ public class ConfigListWidget extends ElementListWidget<ConfigListWidget.Entry> 
 					this.label,
 					(ConfigListWidget.this.width - textRenderer.getWidth(label)) / 2,
 					this.getY() + entryHeight - ConfigListWidget.this.client.textRenderer.fontHeight - 1,
-					0xFFFFFF,
+					0xFFFFFFFF,
 					false
 			);
 		}
@@ -147,7 +147,7 @@ public class ConfigListWidget extends ElementListWidget<ConfigListWidget.Entry> 
 					this.label,
 					x,
 					y + (entryHeight - ConfigListWidget.this.client.textRenderer.fontHeight) / 2,
-					0xFFFFFF,
+					0xFFFFFFFF,
 					false
 			);
 

@@ -95,8 +95,13 @@ public class MappingSerializer {
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	public boolean load(Path dir, RegistryReader reader, List<DashModule<?>> handlers) {
+		ByteBufferIO io;
 		try {
-			ByteBufferIO io = IOHelper.load(dir.resolve("mapping.bin"));
+			io = IOHelper.load(dir.resolve("mapping.bin"));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		try {
 			for (DashModule handler : handlers) {
 				if (io.getByte() == 1) {
 					Class<?> dataClass = handler.getDataClass();
@@ -113,8 +118,8 @@ public class MappingSerializer {
 			}
 
 			return true;
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		} finally {
+			IOHelper.release(io);
 		}
 	}
 }

@@ -30,7 +30,7 @@ public class ConfigHandler {
 
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private final Path configPath;
-	public Config config = new Config();
+	public volatile Config config = new Config();
 
 	public ConfigHandler(Path configPath) {
 		this.configPath = configPath;
@@ -151,3 +151,4 @@ public class ConfigHandler {
 		return FabricLoader.getInstance().isModLoaded("quilt_loader");
 	}
 }
+

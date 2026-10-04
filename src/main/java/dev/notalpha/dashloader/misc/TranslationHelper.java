@@ -1,17 +1,18 @@
 package dev.notalpha.dashloader.misc;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.locale.Language;
 
 public class TranslationHelper {
 	private static final TranslationHelper INSTANCE = new TranslationHelper();
-	private final HashMap<String, String> translations;
-	private String langCode;
+	// Read from the caching thread (DashToastState.setOverwriteText) while the client thread can rewrite it on a language change. ConcurrentHashMap, because a HashMap resize racing a get can spin forever on HotSpot.
+	private final ConcurrentHashMap<String, String> translations;
+	private volatile String langCode;
 
 	private TranslationHelper() {
-		this.translations = new HashMap<>();
+		this.translations = new ConcurrentHashMap<>();
 	}
 
 	public static TranslationHelper getInstance() {
@@ -44,3 +45,6 @@ public class TranslationHelper {
 		return this.translations.containsKey(key);
 	}
 }
+
+
+

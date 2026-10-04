@@ -24,7 +24,7 @@ public final class ThreadHandler {
 			dashThread.setName("dlc-thread-" + this.threadNumber.getAndIncrement());
 			return dashThread;
 		}
-	}, null, true);
+	}, null, false);
 
 	private ThreadHandler() {
 	}
@@ -123,3 +123,4 @@ public final class ThreadHandler {
 		}
 	}
 }
+

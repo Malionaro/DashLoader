@@ -81,6 +81,9 @@ public class Serializer<O> {
 		// memFree below hands it back deterministically.
 		var buffer = MemoryUtil.memAlloc(measure);
 		try {
+			var io = ByteBufferIO.wrap(buffer);
+			this.serializer.put(io, data);
+			io.rewind();
 
 			IOHelper.save(path, task, io, measure, ConfigHandler.instance().config.compression);
 		} catch (IOException e) {

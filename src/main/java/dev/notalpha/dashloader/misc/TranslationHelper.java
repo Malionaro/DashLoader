@@ -1,17 +1,17 @@
 package dev.notalpha.dashloader.misc;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.locale.Language;
 
 public class TranslationHelper {
 	private static final TranslationHelper INSTANCE = new TranslationHelper();
-	private final HashMap<String, String> translations;
+	private final ConcurrentHashMap<String, String> translations;
 	private String langCode;
 
 	private TranslationHelper() {
-		this.translations = new HashMap<>();
+		this.translations = new ConcurrentHashMap<>();
 	}
 
 	public static TranslationHelper getInstance() {
@@ -44,3 +44,6 @@ public class TranslationHelper {
 		return this.translations.containsKey(key);
 	}
 }
+
+
+

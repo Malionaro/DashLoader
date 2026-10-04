@@ -10,7 +10,7 @@ public abstract class Dazy<V> {
 
 	protected abstract V resolve(ErrorCollectingSpriteGetter spriteLoader);
 
-	public V get(spriteLoader) {
+	public V get(ErrorCollectingSpriteGetter spriteLoader) {
 		V local = this.loaded;
 		if (local != null) {
 			return local;

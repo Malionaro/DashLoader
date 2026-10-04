@@ -84,11 +84,16 @@ public class Serializer<O> {
 	}
 
 	public O load(Path path) {
+		ByteBufferIO io;
 		try {
-			ByteBufferIO io = IOHelper.load(path);
-			return this.serializer.get(io);
+			io = IOHelper.load(path);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+		try {
+			return this.serializer.get(io);
+		} finally {
+			IOHelper.release(io);
 		}
 	}
 }

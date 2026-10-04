@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -117,16 +118,15 @@ public class RegistrySerializer {
 		taskConsumer.accept(task);
 		// Serialize. Every fragment ends up in its own file and its own buffer, so
 		// there is nothing shared between them and the work runs on all threads.
-		List<java.util.concurrent.Callable<Void>> fragmentTasks = new ArrayList<>(fragments.size());
+		List<Callable<Void>> fragmentTasks = new ArrayList<>(fragments.size());
 		for (int k = 0; k < fragments.size(); k++) {
 			final int index = k;
 			fragmentTasks.add(() -> {
 				writeFragment(dir, index, fragments.get(index), stages, serializers);
-				task.next();
 				return null;
 			});
 		}
-		ThreadHandler.INSTANCE.parallelCallable(fragmentTasks);
+		ThreadHandler.INSTANCE.forEachCompleted(fragmentTasks, task::next);
 
 		List<ChunkInfo> chunks = new ArrayList<>();
 		for (ChunkFactory<?, ?> chunk : factory.chunks) {
@@ -146,14 +146,6 @@ public class RegistrySerializer {
 		List<StageFragment> stageFragmentMetadata = fragment.stages;
 		ByteBufferIO io = ByteBufferIO.createDirect((int) fragment.info.fileSize);
 
-		int taskSize = 0;
-		for (var stage : stageFragmentMetadata) {
-			for (var chunk : stage.chunks) {
-				taskSize += chunk.info.rangeEnd - chunk.info.rangeStart;
-			}
-		}
-		StepTask stageTask = new StepTask("stage", taskSize);
-
 		for (int i = 0; i < stageFragmentMetadata.size(); i++) {
 			StageFragment stage = stageFragmentMetadata.get(i);
 			StageData data = stages[i + fragment.info.rangeStart];
@@ -167,7 +159,6 @@ public class RegistrySerializer {
 					ChunkData.Entry<?> dashable = chunkData.dashables[i1];
 					io.putInt(dashable.pos);
 					serializer.put(io, dashable.data);
-					stageTask.next();
 				}
 			}
 		}
@@ -204,11 +195,16 @@ public class RegistrySerializer {
 			CacheFragment fragment = fragments.get(j);
 			int finalJ = j;
 			runnables.add(() -> {
+				ByteBufferIO io;
 				try {
-					ByteBufferIO io = IOHelper.load(fragmentFilePath(dir, finalJ));
-					deserialize(out, io, fragment);
+					io = IOHelper.load(fragmentFilePath(dir, finalJ));
 				} catch (IOException e) {
 					throw new RuntimeException(e);
+				}
+				try {
+					deserialize(out, io, fragment);
+				} finally {
+					IOHelper.release(io);
 				}
 			});
 		}

@@ -8,7 +8,16 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public final class DashBlockState implements DashObject<BlockState, BlockState> {
+	// The index of a state inside its block's state list, built once per block.
+	// The linear scan this replaces ran once per cached blockstate, so a save
+	// cost O(sum of N^2) BlockState.equals over all possible states.
+	private static final Map<Block, Map<BlockState, Integer>> STATE_INDEX = new ConcurrentHashMap<>();
+
 	public final int owner;
 	public final int pos;
 
@@ -19,25 +28,25 @@ public final class DashBlockState implements DashObject<BlockState, BlockState> 
 
 	public DashBlockState(BlockState blockState, RegistryWriter writer) {
 		Block block = blockState.getBlock();
-		int pos = -1;
-		Identifier owner = null;
+		Map<BlockState, Integer> index = STATE_INDEX.computeIfAbsent(block, DashBlockState::indexOf);
+		Integer found = index.get(blockState);
+		Identifier owner = BuiltInRegistries.BLOCK.getKey(block);
 
-		var states = block.getStateDefinition().getPossibleStates();
-		for (int i = 0; i < states.size(); i++) {
-			BlockState state = states.get(i);
-			if (state.equals(blockState)) {
-				pos = i;
-				owner = BuiltInRegistries.BLOCK.getKey(block);
-				break;
-			}
-		}
-
-		if (owner == null) {
+		if (owner == null || found == null) {
 			throw new RuntimeException("Could not find a blockstate for " + blockState);
 		}
 
 		this.owner = writer.add(owner);
-		this.pos = pos;
+		this.pos = found;
+	}
+
+	private static Map<BlockState, Integer> indexOf(Block block) {
+		var states = block.getStateDefinition().getPossibleStates();
+		Map<BlockState, Integer> index = new HashMap<>(states.size() * 2);
+		for (int i = 0; i < states.size(); i++) {
+			index.putIfAbsent(states.get(i), i);
+		}
+		return index;
 	}
 
 	@Override

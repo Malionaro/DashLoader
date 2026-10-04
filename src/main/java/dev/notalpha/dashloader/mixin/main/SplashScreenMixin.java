@@ -53,39 +53,42 @@ public class SplashScreenMixin {
 		DashLoader.LOG.info("Minecraft reloaded in {}", ProfilerUtil.getTimeStringFromStart(ProfilerUtil.RELOAD_START));
 		Cache cache = DashLoaderClient.CACHE;
 		if (DashLoaderClient.CACHE.getStatus() == CacheStatus.SAVE && minecraft.getToastManager().getToast(DashToast.class, Toast.NO_TOKEN) == null) {
-			DashToastState rawState;
+			final DashToastState state;
 			if (ConfigHandler.instance().config.showCachingToast) {
 				DashToast toast = new DashToast();
 				minecraft.getToastManager().addToast(toast);
-				rawState = toast.state;
+				state = toast.state;
 			} else {
-				rawState = new DashToastState();
+				state = new DashToastState();
 			}
 
 			final Thread thread = new Thread(() -> {
-				DashToastState state = rawState;
-				DashToastState finalState = state;
 				state.setStatus(DashToastStatus.PROGRESS);
 				long start = System.currentTimeMillis();
-				boolean save = cache.save(stepTask -> finalState.task = stepTask);
+				boolean save = cache.save(stepTask -> state.task = stepTask);
+				cache.reset();
+
 				if (save) {
 					state.setOverwriteText("Created cache in " + ProfilerUtil.getTimeStringFromStart(start));
-					state.setStatus(DashToastStatus.DONE);
+					state.setFinished(DashToastStatus.DONE);
 				} else {
 					// Only show toast on fail.
-					if (!ConfigHandler.instance().config.showCachingToast) {
-						DashToast toast = new DashToast();
-						minecraft.getToastManager().addToast(toast);
-						state = toast.state;
-					}
-					state.setOverwriteText("Internal error, Please check logs.");
-					state.task = new StaticTask("Crash", 0);
-					state.setStatus(DashToastStatus.CRASHED);
+					minecraft.execute(() -> {
+						DashToastState failed;
+						if (!ConfigHandler.instance().config.showCachingToast) {
+							DashToast toast = new DashToast();
+							minecraft.getToastManager().addToast(toast);
+							failed = toast.state;
+						} else {
+							failed = state;
+						}
+						failed.setOverwriteText("Internal error, Please check logs.");
+						failed.task = new StaticTask("Crash", 0);
+						failed.setFinished(DashToastStatus.CRASHED);
+					});
 				}
-				cache.reset();
-				state.setDone();
-			});
-			thread.setName("dashloader-thread");
+			}, "dashloader-thread");
+			thread.setDaemon(true);
 			thread.start();
 		} else {
 			cache.reset();

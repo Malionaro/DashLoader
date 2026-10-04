@@ -174,7 +174,6 @@ public class RegistrySerializer {
 				}
 			}
 
-		try {
 			IOHelper.save(fragmentFilePath(dir, index), new StepTask("Serializing"), io,
 					(int) fragment.info.fileSize, ConfigHandler.instance().config.compression);
 		} catch (IOException e) {

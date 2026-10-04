@@ -27,11 +27,15 @@ public class DashToast implements Toast {
 	private float progress = 0;
 	private Color progressColor = DrawerUtil.getProgressColor(progress);
 	private Visibility visibility = Visibility.SHOW;
-	// First update() call happens when the toast leaves the ToastManager queue
+	// Marks "update() has not run yet". Deliberately not a plausible timestamp,
+	// so a stray read shows up as a wildly wrong hide timer instead of quietly
+	// behaving like a real time.
+	private static final long NOT_VISIBLE_YET = -1;
+	// The first update() call happens when the toast leaves the ToastManager queue
 	// and actually becomes visible. Hide timers run from here, not from the
 	// save-thread timestamps: otherwise a toast that waited in the queue
 	// (vanilla toasts occupying slots) would hide instantly on arrival.
-	private long firstUpdateTime = -1;
+	private long firstUpdateTime = NOT_VISIBLE_YET;
 
 	public DashToast() {
 		this.state = new DashToastState();
@@ -56,7 +60,7 @@ public class DashToast implements Toast {
 
 	@Override
 	public void update(ToastManager manager, long time) {
-		if (firstUpdateTime == -1) {
+		if (firstUpdateTime == NOT_VISIBLE_YET) {
 			firstUpdateTime = System.currentTimeMillis();
 		}
 		// Get progress

@@ -11,7 +11,6 @@ import net.minecraft.util.Identifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,19 +32,9 @@ public final class DashBlockState implements DashObject<BlockState, BlockState> 
 		Block block = blockState.getBlock();
 		Map<BlockState, Integer> index = STATE_INDEX.computeIfAbsent(block, DashBlockState::indexOf);
 		Integer found = index.get(blockState);
-		Identifier owner = BuiltInRegistries.BLOCK.getKey(block);
+		Identifier owner = Registries.BLOCK.getId(block);
 
-		var states = block.getStateManager().getStates();
-		for (int i = 0; i < states.size(); i++) {
-			BlockState state = states.get(i);
-			if (state.equals(blockState)) {
-				pos = i;
-				owner = Registries.BLOCK.getId(block);
-				break;
-			}
-		}
-
-		if (owner == null) {
+		if (owner == null || found == null) {
 			throw new RuntimeException("Could not find a blockstate for " + blockState);
 		}
 
@@ -54,7 +43,7 @@ public final class DashBlockState implements DashObject<BlockState, BlockState> 
 	}
 
 	private static Map<BlockState, Integer> indexOf(Block block) {
-		var states = block.getStateDefinition().getPossibleStates();
+		var states = block.getStateManager().getStates();
 		Map<BlockState, Integer> index = new HashMap<>(states.size() * 2);
 		for (int i = 0; i < states.size(); i++) {
 			index.putIfAbsent(states.get(i), i);

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.stream.Stream;
 
 public final class CacheImpl implements Cache {
 	private static final String METADATA_FILE_NAME = "metadata.bin";
+	private static final String TMP_SUFFIX = ".tmp";
 	private final Path cacheDir;
 	// DashLoader metadata
 	private final List<DashModule<?>> cacheHandlers;
@@ -65,9 +67,18 @@ public final class CacheImpl implements Cache {
 			throw new RuntimeException("Status is not SAVE");
 		}
 		DashLoader.LOG.info("Starting DashLoader Caching");
+		// Everything is written into a sibling temp directory and moved into place
+		// once it is complete. The save runs on a daemon thread, so it can be killed
+		// at any moment while the game shuts down. Without the move, that would leave
+		// a half written cache that exists() reports as valid and the next launch
+		// would waste a full load attempt on it.
+		Path tmpDir = getTmpDir();
 		try {
 
 			Path ourDir = getDir();
+
+			// A leftover from a save that was killed before it could commit.
+			FileUtils.deleteQuietly(tmpDir.toFile());
 
 			// Max caches
 			int maxCaches = ConfigHandler.INSTANCE.config.maxCaches;
@@ -83,9 +94,10 @@ public final class CacheImpl implements Cache {
 								continue;
 							}
 
-							if (path.equals(ourDir)) {
+							if (path.equals(ourDir) || isTmpDir(path)) {
 								continue;
 							}
+
 							cacheCount += 1;
 
 							try {
@@ -123,29 +135,41 @@ public final class CacheImpl implements Cache {
 			RegistryWriterImpl factory = RegistryWriterImpl.create(missingHandlers, dashObjects);
 
 			// Mappings
-			mappingsSerializer.save(ourDir, factory, cacheHandlers, main);
+			mappingsSerializer.save(tmpDir, factory, cacheHandlers, main);
 			main.next();
 
 			// serialization
 			main.run(new StepTask("serialize", 2), (task) -> {
 				try {
-					CacheInfo info = this.registrySerializer.serialize(ourDir, factory, task::setSubTask);
+					CacheInfo info = this.registrySerializer.serialize(tmpDir, factory, task::setSubTask);
 					task.next();
-					DashLoader.METADATA_SERIALIZER.save(ourDir.resolve(METADATA_FILE_NAME), new StepTask("hi"), info);
+					DashLoader.METADATA_SERIALIZER.save(tmpDir.resolve(METADATA_FILE_NAME), new StepTask("hi"), info);
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
 				task.next();
 			});
 
+			// Commit. The rename is atomic, so getDir() either does not exist at all
+			// or is a complete cache.
+			if (Files.exists(ourDir)) {
+				this.remove();
+			}
+			Files.move(tmpDir, ourDir, StandardCopyOption.ATOMIC_MOVE);
+
 			DashLoader.LOG.info("Saved cache in {}", ProfilerUtil.getTimeStringFromStart(start));
 			return true;
 		} catch (Throwable thr) {
 			DashLoader.LOG.error("Failed caching", thr);
 			this.setStatus(CacheStatus.SAVE);
+			FileUtils.deleteQuietly(tmpDir.toFile());
 			this.remove();
 			return false;
 		}
+	}
+
+	private static boolean isTmpDir(Path path) {
+		return path.getFileName().toString().endsWith(TMP_SUFFIX);
 	}
 
 	private void loadCache() {
@@ -206,6 +230,12 @@ public final class CacheImpl implements Cache {
 			throw new RuntimeException("Cache hash has not been set.");
 		}
 		return cacheDir.resolve(hash + "/");
+	}
+
+	/** Temp directory a save writes to before it is moved onto {@link #getDir()}. */
+	private Path getTmpDir() {
+		Path dir = getDir();
+		return dir.resolveSibling(dir.getFileName() + TMP_SUFFIX);
 	}
 
 	public CacheStatus getStatus() {

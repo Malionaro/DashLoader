@@ -15,7 +15,7 @@ public abstract class Dazy<V> {
 	// reloads. Without synchronization both sides could pass the null check and
 	// build two copies of the same object graph, with the loser's copy never
 	// published but still handed to its caller.
-	public V get(spriteLoader) {
+	public V get(SpriteGetter spriteLoader) {
 		V local = this.loaded;
 		if (local != null) {
 			return local;

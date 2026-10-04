@@ -6,16 +6,25 @@ import org.jetbrains.annotations.Nullable;
 // its lazy, but dash! Used for resolution of sprites.
 public abstract class Dazy<V> {
 	@Nullable
-	private transient V loaded;
+	private transient volatile V loaded;
 
 	protected abstract V resolve(ErrorCollectingSpriteGetter spriteLoader);
 
-	public V get(ErrorCollectingSpriteGetter spriteLoader) {
-		if (loaded != null) {
-			return loaded;
+	public V get($1) {
+		V local = this.loaded;
+		if (local != null) {
+			return local;
 		}
 
-		loaded = resolve(spriteLoader);
-		return loaded;
+		synchronized (this) {
+			local = this.loaded;
+			if (local == null) {
+				local = resolve($1);
+				this.loaded = local;
+			}
+			return local;
+		}
 	}
 }
+
+

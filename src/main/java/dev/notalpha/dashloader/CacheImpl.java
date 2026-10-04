@@ -40,7 +40,7 @@ public final class CacheImpl implements Cache {
 	private final RegistrySerializer registrySerializer;
 	private final MappingSerializer mappingsSerializer;
 	private CacheStatus status;
-	private String hash;
+	private volatile String hash;
 
 	CacheImpl(Path cacheDir, List<DashModule<?>> cacheHandlers, List<DashObjectClass<?, ?>> dashObjects, List<MissingHandler<?>> missingHandlers) {
 		this.cacheDir = cacheDir;
@@ -252,3 +252,4 @@ public final class CacheImpl implements Cache {
 		}
 	}
 }
+

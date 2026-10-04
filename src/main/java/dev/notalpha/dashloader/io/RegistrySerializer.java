@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
+import java.nio.ByteBuffer;
+import org.lwjgl.system.MemoryUtil;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class RegistrySerializer {
@@ -131,30 +133,39 @@ public class RegistrySerializer {
 			java.util.Map<Class<?>, Serializer<?>> serializers) {
 		DashLoader.LOG.info("Serializing fragment {}", index);
 		List<StageFragment> stageFragmentMetadata = fragment.stages;
-		ByteBufferIO io = ByteBufferIO.createDirect((int) fragment.info.fileSize);
+		// memAlloc, not ByteBufferIO.createDirect. That one is a plain
+		// allocateDirect: the JDK zeroes the whole thing and only releases it on
+		// GC. Every fragment task holds one of these at the same time, so peak
+		// off-heap was the entire uncompressed cache size plus the per-fragment
+		// compression buffers, against MaxDirectMemorySize.
+		ByteBuffer buffer = MemoryUtil.memAlloc((int) fragment.info.fileSize);
+		try {
+			ByteBufferIO io = ByteBufferIO.wrap(buffer);
 
-		for (int i = 0; i < stageFragmentMetadata.size(); i++) {
-			StageFragment stage = stageFragmentMetadata.get(i);
-			StageData data = stages[i + fragment.info.rangeStart];
+			for (int i = 0; i < stageFragmentMetadata.size(); i++) {
+				StageFragment stage = stageFragmentMetadata.get(i);
+				StageData data = stages[i + fragment.info.rangeStart];
 
-			List<ChunkFragment> chunks = stage.chunks;
-			for (int j = 0; j < chunks.size(); j++) {
-				ChunkFragment chunk = chunks.get(j);
-				ChunkData<?, ?> chunkData = data.chunks[j + stage.info.rangeStart];
-				Serializer serializer = serializers.get(chunkData.dashObject.getDashClass());
-				for (int i1 = chunk.info.rangeStart; i1 < chunk.info.rangeEnd; i1++) {
-					ChunkData.Entry<?> dashable = chunkData.dashables[i1];
-					io.putInt(dashable.pos);
-					serializer.put(io, dashable.data);
+				List<ChunkFragment> chunks = stage.chunks;
+				for (int j = 0; j < chunks.size(); j++) {
+					ChunkFragment chunk = chunks.get(j);
+					ChunkData<?, ?> chunkData = data.chunks[j + stage.info.rangeStart];
+					Serializer serializer = serializers.get(chunkData.dashObject.getDashClass());
+					for (int i1 = chunk.info.rangeStart; i1 < chunk.info.rangeEnd; i1++) {
+						ChunkData.Entry<?> dashable = chunkData.dashables[i1];
+						io.putInt(dashable.pos);
+						serializer.put(io, dashable.data);
+					}
 				}
 			}
-		}
 
-		try {
 			IOHelper.save(dir.resolve("fragment-" + index + ".bin"), new StepTask("Serializing"), io,
 					(int) fragment.info.fileSize, ConfigHandler.INSTANCE.config.compression);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		} finally {
+			buffer.position(0);
+			MemoryUtil.memFree(buffer);
 		}
 	}
 

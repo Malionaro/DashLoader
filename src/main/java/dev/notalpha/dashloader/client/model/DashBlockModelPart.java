@@ -47,7 +47,11 @@ public final class DashBlockModelPart implements DashObject<BlockModelPart, Dash
 		this.quads = writer.add(new BakedQuadCollection(part.getQuads(null)));
 		this.faceQuads = new ObjectObjectList<>();
 		for (Direction direction : Direction.values()) {
-			this.faceQuads.put(direction, writer.add(new BakedQuadCollection(part.getQuads(direction))));
+			List<BakedQuad> forDirection = part.getQuads(direction);
+			if (forDirection.isEmpty()) {
+				continue;
+			}
+			this.faceQuads.put(direction, writer.add(new BakedQuadCollection(forDirection)));
 		}
 		this.useAo = part.useAmbientOcclusion();
 		this.sprite = writer.add(part.particleIcon());
@@ -156,3 +160,4 @@ public final class DashBlockModelPart implements DashObject<BlockModelPart, Dash
 		}
 	}
 }
+

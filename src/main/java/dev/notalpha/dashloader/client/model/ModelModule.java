@@ -69,11 +69,10 @@ public class ModelModule implements DashModule<ModelModule.Data> {
 				// States without resolvable models (e.g. missing) are filled by vanilla on
 				// LOAD, so skipping them is safe. Log the first few so mod users can see
 				// which assets are not cached instead of silently losing speed.
-				if (uncacheableBlockModels.get() < 3) {
+				if (uncacheableBlockModels.getAndIncrement() < 3) {
 					DashLoader.LOG.warn("Skipping uncacheable block model {} ({}): {}",
 							state, model.getClass().getName(), e.getMessage());
 				}
-				uncacheableBlockModels.getAndIncrement();
 			}
 		});
 

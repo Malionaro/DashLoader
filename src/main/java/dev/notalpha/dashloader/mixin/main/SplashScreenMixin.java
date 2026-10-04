@@ -46,49 +46,50 @@ public class SplashScreenMixin {
 	private void done(CallbackInfo ci) {
 		this.client.setOverlay(null);
 		if (this.client.currentScreen != null) {
-			if (this.client.currentScreen instanceof TitleScreen) {
-				TitleScreen titleScreen = new TitleScreen(false);
-				titleScreen.init(this.client, this.client.getWindow().getScaledWidth(), this.client.getWindow().getScaledHeight());
-				this.client.currentScreen = titleScreen;
-			}
+  			if (this.client.currentScreen instanceof TitleScreen) {
+  				this.client.currentScreen = new TitleScreen(false);
+  			}
 		}
 
 		DashLoader.LOG.info("Minecraft reloaded in {}", ProfilerUtil.getTimeStringFromStart(ProfilerUtil.RELOAD_START));
 		Cache cache = DashLoaderClient.CACHE;
 		if (DashLoaderClient.CACHE.getStatus() == CacheStatus.SAVE && client.getToastManager().getToast(DashToast.class, Toast.TYPE) == null) {
-			DashToastState rawState;
+			final DashToastState state;
 			if (ConfigHandler.INSTANCE.config.showCachingToast) {
 				DashToast toast = new DashToast();
 				client.getToastManager().add(toast);
-				rawState = toast.state;
+				state = toast.state;
 			} else {
-				rawState = new DashToastState();
+				state = new DashToastState();
 			}
 
 			final Thread thread = new Thread(() -> {
-				DashToastState state = rawState;
-				DashToastState finalState = state;
 				state.setStatus(DashToastStatus.PROGRESS);
 				long start = System.currentTimeMillis();
-				boolean save = cache.save(stepTask -> finalState.task = stepTask);
+				boolean save = cache.save(stepTask -> state.task = stepTask);
+				cache.reset();
+
 				if (save) {
 					state.setOverwriteText("Created cache in " + ProfilerUtil.getTimeStringFromStart(start));
-					state.setStatus(DashToastStatus.DONE);
+					state.setFinished(DashToastStatus.DONE);
 				} else {
 					// Only show toast on fail.
-					if (!ConfigHandler.INSTANCE.config.showCachingToast) {
-						DashToast toast = new DashToast();
-						client.getToastManager().add(toast);
-						state = toast.state;
-					}
-					state.setOverwriteText("Internal error, Please check logs.");
-					state.task = new StaticTask("Crash", 0);
-					state.setStatus(DashToastStatus.CRASHED);
+					client.execute(() -> {
+						DashToastState failed;
+						if (!ConfigHandler.INSTANCE.config.showCachingToast) {
+							DashToast toast = new DashToast();
+							client.getToastManager().add(toast);
+							failed = toast.state;
+						} else {
+							failed = state;
+						}
+						failed.setOverwriteText("Internal error, Please check logs.");
+						failed.task = new StaticTask("Crash", 0);
+						failed.setFinished(DashToastStatus.CRASHED);
+					});
 				}
-				cache.reset();
-				state.setDone();
-			});
-			thread.setName("dashloader-thread");
+			}, "dashloader-thread");
+			thread.setDaemon(true);
 			thread.start();
 		} else {
 			cache.reset();

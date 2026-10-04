@@ -47,10 +47,21 @@ public final class DashBlockModelPart implements DashObject<BlockStateModelPart,
 	}
 
 	public DashBlockModelPart(BlockStateModelPart part, RegistryWriter writer) {
-		this.quads = writer.add(new BakedQuadCollection(part.getQuads(null)));
+		// One getQuads(null) plus one per direction used to run seven times per
+		// part, and every one of them went through writer.add. The directional
+		// lists are filtered subsets, so they never deduplicate against the full
+		// list: every quad was registered twice, and the empty directions still
+		// burned a registry id each. Filtering the single full list and skipping
+		// empty results halves the adds and drops the empty ones entirely.
+		List<BakedQuad> all = part.getQuads(null);
+		this.quads = writer.add(new BakedQuadCollection(all));
 		this.faceQuads = new ObjectObjectList<>();
 		for (Direction direction : Direction.values()) {
-			this.faceQuads.put(direction, writer.add(new BakedQuadCollection(part.getQuads(direction))));
+			List<BakedQuad> forDirection = part.getQuads(direction);
+			if (forDirection.isEmpty()) {
+				continue;
+			}
+			this.faceQuads.put(direction, writer.add(new BakedQuadCollection(forDirection)));
 		}
 		this.useAo = part.useAmbientOcclusion();
 		Material.Baked particleMaterial = part.particleMaterial();

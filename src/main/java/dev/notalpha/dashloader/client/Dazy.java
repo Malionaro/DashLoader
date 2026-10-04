@@ -10,7 +10,7 @@ public abstract class Dazy<V> {
 
 	protected abstract V resolve(ErrorCollectingSpriteGetter spriteLoader);
 
-	public V get($1) {
+	public V get(spriteLoader) {
 		V local = this.loaded;
 		if (local != null) {
 			return local;
@@ -19,12 +19,13 @@ public abstract class Dazy<V> {
 		synchronized (this) {
 			local = this.loaded;
 			if (local == null) {
-				local = resolve($1);
+				local = resolve(spriteLoader);
 				this.loaded = local;
 			}
 			return local;
 		}
 	}
 }
+
 
 

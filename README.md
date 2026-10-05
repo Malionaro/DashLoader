@@ -20,7 +20,7 @@ DashLoader is a client-side cache for the resource reload. The first time you st
 
 It invalidates itself the way you would expect: the cache key is derived from your mod list, the mod versions and your enabled resource packs, so adding a mod or swapping a pack produces a fresh cache on its own. Press `F3 + T` to force a rebuild while you are iterating on assets.
 
-| | |
+| Aspect | Detail |
 |---|---|
 | ![Java](https://img.shields.io/badge/java-21%20%2F%2025-8A2BE2) | 1.21.x needs Java 21, 26.x needs Java 25 |
 | ![License](https://img.shields.io/badge/license-LGPL--3.0-blue) | LGPL-3.0-only, same as upstream |

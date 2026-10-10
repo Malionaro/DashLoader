@@ -42,6 +42,15 @@ public interface SpriteContentsAccessor {
 	void setHeight(int height);
 
 	@Accessor
+	java.util.List<ResourceMetadataSerializer.Value<?>> getAdditionalMetadata();
+
+	@Accessor
+	MipmapStrategy getStrategy();
+
+	@Accessor
+	float getCutoffBias();
+
+	@Accessor
 	@Mutable
 	void setAdditionalMetadata(java.util.List<ResourceMetadataSerializer.Value<?>> additionalMetadata);
 

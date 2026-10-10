@@ -84,6 +84,9 @@ dependencies {
     modRuntimeOnly fabricApi.module("fabric-lifecycle-events-v1", activeFabricApi)
     modRuntimeOnly fabricApi.module("fabric-resource-loader-v0", activeFabricApi)
     modRuntimeOnly fabricApi.module("fabric-screen-api-v1", activeFabricApi)
+    testImplementation "org.junit.jupiter:junit-jupiter:5.11.4"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.11.4"
+
 }
 
 test {

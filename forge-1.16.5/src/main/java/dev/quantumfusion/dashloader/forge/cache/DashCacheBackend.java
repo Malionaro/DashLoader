@@ -77,6 +77,7 @@ public final class DashCacheBackend {
     private static volatile String modHash;
     private static volatile String packHash;
     private static volatile boolean saveStarted;
+    private static volatile Path loadedDir;
 
     private DashCacheBackend() {
     }
@@ -121,9 +122,6 @@ public final class DashCacheBackend {
      * from mod construction are harmless.
      */
     public static synchronized void ensureLoaded() {
-        if (status != CacheStatus.IDLE) {
-            return;
-        }
         try {
             modHash = computeModHash();
         } catch (Exception e) {
@@ -138,8 +136,29 @@ public final class DashCacheBackend {
             LOGGER.debug("Resource packs not ready yet, deferring cache init.");
             return;
         }
+
         Path dir = getDir();
-        if (Files.isDirectory(dir) && Files.exists(dir.resolve(INFO_FILE))) {
+        boolean present = Files.isDirectory(dir) && Files.exists(dir.resolve(INFO_FILE));
+
+        if (status == CacheStatus.LOAD) {
+            if (dir.equals(loadedDir)) {
+                return;
+            }
+            if (present) {
+                loadCache(dir);
+            } else {
+                status = CacheStatus.SAVE;
+                ModelModule.clearLoad();
+                LOGGER.info("DashLoader: no cache at {}, will SAVE after reload.", dir);
+            }
+            return;
+        }
+
+        if (status != CacheStatus.IDLE) {
+            return;
+        }
+
+        if (present) {
             status = CacheStatus.LOAD;
             loadCache(dir);
         } else {
@@ -265,6 +284,7 @@ public final class DashCacheBackend {
         modHash = null;
         packHash = null;
         saveStarted = false;
+        loadedDir = null;
         ModelModule.reset();
         SpriteContentModule.reset();
         SpriteStitcherModule.reset();
@@ -300,9 +320,11 @@ public final class DashCacheBackend {
                 SplashModule.load(splashes);
             }
             LOGGER.info("Loaded DashLoader cache from {} in {} ms.", dir, System.currentTimeMillis() - start);
+            loadedDir = dir;
         } catch (Exception e) {
             LOGGER.error("Failed loading DashLoader cache, falling back to SAVE.", e);
             status = CacheStatus.SAVE;
+            loadedDir = null;
             removeQuietly(dir);
         }
     }

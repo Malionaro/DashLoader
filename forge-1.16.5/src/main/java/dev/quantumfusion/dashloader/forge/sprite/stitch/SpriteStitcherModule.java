@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Forge 1.16.5 port of modern {@code SpriteStitcherModule}
@@ -28,9 +29,9 @@ public final class SpriteStitcherModule {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-stitch");
 
     /** SAVE-stage: finished stitch runs keyed by atlas id. Mirrors modern {@code STITCHERS_SAVE}. */
-    public static final Map<ResourceLocation, DashTextureStitcher.Data> STITCHERS_SAVE = new LinkedHashMap<>();
+    public static final Map<ResourceLocation, DashTextureStitcher.Data> STITCHERS_SAVE = new ConcurrentHashMap<>();
     /** LOAD-stage: exported stitch data keyed by atlas id. Mirrors modern {@code STITCHERS_LOAD}. */
-    public static final Map<ResourceLocation, DashTextureStitcher.ExportedData> STITCHERS_LOAD = new LinkedHashMap<>();
+    public static final Map<ResourceLocation, DashTextureStitcher.ExportedData> STITCHERS_LOAD = new ConcurrentHashMap<>();
 
     private SpriteStitcherModule() {
     }

@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Forge 1.16.5 port of modern {@code SplashModule}
@@ -25,9 +26,9 @@ public final class SplashModule {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-splash");
 
     /** Staged splash texts. Mirrors modern {@code SplashModule.TEXTS}. */
-    public static final List<String> TEXTS = new ArrayList<>();
+    public static final List<String> TEXTS = new CopyOnWriteArrayList<>();
     /** Restored splash texts for the mixin to serve. */
-    public static final List<String> LOADED = new ArrayList<>();
+    public static final List<String> LOADED = new CopyOnWriteArrayList<>();
 
     private SplashModule() {
     }

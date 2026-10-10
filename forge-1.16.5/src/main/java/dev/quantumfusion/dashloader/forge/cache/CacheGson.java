@@ -61,9 +61,7 @@ import java.util.List;
  *       lambdas and are rebuilt via {@code Selector#getPredicate} on LOAD,
  *       so only the tree is stored. The part-model {@code VariantList} is
  *       likewise bake-time only (the baked part is cached separately), so a
- *       deserialized selector carries an empty one. Unknown (modded)
- *       {@code ICondition} implementations fail loudly instead of
- *       corrupting the cache.</li>
+ *       deserialized selector carries an empty one.</li>
  * </ul>
  *
  * <p>{@link net.minecraft.util.Direction} (enum) and all primitive/collection
@@ -71,6 +69,18 @@ import java.util.List;
  */
 public final class CacheGson {
     private CacheGson() {
+    }
+
+    public static void checkSelectors(List<Selector> selectors) {
+        if (selectors == null) {
+            return;
+        }
+        for (Selector selector : selectors) {
+            if (selector == null) {
+                continue;
+            }
+            SelectorAdapter.writeCondition(((SelectorAccessor) selector).getCondition());
+        }
     }
 
     public static Gson create() {
@@ -189,9 +199,7 @@ public final class CacheGson {
 
     /**
      * Serializes unbaked multipart {@link Selector}s as their condition
-     * tree. Only vanilla {@code ICondition} implementations are supported
-     * (anything else throws loudly — a corrupt cache entry is worse than a
-     * vanilla fallback).
+     * tree. Only vanilla {@code ICondition} implementations are supported.
      */
     private static final class SelectorAdapter
             implements JsonSerializer<Selector>, JsonDeserializer<Selector> {

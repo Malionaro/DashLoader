@@ -18,13 +18,7 @@ import java.util.Objects;
  *   <li>Modern {@code SpriteContents} (pixels + size + animation) and
  *       {@code Sprite} (atlas position) are one class in 1.16.5:
  *       {@code TextureAtlasSprite}. This port snapshots the <em>content</em>
- *       side: sprite id, pixel data and dimensions, carried as
- *       {@link TextureAtlasSprite.Info} (id + size + animation metadata)
- *       plus an RGBA pixel copy.</li>
- *   <li>Pixels are stored as an RGBA {@code int[]} via
- *       {@link NativeImage#getPixelRGBA} /
- *       {@link NativeImage#setPixelRGBA} (both public in 1.16.5), so no
- *       accessor mixin is needed.</li>
+ *       side: sprite id, dimensions and animation metadata.</li>
  *   <li>Atlas <em>position</em> (x/y/width on the sheet) is the stitch
  *       module's job ({@code DashTextureStitcher}), same split as modern
  *       (content vs stitch modules).</li>
@@ -34,7 +28,7 @@ import java.util.Objects;
  * <ul>
  *   <li>Animation metadata round-trip is a stub: frame index/time pairs are
  *       stored, but rebuilding the vanilla
- *       {@code AnimationMetadataSection} for the {@link Info} constructor is
+ *       {@code AnimationMetadataSection} for the {@code Info} constructor is
  *       a cache-backend TODO (vanilla parses it from {@code .mcmeta} JSON;
  *       section construction from parts is unwired). Restored sprites are
  *       non-animated until that lands.</li>
@@ -45,33 +39,14 @@ public final class DashSpriteContents {
     public final ResourceLocation id;
     public final int width;
     public final int height;
-    /** Row-major RGBA pixels ({@code NativeImage} format), {@code width * height} entries. */
-    public final int[] pixels;
     /** Animation frames (index + per-frame time); empty for static sprites. */
     public final List<Frame> frames;
 
-    public DashSpriteContents(ResourceLocation id, int width, int height,
-            int[] pixels, List<Frame> frames) {
+    public DashSpriteContents(ResourceLocation id, int width, int height, List<Frame> frames) {
         this.id = id;
         this.width = width;
         this.height = height;
-        this.pixels = pixels;
         this.frames = frames;
-    }
-
-    /** Snapshot content for {@code info} from a source image (e.g. the stitch input). */
-    public static DashSpriteContents toDash(TextureAtlasSprite.Info info, NativeImage image) {
-        int width = info.getSpriteWidth();
-        int height = info.getSpriteHeight();
-        int[] pixels = new int[width * height];
-        int count = 0;
-        for (int y = 0; y < height && y < image.getHeight(); y++) {
-            for (int x = 0; x < width && x < image.getWidth(); x++) {
-                pixels[count++] = image.getPixelRGBA(x, y);
-            }
-        }
-        return new DashSpriteContents(info.getSpriteLocation(), width, height,
-                pixels, new ArrayList<Frame>());
     }
 
     /**
@@ -79,10 +54,8 @@ public final class DashSpriteContents {
      * {@code AtlasTextureStitchMixin} with per-entry skip resilience at the
      * call site, mirroring modern per-sprite {@code try/catch}).
      *
-     * <p>Pixels come from the first decoded frame ({@code frames[0]},
-     * exposed via {@link TextureAtlasSpriteAccessor}); dimensions are clamped
-     * to the frame so oversized atlas padding never overruns the buffer.
-     * Animation is recorded as static (same stub as {@link #toDash} — the
+     * <p>Dimensions are clamped to the frame so oversized atlas padding is never
+     * reported. Animation is recorded as static (the
      * {@code AnimationMetadataSection} round-trip is a cache-backend TODO).
      *
      * @throws IllegalArgumentException when the sprite has no decoded frames
@@ -98,32 +71,7 @@ public final class DashSpriteContents {
         if (width <= 0 || height <= 0) {
             throw new IllegalArgumentException("Sprite has empty dimensions: " + sprite.getName());
         }
-        int[] pixels = new int[width * height];
-        int count = 0;
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                pixels[count++] = image.getPixelRGBA(x, y);
-            }
-        }
-        return new DashSpriteContents(sprite.getName(), width, height,
-                pixels, new ArrayList<Frame>());
-    }
-
-    /** Rebuild the stitch input. Animation section is {@code null} (see class javadoc). */
-    public TextureAtlasSprite.Info toInfo() {
-        return new TextureAtlasSprite.Info(id, width, height, null);
-    }
-
-    /** Rebuild the pixel image for the stitch input. */
-    public NativeImage toImage() {
-        NativeImage image = new NativeImage(width, height, false);
-        int count = 0;
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                image.setPixelRGBA(x, y, pixels[count++]);
-            }
-        }
-        return image;
+        return new DashSpriteContents(sprite.getName(), width, height, new ArrayList<Frame>());
     }
 
     @Override
@@ -134,7 +82,6 @@ public final class DashSpriteContents {
         return width == that.width
                 && height == that.height
                 && Objects.equals(id, that.id)
-                && java.util.Arrays.equals(pixels, that.pixels)
                 && Objects.equals(frames, that.frames);
     }
 
@@ -143,7 +90,6 @@ public final class DashSpriteContents {
         int result = id == null ? 0 : id.hashCode();
         result = 31 * result + width;
         result = 31 * result + height;
-        result = 31 * result + java.util.Arrays.hashCode(pixels);
         result = 31 * result + (frames == null ? 0 : frames.hashCode());
         return result;
     }

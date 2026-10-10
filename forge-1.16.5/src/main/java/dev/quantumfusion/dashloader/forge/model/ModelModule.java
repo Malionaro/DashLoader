@@ -1,6 +1,7 @@
 package dev.quantumfusion.dashloader.forge.model;
 
 import dev.quantumfusion.dashloader.forge.DashLoaderConfig;
+import dev.quantumfusion.dashloader.forge.cache.CacheGson;
 import dev.quantumfusion.dashloader.forge.mixin.accessor.MultipartBakedModelAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.model.IBakedModel;
@@ -21,6 +22,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
@@ -76,7 +78,7 @@ public final class ModelModule {
     public static final String SYNTHETIC_PART_MARKER = "/__dashloader_part_";
 
     /** SAVE-stage: top baked models keyed by model id. Mirrors modern {@code BAKED_MODEL_PARTS}. */
-    public static final Map<ResourceLocation, IBakedModel> SAVE_TOP_MODELS = new LinkedHashMap<>();
+    public static final Map<ResourceLocation, IBakedModel> SAVE_TOP_MODELS = new ConcurrentHashMap<>();
 
     /**
      * SAVE-stage: unbaked selectors + owning block per baked multipart
@@ -175,6 +177,7 @@ public final class ModelModule {
                                 key, bakedCount);
                     } else {
                         try {
+                            CacheGson.checkSelectors(staged.selectors);
                             multipart.put(key, DashMultipartBakedModel.toDash(
                                     (MultipartBakedModel) model, staged.selectors, staged.owner,
                                     part -> resolvePartId(part, key, basic, weighted, idsByModel)));

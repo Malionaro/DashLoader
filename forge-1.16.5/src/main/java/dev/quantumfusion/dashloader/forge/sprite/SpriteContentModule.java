@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Forge 1.16.5 port of modern {@code SpriteContentModule}
@@ -28,9 +29,9 @@ public final class SpriteContentModule {
     private static final Logger LOGGER = LogManager.getLogger("dashloader-sprite");
 
     /** SAVE-stage: sprite contents keyed by sprite id. Mirrors modern {@code SOURCE}. */
-    public static final Map<ResourceLocation, DashSpriteContents> SAVE = new LinkedHashMap<>();
+    public static final Map<ResourceLocation, DashSpriteContents> SAVE = new ConcurrentHashMap<>();
     /** LOAD-stage: restored contents for the stitch path to consume. */
-    public static final Map<ResourceLocation, DashSpriteContents> LOAD = new LinkedHashMap<>();
+    public static final Map<ResourceLocation, DashSpriteContents> LOAD = new ConcurrentHashMap<>();
 
     private SpriteContentModule() {
     }

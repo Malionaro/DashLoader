@@ -76,6 +76,22 @@ public final class IOHelper {
 		return buffer;
 	}
 
+	private static final ThreadLocal<ByteBuffer> COMPRESS_SCRATCH =
+			ThreadLocal.withInitial(() -> MemoryUtil.memAlloc(1));
+
+	private static ByteBuffer compressBuffer(int fileSize, byte compressionLevel) {
+		final long required = Zstd.compressBound(fileSize);
+		ByteBuffer buffer = COMPRESS_SCRATCH.get();
+		if (buffer.capacity() < required) {
+			if (buffer.capacity() > 1) {
+				MemoryUtil.memFree(buffer);
+			}
+			buffer = MemoryUtil.memAlloc((int) required);
+			COMPRESS_SCRATCH.set(buffer);
+		}
+		return buffer.clear();
+	}
+
 	public static void save(Path path, StepTask task, ByteBufferIO io, int fileSize, byte compressionLevel) throws IOException {
 		io.rewind();
 		io.byteBuffer.limit(fileSize);
@@ -84,10 +100,7 @@ public final class IOHelper {
 			try {
 				if (compressionLevel > 0) {
 					task.reset(4);
-					// Allocate. Owned here and freed in finally, instead of waiting
-					// for the GC to clean up a large direct buffer.
-					final long maxSize = Zstd.compressBound(fileSize);
-					final ByteBuffer dst = MemoryUtil.memAlloc((int) maxSize);
+					final ByteBuffer dst = compressBuffer(fileSize, compressionLevel);
 					try {
 						task.next();
 
@@ -96,7 +109,7 @@ public final class IOHelper {
 						task.next();
 
 						// Write
-						dst.position(0);
+						dst.clear();
 						dst.limit((int) size);
 						map = channel.map(FileChannel.MapMode.READ_WRITE, 0, size + 5).order(ByteOrder.LITTLE_ENDIAN);
 						task.next();
@@ -106,8 +119,7 @@ public final class IOHelper {
 						map.put(dst);
 						io.close();
 					} finally {
-						dst.position(0);
-						MemoryUtil.memFree(dst);
+						dst.clear();
 					}
 				} else {
 					task.reset(2);

@@ -148,6 +148,11 @@ public final class DashBlockStateModel implements DashObject<BlockStateModel, Da
 	 */
 	public static final class DashUnbakedGrouped implements BlockStateModel.UnbakedRoot {
 		private final Dazy<? extends BlockStateModel> model;
+private record SpriteGetterHolder(ModelBaker baker, SpriteGetter sprites) {
+}
+
+private static volatile SpriteGetterHolder spriteGetterHolder;
+
 
 		public DashUnbakedGrouped(Dazy<? extends BlockStateModel> model) {
 			this.model = model;
@@ -157,13 +162,18 @@ public final class DashBlockStateModel implements DashObject<BlockStateModel, Da
 		public BlockStateModel bake(BlockState state, ModelBaker baker) {
 			// ModelBaker no longer hands out a SpriteGetter; resolve sprites through its
 			// MaterialBaker instead. All cached block sprites live in the block atlas.
-			SpriteGetter sprites = id -> baker.materials().get(new Material(id.texture()), () -> "dashloader").sprite();
-			return this.model.get(sprites);
+			SpriteGetterHolder holder = spriteGetterHolder;
+			if (holder == null || holder.baker() != baker) {
+			    SpriteGetter sprites = id -> baker.materials().get(new Material(id.texture()), () -> "dashloader").sprite();
+			    holder = new SpriteGetterHolder(baker, sprites);
+			    spriteGetterHolder = holder;
+			}
+			return this.model.get(holder.sprites());
 		}
 
 		@Override
 		public Object visualEqualityGroup(BlockState state) {
-			return state;
+			return this.model;
 		}
 
 		@Override

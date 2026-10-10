@@ -8,6 +8,7 @@ import dev.notalpha.dashloader.client.font.*;
 import dev.notalpha.dashloader.client.blockstate.DashBlockState;
 import dev.notalpha.dashloader.client.identifier.DashIdentifier;
 import dev.notalpha.dashloader.client.identifier.DashSpriteIdentifier;
+import dev.notalpha.dashloader.client.language.LanguageModule;
 import dev.notalpha.dashloader.client.model.DashBlockModelPart;
 import dev.notalpha.dashloader.client.model.DashBlockStateModel;
 import dev.notalpha.dashloader.client.model.DashWeightedBlockStateModel;
@@ -29,7 +30,6 @@ import java.util.List;
 
 public class DashLoaderClient implements DashEntrypoint {
 	public static final Cache CACHE;
-	public static volatile boolean NEEDS_RELOAD = false;
 
 	static {
 		CacheFactory cacheManagerFactory = CacheFactory.create();
@@ -44,6 +44,7 @@ public class DashLoaderClient implements DashEntrypoint {
 	@Override
 	public void onDashLoaderInit(CacheFactory factory) {
 		factory.addModule(new FontModule());
+		factory.addModule(new LanguageModule());
 		factory.addModule(new ModelModule());
 		factory.addModule(new SplashModule());
 		factory.addModule(new SpriteStitcherModule());

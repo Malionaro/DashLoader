@@ -292,12 +292,21 @@ public class ConfigListWidget extends ContainerObjectSelectionList<ConfigListWid
 
 	class IntFieldEntry extends TextFieldEntry {
 		IntFieldEntry(String label, int value, int defaultValue, IntConsumer saveCallback) {
-			super(label, String.valueOf(value), String.valueOf(defaultValue), chr -> chr >= '0' && chr <= '9', str -> saveCallback.accept(Integer.parseInt(str)));
+			super(label, String.valueOf(value), String.valueOf(defaultValue), chr -> (chr >= '0' && chr <= '9') || chr == '-', str -> saveCallback.accept(parseInt(str)));
 
 			((EditBox) this.widget).setResponder(text -> {
 				this.value = text.isEmpty() ? "0" : text;
 				ConfigListWidget.this.update();
 			});
+		}
+
+		private static int parseInt(String str) {
+			try {
+				return Integer.parseInt(str);
+			} catch (NumberFormatException e) {
+				boolean negative = !str.isEmpty() && str.charAt(0) == '-';
+				return negative ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+			}
 		}
 
 		@Override

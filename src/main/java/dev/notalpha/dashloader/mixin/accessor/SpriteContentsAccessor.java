@@ -43,6 +43,9 @@ public interface SpriteContentsAccessor {
 	void setHeight(int height);
 
 	@Accessor
+	List<ResourceMetadataSerializer.Value<?>> getAdditionalMetadata();
+
+	@Accessor
 	@Mutable
 	void setAdditionalMetadata(List<ResourceMetadataSerializer.Value<?>> additionalMetadata);
 }

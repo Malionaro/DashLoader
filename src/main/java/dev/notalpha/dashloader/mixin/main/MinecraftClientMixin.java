@@ -12,12 +12,6 @@ import java.util.concurrent.CompletableFuture;
 
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin {
-	@Inject(method = "reloadResources()Ljava/util/concurrent/CompletableFuture;",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;reloadResources(ZLnet/minecraft/client/MinecraftClient$LoadingContext;)Ljava/util/concurrent/CompletableFuture;"))
-	private void requestReload(CallbackInfoReturnable<CompletableFuture<Void>> cir) {
-		DashLoaderClient.NEEDS_RELOAD = true;
-	}
-
 	@Inject(method = "reloadResources(ZLnet/minecraft/client/MinecraftClient$LoadingContext;)Ljava/util/concurrent/CompletableFuture;", at = @At(value = "RETURN"))
 	private void reloadComplete(boolean force, MinecraftClient.LoadingContext loadingContext, CallbackInfoReturnable<CompletableFuture<Void>> cir) {
 		cir.getReturnValue().thenRun(() -> {

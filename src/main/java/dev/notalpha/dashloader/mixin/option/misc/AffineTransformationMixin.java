@@ -1,5 +1,6 @@
 package dev.notalpha.dashloader.mixin.option.misc;
 
+import dev.notalpha.dashloader.mixin.accessor.AffineTransformationAccessor;
 import net.minecraft.util.math.AffineTransformation;
 import org.joml.Matrix4fc;
 import org.spongepowered.asm.mixin.Final;
@@ -17,14 +18,14 @@ public class AffineTransformationMixin {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof AffineTransformationMixin that)) return false;
-		if (!super.equals(o)) return false;
+		if (o == null || getClass() != o.getClass()) return false;
 
-		return Objects.equals(matrix, that.matrix);
+		AffineTransformation that = (AffineTransformation) o;
+		return Objects.equals(matrix, ((AffineTransformationAccessor) (Object) that).getMatrix());
 	}
 
 	@Override
 	public int hashCode() {
-		return matrix.hashCode();
+		return 31 + matrix.hashCode();
 	}
 }

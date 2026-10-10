@@ -40,7 +40,7 @@ public class SplashScreenMixin {
 	private boolean reloading;
 
 	@Inject(
-			method = "tick",
+			method = "method_74217",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J", shift = At.Shift.AFTER)
 	)
 	private void done(CallbackInfo ci) {

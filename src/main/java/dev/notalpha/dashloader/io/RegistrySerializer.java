@@ -5,6 +5,7 @@ import dev.notalpha.dashloader.DashObjectClass;
 import dev.notalpha.dashloader.api.DashObject;
 import dev.notalpha.dashloader.config.ConfigHandler;
 import dev.notalpha.dashloader.io.data.CacheInfo;
+import dev.notalpha.dashloader.misc.ProfilerUtil;
 import dev.notalpha.dashloader.io.data.ChunkInfo;
 import dev.notalpha.dashloader.io.data.fragment.CacheFragment;
 import dev.notalpha.dashloader.io.data.fragment.ChunkFragment;
@@ -36,7 +37,6 @@ import org.lwjgl.system.MemoryUtil;
 public class RegistrySerializer {
 	// 20MB
 	private static final int MIN_PER_THREAD_FRAGMENT_SIZE = 1024 * 1024 * 20;
-	// 1GB
 	private final Object2ObjectMap<Class<?>, Serializer<?>> serializers;
 
 	public RegistrySerializer(List<DashObjectClass<?, ?>> dashObjects) {
@@ -71,7 +71,9 @@ public class RegistrySerializer {
 
 			value[i] = new SimplePiece(value2);
 		}
+		long measureStart = System.currentTimeMillis();
 		SimplePiece piece = new SimplePiece(value);
+		ProfilerUtil.phase("measuring", System.currentTimeMillis() - measureStart);
 
 		int[][] stageSizes = new int[stages.length][];
 		for (int i = 0; i < stages.length; i++) {
@@ -103,8 +105,9 @@ public class RegistrySerializer {
 			fragments.add(new CacheFragment(fragment));
 		}
 
-		StepTask task = new StepTask("fragment", fragments.size() * 2);
+		StepTask task = new StepTask("fragment", fragments.size());
 		taskConsumer.accept(task);
+		long writeStart = System.currentTimeMillis();
 		// Serialize. Every fragment ends up in its own file and its own buffer, so
 		// there is nothing shared between them and the work runs on all threads.
 		List<Callable<Void>> fragmentTasks = new ArrayList<>(fragments.size());
@@ -114,6 +117,7 @@ public class RegistrySerializer {
 				writeFragment(dir, index, fragments.get(index), stages, serializers);
 				return null;
 			});
+		ProfilerUtil.phase("writing fragments", System.currentTimeMillis() - writeStart);
 		}
 		ThreadHandler.INSTANCE.forEachCompleted(fragmentTasks, task::next);
 

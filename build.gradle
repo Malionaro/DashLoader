@@ -31,14 +31,6 @@ repositories {
     maven {
         url 'https://jitpack.io'
     }
-    // Exklusiv fuer dev.notalpha-Artefakte (Hyphen, Taski), damit andere Deps nie hier angefragt werden.
-    // Hinweis: Server aktuell teils unreachable (Timeouts). Bei Fehlern: erneut versuchen oder Artefakte vendorn, siehe README.
-    maven {
-        url "https://notalpha.dev/maven/releases"
-        content {
-            includeGroup "dev.notalpha"
-        }
-    }
 }
 
 // Mojang ships Java 25 to end users in 26.x, so mods target Java 25.

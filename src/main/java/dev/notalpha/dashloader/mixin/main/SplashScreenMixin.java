@@ -40,10 +40,10 @@ public class SplashScreenMixin {
 	private boolean reloading;
 
 	@Inject(
-			method = "tick",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J", shift = At.Shift.AFTER)
+			method = "method_25394",
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J", shift = At.Shift.BEFORE, ordinal = 1)
 	)
-	private void done(CallbackInfo ci) {
+	private void done(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
 		this.client.setOverlay(null);
 		if (this.client.currentScreen != null) {
   			if (this.client.currentScreen instanceof TitleScreen) {

@@ -39,7 +39,6 @@ import java.util.List;
 
 public class DashLoaderClient implements DashEntrypoint {
 	public static final Cache CACHE;
-	public static volatile boolean NEEDS_RELOAD = false;
 
 	static {
 		CacheFactory cacheManagerFactory = CacheFactory.create();

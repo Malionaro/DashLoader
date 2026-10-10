@@ -7,7 +7,9 @@ import dev.notalpha.dashloader.client.DashLoaderClient;
 import dev.notalpha.dashloader.client.ui.toast.DashToast;
 import dev.notalpha.dashloader.client.ui.toast.DashToastState;
 import dev.notalpha.dashloader.client.ui.toast.DashToastStatus;
+import dev.notalpha.dashloader.client.ui.toast.StatsToast;
 import dev.notalpha.dashloader.config.ConfigHandler;
+import dev.notalpha.dashloader.misc.CacheStats;
 import dev.notalpha.dashloader.misc.ProfilerUtil;
 import dev.notalpha.taski.builtin.StaticTask;
 import net.minecraft.client.Minecraft;
@@ -51,6 +53,10 @@ public class SplashScreenMixin {
 
 		DashLoader.LOG.info("Minecraft reloaded in {}", ProfilerUtil.getTimeStringFromStart(ProfilerUtil.RELOAD_START));
 		Cache cache = DashLoaderClient.CACHE;
+		if (ConfigHandler.INSTANCE.config.showStats && CacheStats.hasStats()) {
+			this.minecraft.execute(() -> minecraft.gui.toastManager().addToast(
+					new StatsToast(CacheStats.format())));
+		}
 		if (DashLoaderClient.CACHE.getStatus() == CacheStatus.SAVE && minecraft.gui.toastManager().getToast(DashToast.class, Toast.NO_TOKEN) == null) {
 			final DashToastState state;
 			if (ConfigHandler.INSTANCE.config.showCachingToast) {
@@ -70,6 +76,8 @@ public class SplashScreenMixin {
 				if (save) {
 					state.setOverwriteText("Created cache in " + ProfilerUtil.getTimeStringFromStart(start));
 					state.setFinished(DashToastStatus.DONE);
+					CacheStats.writeVanillaTiming(cache.getDir(),
+							System.currentTimeMillis() - ProfilerUtil.RELOAD_START);
 				} else {
 					// Only show toast on fail.
 					minecraft.execute(() -> {

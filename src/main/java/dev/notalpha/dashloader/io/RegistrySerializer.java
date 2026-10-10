@@ -5,6 +5,7 @@ import dev.notalpha.dashloader.DashObjectClass;
 import dev.notalpha.dashloader.api.DashObject;
 import dev.notalpha.dashloader.config.ConfigHandler;
 import dev.notalpha.dashloader.io.data.CacheInfo;
+import dev.notalpha.dashloader.misc.ProfilerUtil;
 import dev.notalpha.dashloader.io.data.ChunkInfo;
 import dev.notalpha.dashloader.io.data.fragment.CacheFragment;
 import dev.notalpha.dashloader.io.data.fragment.ChunkFragment;
@@ -36,7 +37,6 @@ import org.lwjgl.system.MemoryUtil;
 public class RegistrySerializer {
 	// 20MB
 	private static final int MIN_PER_THREAD_FRAGMENT_SIZE = 1024 * 1024 * 20;
-	// 1GB
 	private final Object2ObjectMap<Class<?>, Serializer<?>> serializers;
 
 	public RegistrySerializer(List<DashObjectClass<?, ?>> dashObjects) {
@@ -54,23 +54,31 @@ public class RegistrySerializer {
 	public CacheInfo serialize(Path dir, RegistryWriterImpl factory, Consumer<Task> taskConsumer) throws IOException {
 		StageData[] stages = factory.export();
 
+		long measureStart = System.currentTimeMillis();
+
 		SimplePiece[] value = new SimplePiece[stages.length];
+		List<Runnable> measureTasks = new ArrayList<>(stages.length);
 		for (int i = 0; i < stages.length; i++) {
-			StageData stage = stages[i];
-			SimplePiece[] value2 = new SimplePiece[stage.chunks.length];
-			for (int i1 = 0; i1 < stage.chunks.length; i1++) {
-				ChunkData<?, ?> chunk = stage.chunks[i1];
-				Serializer serializer = getSerializer(chunk.dashObject);
-				SizePiece[] value3 = new SizePiece[chunk.dashables.length];
-				for (int i2 = 0; i2 < chunk.dashables.length; i2++) {
-					value3[i2] = new SizePiece(serializer.measure(chunk.dashables[i2].data) + 4);
+			final int index = i;
+			measureTasks.add(() -> {
+				StageData stage = stages[index];
+				SimplePiece[] value2 = new SimplePiece[stage.chunks.length];
+				for (int i1 = 0; i1 < stage.chunks.length; i1++) {
+					ChunkData<?, ?> chunk = stage.chunks[i1];
+					Serializer serializer = getSerializer(chunk.dashObject);
+					SizePiece[] value3 = new SizePiece[chunk.dashables.length];
+					for (int i2 = 0; i2 < chunk.dashables.length; i2++) {
+						value3[i2] = new SizePiece(serializer.measure(chunk.dashables[i2].data) + 4);
+					}
+
+					value2[i1] = new SimplePiece(value3);
 				}
 
-				value2[i1] = new SimplePiece(value3);
-			}
-
-			value[i] = new SimplePiece(value2);
+				value[index] = new SimplePiece(value2);
+			});
 		}
+		ThreadHandler.INSTANCE.parallelRunnable(measureTasks);
+		ProfilerUtil.phase("measuring", System.currentTimeMillis() - measureStart);
 		SimplePiece piece = new SimplePiece(value);
 
 		int[][] stageSizes = new int[stages.length][];
@@ -103,10 +111,9 @@ public class RegistrySerializer {
 			fragments.add(new CacheFragment(fragment));
 		}
 
-		StepTask task = new StepTask("fragment", fragments.size() * 2);
+		StepTask task = new StepTask("fragment", fragments.size());
 		taskConsumer.accept(task);
-		// Serialize. Every fragment ends up in its own file and its own buffer, so
-		// there is nothing shared between them and the work runs on all threads.
+		long writeStart = System.currentTimeMillis();
 		List<Callable<Void>> fragmentTasks = new ArrayList<>(fragments.size());
 		for (int k = 0; k < fragments.size(); k++) {
 			final int index = k;
@@ -116,6 +123,7 @@ public class RegistrySerializer {
 			});
 		}
 		ThreadHandler.INSTANCE.forEachCompleted(fragmentTasks, task::next);
+		ProfilerUtil.phase("writing fragments", System.currentTimeMillis() - writeStart);
 
 		List<ChunkInfo> chunks = new ArrayList<>();
 		for (ChunkFactory<?, ?> chunk : factory.chunks) {
@@ -125,21 +133,23 @@ public class RegistrySerializer {
 		return new CacheInfo(fragments, chunks, stageSizes);
 	}
 
-	/**
-	 * Serializes and writes a single fragment. Every fragment owns its own buffer
-	 * and its own file, so several of these can run at the same time.
-	 */
+	private static final ThreadLocal<ByteBuffer> SCRATCH = ThreadLocal.withInitial(() -> MemoryUtil.memAlloc(1));
+
 	private static void writeFragment(Path dir, int index, CacheFragment fragment, StageData[] stages,
 			java.util.Map<Class<?>, Serializer<?>> serializers) {
 		DashLoader.LOG.info("Serializing fragment {}", index);
 		List<StageFragment> stageFragmentMetadata = fragment.stages;
-		// memAlloc, not ByteBufferIO.createDirect. That one is a plain
-		// allocateDirect: the JDK zeroes the whole thing and only releases it on
-		// GC. Every fragment task holds one of these at the same time, so peak
-		// off-heap was the entire uncompressed cache size plus the per-fragment
-		// compression buffers, against MaxDirectMemorySize.
-		ByteBuffer buffer = MemoryUtil.memAlloc((int) fragment.info.fileSize);
+		ByteBuffer buffer = SCRATCH.get();
+		int needed = (int) fragment.info.fileSize;
+		if (buffer.capacity() < needed) {
+			if (buffer.capacity() > 1) {
+				MemoryUtil.memFree(buffer);
+			}
+			buffer = MemoryUtil.memAlloc(needed);
+			SCRATCH.set(buffer);
+		}
 		try {
+			buffer.clear();
 			ByteBufferIO io = ByteBufferIO.wrap(buffer);
 
 			for (int i = 0; i < stageFragmentMetadata.size(); i++) {
@@ -165,7 +175,6 @@ public class RegistrySerializer {
 			throw new RuntimeException(e);
 		} finally {
 			buffer.position(0);
-			MemoryUtil.memFree(buffer);
 		}
 	}
 

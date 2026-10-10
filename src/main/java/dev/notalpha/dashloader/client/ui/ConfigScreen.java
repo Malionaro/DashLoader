@@ -51,12 +51,13 @@ public class ConfigScreen extends Screen {
 		var config = ConfigHandler.INSTANCE.config;
 
 		list.addCategory("config.category.behaviour");
-		list.addIntSlider("config.compression", config.compression, 3, 0, 23, v -> config.compression = (byte) v);
+		list.addIntSlider("config.compression", config.compression, 3, 0, 22, v -> config.compression = (byte) v);
 		list.addIntField("config.max_caches", config.maxCaches, 5, v -> config.maxCaches = v);
 		list.addBoolToggle("config.single_threaded_reading", config.singleThreadedReading, false, v -> config.singleThreadedReading = v);
 
 		list.addCategory("config.category.visuals");
 		list.addBoolToggle("config.caching_toast", config.showCachingToast, true, v -> config.showCachingToast = v);
+		list.addBoolToggle("config.show_stats", config.showStats, false, v -> config.showStats = v);
 		list.addBoolToggle("config.default_splashes", config.addDefaultSplashLines, true, v -> config.addDefaultSplashLines = v);
 
 		var splashes = config.customSplashLines.stream().map(s -> s.replace(";", ";;")).collect(Collectors.joining(";"));

@@ -15,6 +15,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class ConfigHandler {
 	private static final EnumMap<Option, Boolean> OPTION_ACTIVE = new EnumMap<>(Option.class);
@@ -22,7 +23,7 @@ public class ConfigHandler {
 
 	static {
 		for (Option value : Option.values()) {
-			OPTION_ACTIVE.put(value, true);
+			OPTION_ACTIVE.put(value, value != Option.CACHE_MODEL_LOADER);
 		}
 	}
 
@@ -35,6 +36,7 @@ public class ConfigHandler {
 	public ConfigHandler(Path configPath) {
 		this.configPath = configPath;
 		this.reloadConfig();
+		List<String> removedOptions = new ArrayList<>();
 		this.config.options.forEach((s, aBoolean) -> {
 			try {
 				var option = Option.valueOf(s.toUpperCase());
@@ -43,9 +45,10 @@ public class ConfigHandler {
 					DashLoader.LOG.warn("Disabled Optional Feature {} from DashLoader config.", s);
 				}
 			} catch (IllegalArgumentException illegalArgumentException) {
-				DashLoader.LOG.error("Could not disable Optional Feature {} from DashLoader config as it does not exist.", s);
+				removedOptions.add(s);
 			}
 		});
+		removedOptions.forEach(this.config.options::remove);
 
 		for (var modContainer : FabricLoader.getInstance().getAllMods()) {
 			var mod = modContainer.getMetadata();
@@ -57,16 +60,14 @@ public class ConfigHandler {
 						OPTION_ACTIVE.put(option, false);
 						DashLoader.LOG.warn("Disabled Optional Feature {} from {} config. {}", feature, mod.getId(), mod.getName());
 					} catch (IllegalArgumentException illegalArgumentException) {
-						DashLoader.LOG.error("Could not disable Optional Feature {} from {} config as it does not exist. {}", feature, mod.getId(), mod.getName());
+						DashLoader.LOG.warn("Mod {} asked to disable Optional Feature {} which does not exist.", mod.getId(), feature);
 					}
 				}
 			}
 		}
 		if (isVulkanModPresent()) {
-			for (Option option : new Option[]{Option.CACHE_SHADER, Option.UNSAFE_MIPMAP_GENERATION, Option.CACHE_ATLASES}) {
-				OPTION_ACTIVE.put(option, false);
-				DashLoader.LOG.warn("Found VulkanMod, Disabling Optional Feature {}", option.name());
-			}
+			OPTION_ACTIVE.put(Option.UNSAFE_MIPMAP_GENERATION, false);
+			DashLoader.LOG.warn("Found VulkanMod, Disabling Optional Feature {}", Option.UNSAFE_MIPMAP_GENERATION.name());
 		}
 		if (isQuiltLoaderPresent()) {
 			// Quilt ships its own MixinExtras/ASM combo that breaks @Redirect processing on

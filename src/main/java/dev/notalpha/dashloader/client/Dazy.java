@@ -7,6 +7,8 @@ import org.jetbrains.annotations.Nullable;
 public abstract class Dazy<V> {
 	@Nullable
 	private transient volatile V loaded;
+	@Nullable
+	private transient volatile SpriteGetter loader;
 
 	protected abstract V resolve(SpriteGetter spriteLoader);
 
@@ -17,14 +19,15 @@ public abstract class Dazy<V> {
 	// published but still handed to its caller.
 	public V get(SpriteGetter spriteLoader) {
 		V local = this.loaded;
-		if (local != null) {
+		if (local != null && this.loader == spriteLoader) {
 			return local;
 		}
 
 		synchronized (this) {
 			local = this.loaded;
-			if (local == null) {
+			if (local == null || this.loader != spriteLoader) {
 				local = resolve(spriteLoader);
+				this.loader = spriteLoader;
 				this.loaded = local;
 			}
 			return local;

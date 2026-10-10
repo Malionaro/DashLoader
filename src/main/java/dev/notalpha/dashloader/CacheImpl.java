@@ -8,6 +8,7 @@ import dev.notalpha.dashloader.config.ConfigHandler;
 import dev.notalpha.dashloader.io.MappingSerializer;
 import dev.notalpha.dashloader.io.RegistrySerializer;
 import dev.notalpha.dashloader.io.data.CacheInfo;
+import dev.notalpha.dashloader.misc.CacheStats;
 import dev.notalpha.dashloader.misc.ProfilerUtil;
 import dev.notalpha.dashloader.registry.MissingHandler;
 import dev.notalpha.dashloader.registry.RegistryReaderImpl;
@@ -24,6 +25,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -39,7 +43,7 @@ public final class CacheImpl implements Cache {
 	// Serializers
 	private final RegistrySerializer registrySerializer;
 	private final MappingSerializer mappingsSerializer;
-	private CacheStatus status;
+	private CacheStatus status = CacheStatus.IDLE;
 	private volatile String hash;
 
 	CacheImpl(Path cacheDir, List<DashModule<?>> cacheHandlers, List<DashObjectClass<?, ?>> dashObjects, List<MissingHandler<?>> missingHandlers) {
@@ -85,38 +89,33 @@ public final class CacheImpl implements Cache {
 			if (maxCaches != -1) {
 				DashLoader.LOG.info("Checking for cache count.");
 				try {
-					FileTime oldestTime = null;
-					Path oldestPath = null;
-					int cacheCount = 1;
+					List<Path> foreignCaches = new ArrayList<>();
 					try (Stream<Path> stream = Files.list(cacheDir)) {
 						for (Path path : stream.toList()) {
-							if (!Files.isDirectory(path)) {
+							if (!Files.isDirectory(path) || path.equals(ourDir) || isTmpDir(path)) {
 								continue;
 							}
-
-							if (path.equals(ourDir) || isTmpDir(path)) {
-								continue;
-							}
-
-							cacheCount += 1;
-
-							try {
-								BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
-								FileTime lastAccessTime = attrs.lastAccessTime();
-								if (oldestTime == null || lastAccessTime.compareTo(oldestTime) < 0) {
-									oldestTime = lastAccessTime;
-									oldestPath = path;
-								}
-							} catch (IOException e) {
-								DashLoader.LOG.warn("Could not find access time for cache.", e);
-							}
+							foreignCaches.add(path);
 						}
 					}
 
-					if (oldestPath != null && cacheCount > maxCaches) {
-						DashLoader.LOG.info("Removing {} as we are currently above the maximum caches.", oldestPath);
-						if (!FileUtils.deleteQuietly(oldestPath.toFile())) {
-							DashLoader.LOG.error("Could not remove cache {}", oldestPath);
+					int overflow = foreignCaches.size() + 1 - maxCaches;
+					if (overflow > 0) {
+						foreignCaches.sort(Comparator.comparing((Path path) -> {
+							try {
+								return Files.readAttributes(path, BasicFileAttributes.class).lastAccessTime();
+							} catch (IOException e) {
+								DashLoader.LOG.warn("Could not find access time for cache {}", path, e);
+								return FileTime.from(Instant.MAX);
+							}
+						}));
+
+						for (int i = 0; i < overflow && i < foreignCaches.size(); i++) {
+							Path oldest = foreignCaches.get(i);
+							DashLoader.LOG.info("Removing {} as we are currently above the maximum caches.", oldest);
+							if (!FileUtils.deleteQuietly(oldest.toFile())) {
+								DashLoader.LOG.error("Could not remove cache {}", oldest);
+							}
 						}
 					}
 				} catch (NoSuchFileException ignored) {
@@ -136,10 +135,11 @@ public final class CacheImpl implements Cache {
 
 			// Mappings
 			mappingsSerializer.save(tmpDir, factory, cacheHandlers, main);
+			main.setSubTask(null);
 			main.next();
 
 			// serialization
-			main.run(new StepTask("serialize", 2), (task) -> {
+			main.run(0, new StepTask("serialize", 2), (task) -> {
 				try {
 					CacheInfo info = this.registrySerializer.serialize(tmpDir, factory, task::setSubTask);
 					task.next();
@@ -149,6 +149,9 @@ public final class CacheImpl implements Cache {
 				}
 				task.next();
 			});
+			main.setSubTask(null);
+			main.next();
+			main.finish();
 
 			// Commit. The rename is atomic, so getDir() either does not exist at all
 			// or is a complete cache.
@@ -179,19 +182,27 @@ public final class CacheImpl implements Cache {
 
 		long start = System.currentTimeMillis();
 		try {
-			StepTask task = new StepTask("Loading DashCache", 3);
+			StepTask task = new StepTask("Loading DashCache", 4);
 			Path cacheDir = getDir();
 
 			// Get metadata
 			Path metadataPath = cacheDir.resolve(METADATA_FILE_NAME);
 			CacheInfo info = DashLoader.METADATA_SERIALIZER.load(metadataPath);
+			task.next();
 
 			// File reading
+			long readStart = System.currentTimeMillis();
 			StageData[] stageData = registrySerializer.deserialize(cacheDir, info, dashObjects);
-			RegistryReaderImpl reader = new RegistryReaderImpl(info, stageData);
+			ProfilerUtil.phase("reading fragments", System.currentTimeMillis() - readStart);
+			task.next();
 
 			// Exporting assets
-			task.run(() -> reader.export(task::setSubTask));
+			RegistryReaderImpl reader = new RegistryReaderImpl(info, stageData);
+			long exportStart = System.currentTimeMillis();
+			reader.export(task::setSubTask);
+			ProfilerUtil.phase("exporting objects", System.currentTimeMillis() - exportStart);
+			task.setSubTask(null);
+			task.next();
 
 			// Loading mappings
 			if (!mappingsSerializer.load(cacheDir, reader, cacheHandlers)) {
@@ -199,8 +210,18 @@ public final class CacheImpl implements Cache {
 				this.remove();
 				return;
 			}
+			task.next();
+			task.finish();
+
+			Path loadedDir = getDir();
+			CacheStats.recordLoad(
+					System.currentTimeMillis() - ProfilerUtil.RELOAD_START,
+					CacheStats.readVanillaTiming(loadedDir),
+					CacheStats.directorySize(loadedDir),
+					info.fragments.size());
 
 			DashLoader.LOG.info("Loaded cache in {}", ProfilerUtil.getTimeStringFromStart(start));
+			DashLoader.LOG.info(CacheStats.format());
 		} catch (Exception e) {
 			DashLoader.LOG.error("Summoned CrashLoader in {}", ProfilerUtil.getTimeStringFromStart(start), e);
 			this.setStatus(CacheStatus.SAVE);
@@ -252,4 +273,3 @@ public final class CacheImpl implements Cache {
 		}
 	}
 }
-

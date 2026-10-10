@@ -14,6 +14,7 @@ import dev.notalpha.dashloader.client.model.DashWeightedBlockStateModel;
 import dev.notalpha.dashloader.client.model.ModelModule;
 import dev.notalpha.dashloader.client.model.components.DashBakedQuad;
 import dev.notalpha.dashloader.client.model.components.DashBakedQuadCollection;
+import dev.notalpha.dashloader.client.language.LanguageModule;
 import dev.notalpha.dashloader.client.splash.SplashModule;
 import dev.notalpha.dashloader.client.sprite.content.DashImage;
 import dev.notalpha.dashloader.client.sprite.content.DashSprite;
@@ -27,7 +28,6 @@ import java.nio.file.Path;
 
 public class DashLoaderClient implements DashEntrypoint {
 	public static Cache CACHE;
-	public static volatile boolean NEEDS_RELOAD = false;
 
 	/**
 	 * NeoForge-safe init: ServiceLoader kills mod construction under NeoForge's
@@ -46,6 +46,7 @@ public class DashLoaderClient implements DashEntrypoint {
 	@Override
 	public void onDashLoaderInit(CacheFactory factory) {
 		factory.addModule(new FontModule());
+		factory.addModule(new LanguageModule());
 		factory.addModule(new ModelModule());
 		factory.addModule(new SplashModule());
 		factory.addModule(new SpriteStitcherModule());

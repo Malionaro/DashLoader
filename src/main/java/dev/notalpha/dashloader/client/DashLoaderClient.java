@@ -27,7 +27,6 @@ import java.nio.file.Path;
 
 public class DashLoaderClient implements DashEntrypoint {
 	public static Cache CACHE;
-	public static volatile boolean NEEDS_RELOAD = false;
 
 	/**
 	 * NeoForge-safe init: ServiceLoader kills mod construction under NeoForge's

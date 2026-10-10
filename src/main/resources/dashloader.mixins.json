@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "dev.notalpha.dashloader.mixin",
   "compatibilityLevel": "JAVA_21",
+  "plugin": "dev.notalpha.dashloader.mixin.MixinPlugin",
   "mixins": [
     "accessor.BitmapFontAccessor",
     "accessor.BitmapFontGlyphAccessor",

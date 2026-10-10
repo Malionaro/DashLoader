@@ -142,7 +142,7 @@ public final class DashBlockStateModel implements DashObject<BlockStateModel, Da
 
 		@Override
 		public Object visualEqualityGroup(BlockState state) {
-			return state;
+			return this.model;
 		}
 
 		@Override

@@ -42,6 +42,15 @@ public interface SpriteContentsAccessor {
 	void setHeight(int height);
 
 	@Accessor
+	java.util.List<MetadataSectionType.WithValue<?>> getAdditionalMetadata();
+
+	@Accessor
+	MipmapStrategy getMipmapStrategy();
+
+	@Accessor
+	float getAlphaCutoffBias();
+
+	@Accessor
 	@Mutable
 	void setAdditionalMetadata(java.util.List<MetadataSectionType.WithValue<?>> additionalMetadata);
 

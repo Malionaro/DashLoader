@@ -16,4 +16,5 @@ public class Config {
 	public boolean addDefaultSplashLines = true;
 	public boolean singleThreadedReading = false;
 	public boolean showCachingToast = true;
+	public boolean showStats = false;
 }

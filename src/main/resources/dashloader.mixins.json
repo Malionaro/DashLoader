@@ -7,6 +7,7 @@
   "mixins": [
     "accessor.BitmapFontAccessor",
     "accessor.BitmapFontGlyphAccessor",
+    "accessor.ClientLanguageAccessor",
     "accessor.FilterMapAccessor",
     "accessor.FontManagerProviderIndexAccessor",
     "accessor.IdentifierAccessor",
@@ -28,6 +29,7 @@
     "option.cache.SplashTextResourceSupplierMixin",
     "option.cache.font.FontManagerOverride",
     "option.cache.font.TrueTypeFontLoaderMixin",
+    "option.cache.language.ClientLanguageMixin",
     "option.cache.model.ModelManagerMixin",
     "option.cache.sprite.stitch.StitchSpriteLoaderMixin",
     "option.misc.AffineTransformationMixin"

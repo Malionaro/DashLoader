@@ -49,6 +49,15 @@ public interface SpriteContentsAccessor {
 	void setTransparency(Transparency transparency);
 
 	@Accessor
+	List<MetadataSectionType.WithValue<?>> getAdditionalMetadata();
+
+	@Accessor
+	MipmapStrategy getMipmapStrategy();
+
+	@Accessor
+	float getAlphaCutoffBias();
+
+	@Accessor
 	@Mutable
 	void setAdditionalMetadata(List<MetadataSectionType.WithValue<?>> metadata);
 
